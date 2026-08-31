@@ -23,8 +23,12 @@ DEFAULT_ODDS = -110.0
 
 
 def american_profit(odds: float, stake: float = FLAT_STAKE) -> float:
-    """Profit on a winning bet at American odds (loss is simply -stake)."""
-    if pd.isna(odds):
+    """Profit on a winning bet at American odds (loss is simply -stake).
+
+    Odds strictly between -100 and +100 do not exist; a consensus median can
+    still produce one, and it is treated as a missing price rather than a
+    windfall."""
+    if pd.isna(odds) or abs(odds) < 100:
         odds = DEFAULT_ODDS
     return stake * (odds / 100.0 if odds > 0 else 100.0 / abs(odds))
 
@@ -79,6 +83,19 @@ def grade(preds: pd.DataFrame, margin_sigma: float = 13.5) -> pd.DataFrame:
         (american_profit(p) if r == "win" else -FLAT_STAKE)
         for r, p in zip(df["ats_result"], df["ats_price"])
     ]
+
+    # --- closing line value ---------------------------------------------
+    # Did the market move toward our side after we took it? Over a season
+    # this is a far better test of edge than win rate, because it is not
+    # drowned in the variance of individual results. It needs an opening
+    # price to compare against, which only the college feed publishes.
+    if "open_spread_line" in df.columns:
+        opened = df["open_spread_line"]
+        moved = df["spread_line"] - opened          # positive = toward home
+        df["clv_points"] = np.where(has_line & opened.notna(),
+                                    np.where(take_home, moved, -moved), np.nan)
+    else:
+        df["clv_points"] = np.nan
 
     # pick categories (lock / pickem / value / upset) travel with the graded
     # frame so the same buckets shown on a game card can be scored later
@@ -157,6 +174,18 @@ def record(graded: pd.DataFrame, kind: str) -> dict:
         "profit": profit,
         "roi": profit / staked if staked else 0.0,
     }
+
+
+def clv_summary(graded: pd.DataFrame) -> dict:
+    """Share of spread picks the market moved toward, and by how much."""
+    if "clv_points" not in graded.columns:
+        return {"n": 0}
+    clv = graded["clv_points"].dropna()
+    clv = clv[clv != 0]  # an unmoved line is neither for nor against
+    if clv.empty:
+        return {"n": 0}
+    return {"n": int(len(clv)), "beat_rate": float((clv > 0).mean()),
+            "avg_points": float(clv.mean())}
 
 
 def format_record(rec: dict) -> str:

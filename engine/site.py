@@ -493,7 +493,8 @@ def week_slug(league: str, week: int, season: int | None = None, current: int | 
     return f"{league}-w{week:02d}.html"
 
 
-ODDS_COLS = ["home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds"]
+ODDS_COLS = ["home_moneyline", "away_moneyline", "home_spread_odds",
+             "away_spread_odds", "open_spread_line"]
 
 # A pick made in August for a game in December is worthless: it cannot know
 # who is hurt, who is starting, or what the weather will be. Picks are held
@@ -613,31 +614,52 @@ def _week_nav(league: str, weeks: list[dict], current: int, cur_season: int,
 </div>"""
 
 
-def build_league_weeks(
-    league: str, refresh: bool, season: int | None = None,
-    write_pages: bool = True, seed_history: pd.DataFrame | None = None,
-) -> tuple[list[dict], str, int]:
-    """Build every week of a season (default: the current one).
-    Returns (weeks, season_summary, season)."""
+# How many seasons of archive to publish. More seasons means more history
+# for the calibrator to learn the model-versus-price relationship from, and
+# more of a record for a reader to judge the picks by.
+ARCHIVE_SEASONS = 4
+
+
+def prepare_league(league: str, refresh: bool, first_season: int):
+    """Load data and build walk-forward features once for every season the
+    archive covers, rather than repeating the work per season."""
     cfg = LEAGUES[league]
+    # the archive needs its own seasons plus enough earlier ones to rate the
+    # first archived week from
     games, unit_stats, players, availability = pipeline.load_league_inputs(
-        league, refresh=refresh, recent_only=True, with_players=True
+        league, refresh=refresh, recent_only=True, with_players=True,
+        history_seasons=ARCHIVE_SEASONS + cfg.rating_window_seasons,
     )
-    season = int(games["season"].max()) if season is None else season
     feats = pipeline.build_walk_forward_features(
-        league, games, unit_stats, start_season=season - 1, availability=availability
+        league, games, unit_stats, start_season=first_season - 1,
+        availability=availability,
     )
     score_cols = ["game_id", "home_score", "away_score", "gameday", "game_type"]
     if "gametime" in games.columns:
         score_cols.append("gametime")
     score_cols += [c for c in ODDS_COLS if c in games.columns]
     feats = feats.merge(games[score_cols], on="game_id", how="left")
+    return games, feats, players, cfg
+
+
+def build_league_weeks(
+    league: str, refresh: bool, season: int | None = None,
+    write_pages: bool = True, seed_history: pd.DataFrame | None = None,
+    prepared: tuple | None = None,
+) -> tuple[list[dict], str, int]:
+    """Build every week of a season (default: the current one).
+    Returns (weeks, season_summary, season)."""
+    if prepared is None:
+        season_guess = season or 2100
+        prepared = prepare_league(league, refresh, season_guess)
+    games, feats, players, cfg = prepared
+    season = int(games["season"].max()) if season is None else season
     # predict_week trains on everything before the target week, so keep the
     # full feature history and iterate only the current season's weeks
     season_weeks = sorted(feats.loc[feats["season"] == season, "week"].unique())
 
     weeks = []
-    # calibration starts from last season's settled games, so week 1 is not
+    # calibration starts from earlier seasons' settled games, so week 1 is not
     # flying blind while this season accumulates results
     settled: list[pd.DataFrame] = ([seed_history] if seed_history is not None
                                    and len(seed_history) else [])
@@ -780,21 +802,20 @@ def _week_grid(league: str, weeks: list[dict], season: int, cur_season: int) -> 
     )
 
 
-def _league_hub(league: str, weeks: list[dict], season_summary: str,
-                prior_weeks: list[dict], prior_season: int, prior_summary: str,
-                season: int) -> str:
-    """League landing page: this season's weeks, then last season's archive."""
-    prior = ""
-    if prior_weeks:
-        prior = (f'<h2>{prior_season} season</h2>'
-                 f'<div class="card"><strong>{prior_summary}</strong></div>'
-                 f'{_week_grid(league, prior_weeks, prior_season, season)}')
-    return f"""<h2>{league.upper()} &mdash; {season} season</h2>
-<div class="card"><strong>{season_summary}</strong>
-<div class="meta">Every week of the season, with picks before kickoff and results after.
-Playoff rounds appear as they are scheduled.</div></div>
-{_week_grid(league, weeks, season, season)}
-{prior}"""
+def _league_hub(league: str, by_season: list[tuple[int, list[dict]]],
+                summaries: dict[int, str], season: int) -> str:
+    """League landing page: every archived season, newest first."""
+    blocks = []
+    for i, (yr, yr_weeks) in enumerate(reversed(by_season)):
+        note = ('<div class="meta">Every week of the season, with picks before kickoff '
+                "and results after. Playoff rounds appear as they are scheduled.</div>"
+                if i == 0 else "")
+        blocks.append(
+            f'<h2>{league.upper()} &mdash; {yr} season</h2>'
+            f'<div class="card"><strong>{summaries.get(yr, "")}</strong>{note}</div>'
+            f'{_week_grid(league, yr_weeks, yr, season)}'
+        )
+    return "\n".join(blocks)
 
 
 def _pixel_section(week: dict, league: str, players) -> str:
@@ -875,7 +896,8 @@ def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: 
                 "ml": ml, "ats": ats,
             })
 
-    cat_table = _tier_table(league_weeks) + _category_table(league_weeks)
+    cat_table = (_clv_section(league_weeks) + _tier_table(league_weeks)
+                 + _category_table(league_weeks))
 
     if not rows:
         table = ('<div class="card"><div class="meta">Once games are played, every week\'s '
@@ -933,6 +955,36 @@ losing money.</span></div>
 {table}
 {cat_table}
 {TRACK_SCRIPT}"""
+
+
+def _clv_section(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
+    """Closing line value: the leading indicator of whether an edge is real."""
+    tiles = []
+    for (league, season), weeks in league_weeks.items():
+        graded = [w["graded"] for w in weeks if len(w["graded"])]
+        if not graded:
+            continue
+        summary = tracking.clv_summary(pd.concat(graded, ignore_index=True))
+        if not summary.get("n"):
+            continue
+        rate = summary["beat_rate"]
+        tone = "strong" if rate >= 0.55 else "good" if rate > 0.50 else "bad"
+        tiles.append(_stat_tile(
+            f"{league.upper()} closing line value &middot; {season}",
+            f"{rate:.0%}", tone,
+            f'market moved toward the pick on {summary["n"]} spread picks '
+            f'&middot; {summary["avg_points"]:+.2f} pts on average'))
+    if not tiles:
+        return ""
+    return f"""<h2>Closing line value</h2>
+<div class="card explain"><span class="meta">The most reliable test of whether picks
+carry an edge. If a pick is genuinely good, the market tends to move toward that side
+before kickoff &mdash; the number taken beats the number at close. Above 50% means the
+picks are on the right side of where money goes; below 50% means the opposite, and no
+run of wins changes that verdict. Win rate over one season is mostly noise; this is not.
+Opening prices are published for college games only, so the NFL cannot be measured this
+way from free data.</span></div>
+<div class="tiles">{''.join(tiles)}</div>"""
 
 
 def _tier_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
@@ -1069,30 +1121,46 @@ def build_site(out_dir: Path = SITE_DIR, refresh: bool = True) -> Path:
     league_weeks: dict[tuple[str, int], list[dict]] = {}
     cur_season: dict[str, int] = {}
     for league in ("nfl", "ncaa"):
-        # build last season first: it supplies the tracking page's history and
-        # seeds this season's calibration
-        probe, _, season = build_league_weeks(league, refresh, write_pages=False)
+        # Seasons are built oldest first so each one's calibration is seeded
+        # with every settled game that came before it, the same way the live
+        # season will be seeded when it starts.
+        probe_games, _, _, _ = pipeline.load_league_inputs(
+            league, refresh=refresh, recent_only=True, with_players=True)
+        season = int(probe_games["season"].max())
         cur_season[league] = season
-        prior_weeks, prior_summary, prior_season = build_league_weeks(
-            league, refresh=False, season=season - 1, write_pages=False)
-        seed = (pd.concat([w["graded"] for w in prior_weeks if len(w["graded"])],
-                          ignore_index=True)
-                if prior_weeks else None)
-        weeks, season_summary, season = build_league_weeks(
-            league, refresh=False, write_pages=False, seed_history=seed)
-        league_weeks[(league, season)] = weeks
+        first = season - ARCHIVE_SEASONS + 1
+        prepared = prepare_league(league, refresh=False, first_season=first)
 
-        index = [(season, weeks)] + ([(prior_season, prior_weeks)] if prior_weeks else [])
-        write_week_pages(league, weeks, season, season, index)
-        if prior_weeks:
-            write_week_pages(league, prior_weeks, prior_season, season, index)
-        if prior_weeks:
-            league_weeks[(league, prior_season)] = prior_weeks
+        by_season: list[tuple[int, list[dict]]] = []
+        summaries_by_season: dict[int, str] = {}
+        seed_frames: list[pd.DataFrame] = []
+        for yr in range(first, season + 1):
+            seed = (pd.concat(seed_frames, ignore_index=True) if seed_frames else None)
+            yr_weeks, yr_summary, _ = build_league_weeks(
+                league, refresh=False, season=yr, write_pages=False,
+                seed_history=seed, prepared=prepared,
+            )
+            if not yr_weeks:
+                continue
+            by_season.append((yr, yr_weeks))
+            summaries_by_season[yr] = yr_summary
+            league_weeks[(league, yr)] = yr_weeks
+            graded_rows = [w["graded"] for w in yr_weeks if len(w["graded"])]
+            if graded_rows:
+                seed_frames.append(pd.concat(graded_rows, ignore_index=True))
+
+        if not by_season:
+            continue
+        index = list(reversed(by_season))  # newest first in the dropdown
+        for yr, yr_weeks in by_season:
+            write_week_pages(league, yr_weeks, yr, season, index)
+
+        weeks = dict(by_season).get(season, [])
+        season_summary = summaries_by_season.get(season, "")
 
         (out_dir / f"{league}.html").write_text(
             _page(f"{league.upper()} archive — Gridiron Engine",
-                  _league_hub(league, weeks, season_summary, prior_weeks, prior_season,
-                              prior_summary, season))
+                  _league_hub(league, by_season, summaries_by_season, season))
         )
         # current week = first with games still to play, else the last graded
         current = next((w for w in weeks if not w["complete"]), weeks[-1] if weeks else None)

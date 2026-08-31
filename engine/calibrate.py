@@ -32,6 +32,7 @@ def logit(p) -> np.ndarray:
 
 def implied_probability(american) -> np.ndarray:
     odds = np.asarray(american, dtype=float)
+    odds = np.where(np.abs(odds) < 100, -110.0, odds)  # impossible price
     return np.where(odds > 0, 100.0 / (odds + 100.0), np.abs(odds) / (np.abs(odds) + 100.0))
 
 
@@ -74,6 +75,7 @@ def fit_and_apply(history: pd.DataFrame, target: pd.DataFrame, kind: str) -> pd.
 def expected_value(prob, american) -> np.ndarray:
     """Profit per unit staked at these odds, under this probability."""
     odds = np.asarray(american, dtype=float)
+    odds = np.where(np.abs(odds) < 100, -110.0, odds)
     payout = np.where(odds > 0, odds / 100.0, 100.0 / np.abs(odds))
     p = np.asarray(prob, dtype=float)
     return p * payout - (1 - p)

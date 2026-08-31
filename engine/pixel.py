@@ -37,7 +37,8 @@ MAX_DISAGREEMENT = 0.15
 
 
 def american_to_decimal(odds: float) -> float:
-    if pd.isna(odds):
+    # guard impossible prices from consensus medians (see tracking module)
+    if pd.isna(odds) or abs(odds) < 100:
         odds = -110.0
     return 1.0 + (odds / 100.0 if odds > 0 else 100.0 / abs(odds))
 
