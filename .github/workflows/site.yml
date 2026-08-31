@@ -23,7 +23,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Scheduled runs are dispatched from the repository's default branch,
+      # whatever that happens to be. Pin the checkout so the published site is
+      # always built from main rather than from whichever branch is default.
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
