@@ -36,6 +36,18 @@ CFB_LINES_URL = (
 # ESPN schedule mirror (also keyless); shares ESPN game ids with the CFBD
 # schedules above, and is used to backfill scores for seasons where the
 # primary mirror's results are stale (e.g. 2024).
+CFB_PLAYER_STATS_URL = (
+    "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
+    "player_stats/parquet/player_stats_{year}.parquet"
+)
+# one row per play, with player attribution, down/distance and yardage —
+# enough to build the same unit ratings and player breakdowns as the NFL side
+CFB_PLAY_COLUMNS = [
+    "game_id", "season", "week", "team", "opponent", "down", "distance",
+    "yards_to_goal", "completion_player", "completion_yds", "rush_player",
+    "rush_yds", "incompletion_player", "reception_player", "reception_yds",
+]
+
 CFB_ESPN_SCHED_URL = (
     "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/"
     "espn_cfb_schedules/cfb_schedule_{year}.parquet"
@@ -178,3 +190,57 @@ def _patch_ncaa_scores(df: pd.DataFrame, year: int, refresh: bool) -> pd.DataFra
 def load_ncaa_lines(refresh: bool = False) -> pd.DataFrame:
     dest = DATA_DIR / "ncaa" / "cfb_line_odds.parquet"
     return _cached_parquet(CFB_LINES_URL, dest, refresh)
+
+
+def load_ncaa_plays(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:
+    """Play-level data for the seasons available from the mirror."""
+    frames = []
+    for year in seasons:
+        dest = DATA_DIR / "ncaa" / f"plays_{year}.parquet"
+        refresh = refresh_latest and year == max(seasons)
+        try:
+            df = _cached_parquet(CFB_PLAYER_STATS_URL.format(year=year), dest, refresh)
+        except requests.HTTPError:
+            continue  # season not published yet
+        cols = [c for c in CFB_PLAY_COLUMNS if c in df.columns]
+        frames.append(df[cols])
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def ncaa_game_odds(schedule: pd.DataFrame, refresh: bool = False) -> pd.DataFrame:
+    """Consensus spread, total, and moneyline per game, in the same shape and
+    sign convention as the NFL schedule feed.
+
+    The lines file carries one row per book per side; team names match the
+    schedule exactly for every FBS team, so the home row is identified by
+    name. Consensus is the median across books, which is more robust than
+    trusting any single one.
+    """
+    lines = load_ncaa_lines(refresh=refresh)
+    lines = lines.dropna(subset=["game_id"]).copy()
+    lines["game_id"] = lines["game_id"].astype("int64")
+
+    sched = schedule[["game_id", "home_team", "away_team"]].copy()
+    sched["game_id"] = sched["game_id"].astype("int64")
+    df = lines.merge(sched, on="game_id", how="inner")
+    is_home = df["abbr"] == df["home_team"]
+    is_away = df["abbr"] == df["away_team"]
+
+    def consensus(mask: pd.Series, value_col: str, name: str) -> pd.Series:
+        return df.loc[mask].groupby("game_id")[value_col].median().rename(name)
+
+    spread = df["market_type"] == "spread"
+    money = df["market_type"] == "money_line"
+    total = (df["market_type"] == "total") & (df["abbr"] == "over")
+
+    out = pd.concat([
+        # book posts the home side as e.g. -2.5; the engine's convention is
+        # positive when the home team is favored
+        (-consensus(spread & is_home, "lines", "spread_line")),
+        consensus(total, "lines", "total_line"),
+        consensus(money & is_home, "odds", "home_moneyline"),
+        consensus(money & is_away, "odds", "away_moneyline"),
+        consensus(spread & is_home, "odds", "home_spread_odds"),
+        consensus(spread & is_away, "odds", "away_spread_odds"),
+    ], axis=1).reset_index()
+    return out

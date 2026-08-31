@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from . import odds
+from . import grades, odds
 
 # Unit rating thresholds in EPA/play, roughly: 0.05 is a noticeable edge,
 # 0.10 is a strong unit, 0.15+ is elite (or, negative, a real liability).
@@ -48,6 +48,15 @@ def game_script(row: pd.Series, league: str) -> list[str]:
     paras = []
 
     # --- paragraph 1: the shape of the matchup -------------------------
+    n = int(row.get("n_teams", 32) or 32)
+    ranks = ""
+    if pd.notna(row.get("home_rating_rank")):
+        h_pct = grades.percentile(int(row.home_rating_rank), n)
+        a_pct = grades.percentile(int(row.away_rating_rank), n)
+        ranks = (f" Overall, {home} is the {grades.ordinal(int(row.home_rating_rank))}-rated "
+                 f"team in the league ({grades.tier(h_pct)}) and {away} is "
+                 f"{grades.ordinal(int(row.away_rating_rank))} ({grades.tier(a_pct)}).")
+
     rating_gap = row.home_rating - row.away_rating
     stronger = home if rating_gap > 0 else away
     gap = abs(rating_gap)
@@ -65,7 +74,7 @@ def game_script(row: pd.Series, league: str) -> list[str]:
              f"{home} then adds the home-field bump the model fits at "
              f"{abs(row.hfa_fit):.1f} points.")
     paras.append(
-        f"The power ratings see {shape}. {venue} Rolling that together, the engine "
+        f"The power ratings see {shape}.{ranks} {venue} Rolling that together, the engine "
         f"projects <strong>{fav} by {spread}</strong> and gives them a {prob:.0%} chance "
         "to win outright."
     )
@@ -79,24 +88,20 @@ def game_script(row: pd.Series, league: str) -> list[str]:
 
         bits = []
         if abs(h_pass_edge - a_pass_edge) >= NOTABLE:
-            better, val, other = ((home, h_pass_edge, a_pass_edge)
-                                  if h_pass_edge > a_pass_edge
-                                  else (away, a_pass_edge, h_pass_edge))
-            bits.append(
-                f"the passing game should tilt toward {better}, projected at "
-                f"{val:+.3f} EPA per dropback against this defense versus "
-                f"{other:+.3f} the other way"
-            )
+            better = home if h_pass_edge > a_pass_edge else away
+            size, _ = grades.edge_word(h_pass_edge - a_pass_edge)
+            bits.append(f"the passing game tilts toward <strong>{better}</strong> "
+                        f"&mdash; {size} through the air")
         if abs(h_rush_edge - a_rush_edge) >= NOTABLE:
-            better, val, other = ((home, h_rush_edge, a_rush_edge)
-                                  if h_rush_edge > a_rush_edge
-                                  else (away, a_rush_edge, h_rush_edge))
-            # both sides can be negative — say which is less bad, not "edge"
-            phrasing = (f"{better} has the better ground matchup at {val:+.3f} EPA per rush"
-                        if val > 0 else
-                        f"neither run game projects well, though {better} is the less "
-                        f"inefficient of the two ({val:+.3f} vs {other:+.3f} EPA per rush)")
-            bits.append(phrasing)
+            better = home if h_rush_edge > a_rush_edge else away
+            val = max(h_rush_edge, a_rush_edge)
+            size, _ = grades.edge_word(h_rush_edge - a_rush_edge)
+            bits.append(
+                f"<strong>{better}</strong> has the better ground matchup, {size} on "
+                "the run" if val > 0 else
+                f"neither run game projects well, though <strong>{better}</strong> is "
+                "the less inefficient of the two"
+            )
         if not bits:
             bits.append(
                 "neither side owns a clear schematic edge &mdash; the unit ratings are "
@@ -147,27 +152,29 @@ def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str,
     if players is None or players.empty:
         return []
     out = []
-    for team in (row.home_team, row.away_team):
-        side = players[players["team"] == team]
+    # players are keyed by the data source's team code, while display uses
+    # the full name, so look up by key and label by name
+    pairs = [(row.get("home_key", row.home_team), row.home_team),
+             (row.get("away_key", row.away_team), row.away_team)]
+    for key, team in pairs:
+        side = players[players["team"] == key]
         if side.empty:
             continue
         bits = []
         qb = side[side["role"] == "QB"].nlargest(1, "total_epa")
         if not qb.empty:
             q = qb.iloc[0]
-            verdict = ("driving the offense" if q.epa_per_play >= 0.10
+            verdict = ("carrying the offense" if q.epa_per_play >= 0.15
+                       else "playing well" if q.epa_per_play >= 0.08
                        else "steady but not a difference-maker" if q.epa_per_play >= 0.0
                        else "a drag on the offense")
             bits.append(
-                f"QB <strong>{q.player}</strong> is {verdict} at {q.epa_per_play:+.3f} "
-                f"EPA per dropback over {int(q.plays)} plays"
+                f"QB <strong>{q.player}</strong> has been {verdict}, adding roughly "
+                f"{q.epa_per_play * 35:+.1f} points a game over an average quarterback"
             )
         top_rec = side[side["role"] == "REC"].nlargest(2, "total_epa")
         if not top_rec.empty:
-            names = ", ".join(
-                f"<strong>{r.player}</strong> ({r.epa_per_play:+.2f} EPA/target)"
-                for r in top_rec.itertuples()
-            )
+            names = " and ".join(f"<strong>{r.player}</strong>" for r in top_rec.itertuples())
             bits.append(f"the passing game runs through {names}")
         # rusher_player_name includes QB scrambles, so drop anyone who is
         # this team's passer before naming a running back
@@ -175,48 +182,60 @@ def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str,
         rb = side[(side["role"] == "RB") & ~side["player"].isin(qbs)].nlargest(1, "total_epa")
         if not rb.empty:
             r = rb.iloc[0]
-            quality = "productive" if r.epa_per_play >= 0.0 else "inefficient"
-            bits.append(
-                f"on the ground <strong>{r.player}</strong> has been {quality} "
-                f"({r.epa_per_play:+.3f} EPA per carry)"
-            )
+            quality = ("been efficient" if r.epa_per_play >= 0.02
+                       else "held his own" if r.epa_per_play >= -0.05
+                       else "struggled to move the ball")
+            bits.append(f"lead back <strong>{r.player}</strong> has {quality}")
         if bits:
             out.append((team, "; ".join(bits) + "."))
     return out
 
 
-def key_factors(row: pd.Series) -> list[tuple[str, str]]:
-    """(label, explanation) pairs — the units and situational factors that
-    drive this pick, strongest first."""
+def key_factors(row: pd.Series) -> list[dict]:
+    """Matchup breakdowns in plain language: who has the edge, how big, and
+    how each unit ranks in its league."""
     if not _has_units(row):
         return []
     home, away = row.home_team, row.away_team
-    factors = []
+    n = int(row.get("unit_n") or row.get("n_teams", 32) or 32)
+    out = []
     specs = [
-        (f"{home} pass offense", row.home_off_pass_epa, f"{away} pass defense", row.away_def_pass_epa, "through the air"),
-        (f"{away} pass offense", row.away_off_pass_epa, f"{home} pass defense", row.home_def_pass_epa, "through the air"),
-        (f"{home} rush offense", row.home_off_rush_epa, f"{away} run defense", row.away_def_rush_epa, "on the ground"),
-        (f"{away} rush offense", row.away_off_rush_epa, f"{home} run defense", row.home_def_rush_epa, "on the ground"),
+        (home, away, "home_off_pass_epa", "away_def_pass_epa", "passing", "pass defense"),
+        (away, home, "away_off_pass_epa", "home_def_pass_epa", "passing", "pass defense"),
+        (home, away, "home_off_rush_epa", "away_def_rush_epa", "running", "run defense"),
+        (away, home, "away_off_rush_epa", "home_def_rush_epa", "running", "run defense"),
     ]
-    for off_name, off_val, def_name, def_val, phase in specs:
-        edge = off_val - def_val
-        if abs(edge) < NOTABLE:
-            continue
-        who = off_name.rsplit(" ", 2)[0]
-        factors.append((
-            f"{off_name} vs {def_name}",
-            f"The offense grades {_grade(off_val)} ({off_val:+.3f} EPA/play) against a "
-            f"defense that grades {_grade(def_val)} ({def_val:+.3f}). Net {edge:+.3f} "
-            f"per play {phase} favors {who if edge > 0 else def_name.rsplit(' ', 2)[0]}."
-        ))
-    factors.sort(key=lambda f: -abs(float(f[1].split("Net ")[1].split()[0])))
+    for off_team, def_team, off_key, def_key, phase, def_name in specs:
+        off_val, def_val = row[off_key], row[def_key]
+        net = off_val - def_val
+        off_pct = grades.percentile(int(row.get(f"{off_key}_rank", 1)), n)
+        def_pct = grades.percentile(int(row.get(f"{def_key}_rank", 1)), n)
+        desc, tone = grades.edge_word(net)
+        winner = off_team if net > 0 else def_team
+        out.append({
+            "title": f"{off_team} {phase} vs {def_team} {def_name}",
+            "verdict": desc,
+            "tone": tone if net > 0 else ("bad" if abs(net) >= 0.09 else "mid"),
+            "winner": winner,
+            "magnitude": abs(net),
+            "text": (
+                f"{off_team}'s {phase} attack grades <strong>{grades.grade(off_pct)}</strong> "
+                f"({grades.rank_label(int(row[f'{off_key}_rank']), n)}); "
+                f"{def_team}'s {def_name} grades <strong>{grades.grade(def_pct)}</strong> "
+                f"({grades.rank_label(int(row[f'{def_key}_rank']), n)}). "
+                f"That is {desc} for <strong>{winner}</strong>."
+            ),
+        })
+    out.sort(key=lambda f: -f["magnitude"])
 
     rest = row.get("rest_diff", 0)
     if pd.notna(rest) and abs(rest) >= 3:
         team = home if rest > 0 else away
-        factors.append((
-            "Rest advantage",
-            f"{team} enters with {abs(rest):.0f} more days of rest, worth a fraction of a "
-            "point in the model but a real factor for injury recovery and preparation."
-        ))
-    return factors
+        out.append({
+            "title": "Rest advantage", "verdict": "situational", "tone": "mid",
+            "winner": team, "magnitude": 0.0,
+            "text": (f"<strong>{team}</strong> comes in with {abs(rest):.0f} more days of "
+                     "rest &mdash; worth a fraction of a point, but real for recovery "
+                     "and preparation."),
+        })
+    return out

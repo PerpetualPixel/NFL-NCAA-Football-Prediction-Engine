@@ -3,13 +3,15 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gridiron Engine</title><style>
 :root {
-  --bg: #f6f7f9; --card: #ffffff; --ink: #1a1d21; --muted: #6b7280;
-  --line: #e5e7eb; --accent: #1d4ed8; --good: #047857; --bad: #b91c1c;
+  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
+  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
+  --good: #047857; --warn: #b45309; --bad: #b91c1c;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101317; --card: #1a1f26; --ink: #e7eaee; --muted: #9aa3af;
-    --line: #2a3138; --accent: #7aa2ff; --good: #34d399; --bad: #f87171;
+    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
+    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
   }
 }
 * { box-sizing: border-box; }
@@ -18,10 +20,18 @@ body {
   font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
-header.site { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
-header.site h1 { font-size: 1.5rem; margin: 0; }
-header.site nav a { margin-right: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
-.stamp { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+header.site {
+  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+}
+header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
+header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site nav a {
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
+  padding: 4px 10px; border-radius: 6px;
+}
+header.site nav a:hover { color: var(--accent); background: var(--sunken); }
+.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
 h2 { font-size: 1.15rem; margin: 32px 0 12px; }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: 10px;
@@ -33,9 +43,69 @@ h2 { font-size: 1.15rem; margin: 32px 0 12px; }
 .meta { color: var(--muted); font-size: 0.85rem; }
 .edge-pos { color: var(--good); font-weight: 600; }
 .edge-neg { color: var(--bad); font-weight: 600; }
-table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 420px; }
-table.units th, table.units td { text-align: right; padding: 3px 10px; border-bottom: 1px solid var(--line); }
-table.units th:first-child, table.units td:first-child { text-align: left; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 480px; }
+table.units th, table.units td { text-align: center; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td.ulabel { text-align: left; }
+table.units th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.ulabel { color: var(--ink); }
+.gwrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.gletter { font-weight: 800; font-size: 0.98rem; }
+.grank { color: var(--muted); font-size: 0.74rem; }
+.gbar { height: 4px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.gbar i { display: block; height: 100%; border-radius: 3px; }
+.gnote { margin-top: 8px; font-size: 0.78rem; }
+/* one colour language across the whole site */
+.t-strong { color: var(--good); }
+.t-good { color: var(--good); opacity: 0.85; }
+.t-mid { color: var(--muted); }
+.t-poor { color: var(--warn); }
+.t-bad { color: var(--bad); }
+.gbar i.t-strong { background: var(--good); }
+.gbar i.t-good { background: var(--good); opacity: 0.7; }
+.gbar i.t-mid { background: var(--muted); }
+.gbar i.t-poor { background: var(--warn); }
+.gbar i.t-bad { background: var(--bad); }
+.bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
+.bet {
+  flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 11px;
+}
+.betlabel {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 700;
+}
+.betvalue { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+.betvalue .price { color: var(--muted); font-weight: 600; font-size: 0.88rem; }
+.betnote { font-size: 0.76rem; margin-top: 1px; }
+.outcome {
+  display: inline-block; margin-top: 5px; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.factor { margin-bottom: 11px; list-style: none; }
+ul.factors { padding-left: 0; }
+.fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fname { font-weight: 700; font-size: 0.88rem; }
+.fverdict {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ftext { font-size: 0.86rem; color: var(--ink); margin-top: 1px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
+.tilesub { font-size: 0.78rem; }
+.explain { font-size: 0.88rem; }
+table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
+table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+table.track td.num, table.track th.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.track a { color: var(--ink); text-decoration: none; }
+table.track a:hover { color: var(--accent); }
+.lgtag {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; padding: 1px 5px;
+  border-radius: 3px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px;
+}
 .result-hit { color: var(--good); font-weight: 700; }
 .result-miss { color: var(--bad); font-weight: 700; }
 .cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
@@ -78,18 +148,48 @@ details.more[open] summary::before { transform: rotate(90deg); }
 .analysis p { margin: 0 0 10px; font-size: 0.9rem; }
 ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
 ul.factors li { margin-bottom: 8px; }
+.wknav {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 6px;
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+  white-space: nowrap;
+}
+.wknav-btn.disabled { color: var(--muted); opacity: 0.5; }
+.wksel { font-size: 0.85rem; color: var(--muted); }
+.wksel select {
+  font: inherit; font-size: 0.85rem; margin-left: 6px; padding: 4px 8px; max-width: 240px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.weekhead { color: var(--muted); font-size: 0.9rem; margin: -6px 0 10px; }
+.weekgrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;
+}
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.92rem; }
+.wt-detail { margin-top: 3px; }
+.wt-detail .good { color: var(--good); font-weight: 600; }
+.wt-detail .bad { color: var(--bad); font-weight: 600; }
+.wt-detail .upcoming { color: var(--accent); font-weight: 600; }
 .leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .leagues a.card { display: block; text-decoration: none; color: inherit; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </style></head>
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
-<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a></nav></header>
-<div class="stamp">Updated 2026-08-31 05:18 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<a href="tracking.html">Tracking</a></nav></header>
+<div class="stamp">Updated 2026-08-31 05:40 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 
 <h2>Weekly picks, powered by opponent-adjusted ratings</h2>
-<div class="leagues"><a class="card" href="nfl.html"><div class="teams">NFL</div><div class="meta">NFL: week 1 &mdash; 16 games, top pick DET -9</div></a>
-<a class="card" href="ncaa.html"><div class="teams">NCAA</div><div class="meta">NCAA: no upcoming games found</div></a></div>
+<div class="leagues"><a class="card" href="nfl-w01.html"><div class="teams">NFL</div><div class="meta">Week 1 &middot; 16 games, picks below</div><div class="meta">2026 season &mdash; no completed games yet</div></a>
+<a class="card" href="ncaa-w01.html"><div class="teams">NCAA</div><div class="meta">Week 1 &middot; 2-2 on the moneyline, 0-0 against the spread</div><div class="meta">2026 season to date: 2-2 moneyline (50%, -4.5% ROI) &middot; 0-0 spread (0%, +0.0% ROI)</div></a></div>
 <h2>How it works</h2>
 <div class="card"><div class="meta">
 Team power ratings and (NFL) pass/rush unit ratings are solved by weighted ridge
