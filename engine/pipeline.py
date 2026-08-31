@@ -16,18 +16,56 @@ from .features.ratings import recency_weights, solve_ratings
 FCS_BUCKET = "NON-FBS"
 
 
-def load_league_inputs(league: str, refresh: bool = False, recent_only: bool = False):
+def load_league_inputs(
+    league: str, refresh: bool = False, recent_only: bool = False,
+    with_players: bool = False,
+):
     """Games table plus (NFL) unit stats; recent_only trims the play-by-play
-    download to the rating window for fast CI site builds."""
+    download to the rating window for fast CI site builds. with_players also
+    returns per-player production for the key-players breakdown."""
     games = load_games(league, refresh=refresh)
-    unit_stats = None
+    unit_stats = players = None
     if league == "nfl":
         seasons = sorted(games.loc[games["completed"], "season"].unique().tolist())
         if recent_only:
             seasons = seasons[-(LEAGUES[league].rating_window_seasons + 1):]
         pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
         unit_stats = nfl_unit_game_stats(pbp)
-    return games, unit_stats
+        if with_players:
+            players = nfl_player_production(pbp, seasons[-1])
+    return (games, unit_stats, players) if with_players else (games, unit_stats)
+
+
+def nfl_player_production(pbp: pd.DataFrame, season: int, min_plays: int = 25) -> pd.DataFrame:
+    """Per-player EPA production for the latest season, by role.
+
+    Returns columns: team, player, role, plays, epa_per_play, total_epa.
+    Used to name the handful of players actually driving each unit rating.
+    """
+    recent = pbp[(pbp["season"] == season) & pbp["epa"].notna()]
+    roles = [
+        ("passer_player_name", "pass", "QB"),
+        ("rusher_player_name", "run", "RB"),
+        ("receiver_player_name", "pass", "REC"),
+    ]
+    frames = []
+    for col, play_type, role in roles:
+        sub = recent[recent[col].notna() & recent["play_type"].eq(play_type)]
+        if sub.empty:
+            continue
+        agg = (
+            sub.groupby(["posteam", col])
+            .agg(plays=("epa", "size"), total_epa=("epa", "sum"),
+                 epa_per_play=("epa", "mean"), success=("success", "mean"))
+            .reset_index()
+            .rename(columns={"posteam": "team", col: "player"})
+        )
+        agg["role"] = role
+        frames.append(agg[agg["plays"] >= min_plays])
+    if not frames:
+        return pd.DataFrame(columns=["team", "player", "role", "plays",
+                                     "epa_per_play", "total_epa", "success"])
+    return pd.concat(frames, ignore_index=True)
 
 
 # ---------------------------------------------------------------------------
@@ -49,7 +87,8 @@ def load_games(league: str, refresh: bool = False) -> pd.DataFrame:
         df["completed"] = df["home_score"].notna() & df["away_score"].notna()
         df["margin"] = df["home_score"] - df["away_score"]
         keep = [
-            "game_id", "season", "week", "gameday", "home_team", "away_team",
+            "game_id", "season", "week", "gameday", "gametime", "weekday",
+            "home_team", "away_team",
             "home_score", "away_score", "margin", "neutral", "completed",
             "spread_line", "total_line", "home_rest", "away_rest",
             "home_qb_name", "away_qb_name", "home_coach", "away_coach",
