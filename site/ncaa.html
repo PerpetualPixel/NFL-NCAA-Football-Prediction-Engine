@@ -38,6 +38,46 @@ table.units th, table.units td { text-align: right; padding: 3px 10px; border-bo
 table.units th:first-child, table.units td:first-child { text-align: left; }
 .result-hit { color: var(--good); font-weight: 700; }
 .result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
 .leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .leagues a.card { display: block; text-decoration: none; color: inherit; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
@@ -45,39 +85,119 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a></nav></header>
-<div class="stamp">Updated 2026-08-31 04:50 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 05:18 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <h2>Upcoming picks</h2><div class="card"><div class="meta">No upcoming games in the schedule mirror yet &mdash; picks appear here automatically once next week's slate is published.</div></div>
 <h2>Last completed week graded &mdash; season 2026, week 1 (2/5 straight-up)</h2>
-<div class="card">
-<div class="teams">Jacksonville State @ NON-FBS</div>
-<div class="pick">Pick: <strong>Jacksonville State by 32.3</strong> &middot; 97% win probability</div>
-<div class="meta">Power ratings: NON-FBS -25.4, Jacksonville State +0.6</div>
-<div class="meta">Final: NON-FBS 33&ndash;7 &middot; <span class="result-miss">MISS</span></div>
+<div class="card game" data-kick="1788019200" data-prob="0.6493" data-margin="6.327" data-edge="0.000" data-tags="">
+<div class="cardhead"><div class="teams">North Carolina @ TCU (neutral site)</div>
+<div class="kick">Sat, Aug 29</div></div>
+<div class="pick">Pick: <strong>TCU -6.5</strong> &middot; 65% win probability &middot; <span class="meta">ML -205</span></div>
+<div class="chips"><span class="tag tag-key">near 7</span></div>
+<div class="meta">Power ratings: TCU +2.7, North Carolina -1.9
+&middot; raw projection 6.3</div>
+<div class="meta">Final: TCU 10&ndash;15 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for TCU, 4.6 points of separation before adjustments. Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>TCU by 6.5</strong> and gives them a 65% chance to win outright.</p><p>One caution: the projection sits near 7, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+
+<h4>Unit ratings</h4>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">San José State @ USC</div>
-<div class="pick">Pick: <strong>USC by 18.9</strong> &middot; 87% win probability</div>
-<div class="meta">Power ratings: USC +6.2, San José State -5.0</div>
-<div class="meta">Final: USC 42&ndash;26 &middot; <span class="result-hit">HIT</span></div>
+<div class="card game" data-kick="1788030000" data-prob="0.8737" data-margin="18.876" data-edge="0.000" data-tags="lock">
+<div class="cardhead"><div class="teams">San José State @ USC</div>
+<div class="kick">Sat, Aug 29</div></div>
+<div class="pick">Pick: <strong>USC -19</strong> &middot; 87% win probability &middot; <span class="meta">ML -865</span></div>
+<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="meta">Power ratings: USC +6.2, San José State -5.0
+&middot; raw projection 18.9</div>
+<div class="meta">Final: USC 42&ndash;26 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a clear talent gap &mdash; USC rates 11.2 points stronger before any situational adjustment. USC then adds the home-field bump the model fits at 4.7 points. Rolling that together, the engine projects <strong>USC by 19</strong> and gives them a 87% chance to win outright.</p>
+
+<h4>Unit ratings</h4>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">North Carolina @ TCU (neutral site)</div>
-<div class="pick">Pick: <strong>TCU by 6.3</strong> &middot; 65% win probability</div>
-<div class="meta">Power ratings: TCU +2.7, North Carolina -1.9</div>
-<div class="meta">Final: TCU 10&ndash;15 &middot; <span class="result-miss">MISS</span></div>
+<div class="card game" data-kick="1788031800" data-prob="0.6060" data-margin="4.437" data-edge="0.000" data-tags="">
+<div class="cardhead"><div class="teams">NC State @ Virginia</div>
+<div class="kick">Sat, Aug 29</div></div>
+<div class="pick">Pick: <strong>Virginia -4.5</strong> &middot; 61% win probability &middot; <span class="meta">ML -170</span></div>
+<div class="chips"></div>
+<div class="meta">Power ratings: Virginia +1.7, NC State +1.0
+&middot; raw projection 4.4</div>
+<div class="meta">Final: Virginia 34&ndash;8 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.7 points between them on raw strength. Virginia then adds the home-field bump the model fits at 4.7 points. Rolling that together, the engine projects <strong>Virginia by 4.5</strong> and gives them a 61% chance to win outright.</p>
+
+<h4>Unit ratings</h4>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">NC State @ Virginia</div>
-<div class="pick">Pick: <strong>Virginia by 4.4</strong> &middot; 61% win probability</div>
-<div class="meta">Power ratings: Virginia +1.7, NC State +1.0</div>
-<div class="meta">Final: Virginia 34&ndash;8 &middot; <span class="result-hit">HIT</span></div>
+<div class="card game" data-kick="1788039000" data-prob="0.9749" data-margin="32.299" data-edge="0.000" data-tags="lock">
+<div class="cardhead"><div class="teams">Jacksonville State @ NON-FBS</div>
+<div class="kick">Sat, Aug 29</div></div>
+<div class="pick">Pick: <strong>Jacksonville State -32.5</strong> &middot; 97% win probability &middot; <span class="meta">ML -6565</span></div>
+<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="meta">Power ratings: NON-FBS -25.4, Jacksonville State +0.6
+&middot; raw projection 32.3</div>
+<div class="meta">Final: NON-FBS 33&ndash;7 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a clear talent gap &mdash; Jacksonville State rates 26.0 points stronger before any situational adjustment. NON-FBS then adds the home-field bump the model fits at 4.7 points. Rolling that together, the engine projects <strong>Jacksonville State by 32.5</strong> and gives them a 97% chance to win outright.</p>
+
+<h4>Unit ratings</h4>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">Memphis @ UNLV</div>
-<div class="pick">Pick: <strong>UNLV by 2.5</strong> &middot; 56% win probability</div>
-<div class="meta">Power ratings: UNLV +2.9, Memphis +3.6</div>
-<div class="meta">Final: UNLV 21&ndash;27 &middot; <span class="result-miss">MISS</span></div>
+<div class="card game" data-kick="1788055200" data-prob="0.5609" data-margin="2.530" data-edge="0.000" data-tags="pickem">
+<div class="cardhead"><div class="teams">Memphis @ UNLV</div>
+<div class="kick">Sun, Aug 30</div></div>
+<div class="pick">Pick: <strong>UNLV -2.5</strong> &middot; 56% win probability &middot; <span class="meta">ML -140</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Power ratings: UNLV +2.9, Memphis +3.6
+&middot; raw projection 2.5</div>
+<div class="meta">Final: UNLV 21&ndash;27 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.7 points between them on raw strength. UNLV then adds the home-field bump the model fits at 4.7 points. Rolling that together, the engine projects <strong>UNLV by 2.5</strong> and gives them a 56% chance to win outright.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+
+<h4>Unit ratings</h4>
+</div></details>
 </div>
+<script>
+(function () {
+  var list = document.getElementById('games');
+  if (!list) return;
+  var note = document.querySelector('.emptynote');
+  var filter = 'all';
+
+  function apply() {
+    var key = document.getElementById('sortby').value;
+    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
+    cards.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
+    });
+    cards.forEach(function (c) {
+      list.appendChild(c);
+      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
+      c.hidden = !show;
+    });
+    var visible = cards.filter(function (c) { return !c.hidden; }).length;
+    if (note) note.hidden = visible !== 0;
+  }
+
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      apply();
+    });
+  });
+  document.getElementById('sortby').addEventListener('change', apply);
+  apply();
+})();
+</script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
 ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
 </div></body></html>

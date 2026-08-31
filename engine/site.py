@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import model as model_mod
-from . import pipeline
+from . import analysis, model as model_mod
+from . import odds, pipeline
 from .config import LEAGUES
 
 SITE_DIR = Path(__file__).resolve().parents[1] / "site"
@@ -53,6 +53,46 @@ table.units th, table.units td { text-align: right; padding: 3px 10px; border-bo
 table.units th:first-child, table.units td:first-child { text-align: left; }
 .result-hit { color: var(--good); font-weight: 700; }
 .result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
 .leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .leagues a.card { display: block; text-decoration: none; color: inherit; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
@@ -88,32 +128,149 @@ def _unit_table(row: pd.Series) -> str:
 </table>"""
 
 
-def _game_card(row: pd.Series, graded: bool) -> str:
-    pick = row.home_team if row.pred_margin > 0 else row.away_team
-    by = abs(row.pred_margin)
-    prob = row.home_win_prob if row.pred_margin > 0 else 1 - row.home_win_prob
+def _kickoff(row: pd.Series) -> tuple[str, float]:
+    """Human kickoff label and a sortable epoch value."""
+    ts = pd.to_datetime(row.get("gameday"), utc=True, errors="coerce")
+    if pd.isna(ts):
+        return "", 0.0
+    label = ts.strftime("%a, %b %-d")
+    gametime = row.get("gametime")
+    if isinstance(gametime, str) and ":" in gametime:
+        hour, minute = (int(p) for p in gametime.split(":")[:2])
+        suffix = "AM" if hour < 12 else "PM"
+        label += f" &middot; {((hour - 1) % 12) + 1}:{minute:02d} {suffix} ET"
+    return label, ts.timestamp()
+
+
+def _game_card(row: pd.Series, graded: bool, league: str,
+               players: pd.DataFrame | None = None) -> str:
+    home_favored = row.pred_margin > 0
+    pick = row.home_team if home_favored else row.away_team
+    prob = row.home_win_prob if home_favored else 1 - row.home_win_prob
+    line = odds.format_line(pick, row.pred_margin)
+    ml = odds.format_moneyline(prob)
+
+    edge = None
     market = ""
     if pd.notna(row.get("spread_line")):
-        edge = row.pred_margin - row.spread_line
+        edge = float(row.pred_margin - row.spread_line)
         side = row.home_team if edge > 0 else row.away_team
-        cls = "edge-pos" if abs(edge) >= 2 else "meta"
-        market = (f'<div class="meta">Market: {row.home_team} {-row.spread_line:+.1f} '
+        cls = "edge-pos" if abs(edge) >= odds.VALUE_EDGE_PTS else "meta"
+        market = (f'<div class="meta">Market: {odds.format_line(row.home_team, row.spread_line)} '
                   f'&middot; <span class="{cls}">model {edge:+.1f} toward {side}</span></div>')
+
+    tags = odds.classify(prob, edge)
+    key = odds.near_key_number(row.pred_margin, league)
+    chips = "".join(f'<span class="tag tag-{t}">{t}</span>' for t in tags)
+    if key:
+        chips += f'<span class="tag tag-key">near {key}</span>'
+
     result = ""
     if graded and pd.notna(row.get("margin")):
         actual_winner = row.home_team if row.margin > 0 else row.away_team
         hit = actual_winner == pick
         cls = "result-hit" if hit else "result-miss"
-        result = (f'<div class="meta">Final: {row.home_team} {int(row.home_score) if pd.notna(row.get("home_score")) else "?"}'
-                  f'&ndash;{int(row.away_score) if pd.notna(row.get("away_score")) else "?"} '
+        hs = int(row.home_score) if pd.notna(row.get("home_score")) else "?"
+        as_ = int(row.away_score) if pd.notna(row.get("away_score")) else "?"
+        result = (f'<div class="meta">Final: {row.home_team} {hs}&ndash;{as_} '
                   f'&middot; <span class="{cls}">{"HIT" if hit else "MISS"}</span></div>')
+
+    kick_label, kick_sort = _kickoff(row)
     neutral = " (neutral site)" if row.neutral else ""
-    return f"""<div class="card">
-<div class="teams">{row.away_team} @ {row.home_team}{neutral}</div>
-<div class="pick">Pick: <strong>{pick} by {by:.1f}</strong> &middot; {prob:.0%} win probability</div>
-<div class="meta">Power ratings: {row.home_team} {row.home_rating:+.1f}, {row.away_team} {row.away_rating:+.1f}</div>
-{market}{result}{_unit_table(row)}
+    return f"""<div class="card game" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
+data-margin="{abs(row.pred_margin):.3f}" data-edge="{abs(edge) if edge is not None else 0:.3f}" \
+data-tags="{' '.join(tags)}">
+<div class="cardhead"><div class="teams">{row.away_team} @ {row.home_team}{neutral}</div>
+<div class="kick">{kick_label}</div></div>
+<div class="pick">Pick: <strong>{line}</strong> &middot; {prob:.0%} win probability &middot; <span class="meta">ML {ml}</span></div>
+<div class="chips">{chips}</div>
+<div class="meta">Power ratings: {row.home_team} {row.home_rating:+.1f}, {row.away_team} {row.away_rating:+.1f}
+&middot; raw projection {abs(row.pred_margin):.1f}</div>
+{market}{result}{_analysis_panel(row, league, players)}
 </div>"""
+
+
+def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -> str:
+    """Collapsed 'More info' section: game script, key players, matchups, units."""
+    paras = "".join(f"<p>{p}</p>" for p in analysis.game_script(row, league))
+
+    player_html = ""
+    people = analysis.key_players(row, players)
+    if people:
+        items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in people)
+        player_html = f'<h4>Players to watch</h4><ul class="factors">{items}</ul>'
+
+    factor_html = ""
+    factors = analysis.key_factors(row)
+    if factors:
+        items = "".join(
+            f"<li><strong>{label}.</strong> {text}</li>" for label, text in factors
+        )
+        factor_html = f'<h4>Key matchups</h4><ul class="factors">{items}</ul>'
+
+    return f"""<details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4>{paras}
+{player_html}{factor_html}
+<h4>Unit ratings</h4>{_unit_table(row)}
+</div></details>"""
+
+
+CONTROLS = """<div class="controls">
+  <div class="ctl-group" role="group" aria-label="Filter games">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pickem">Pick'ems</button>
+    <button class="chip" data-filter="value">Value vs market</button>
+    <button class="chip" data-filter="upset">Upset picks</button>
+  </div>
+  <label class="ctl-sort">Sort:
+    <select id="sortby">
+      <option value="kick">Kickoff (chronological)</option>
+      <option value="prob">Win probability</option>
+      <option value="margin">Projected margin</option>
+      <option value="edge">Edge vs market</option>
+    </select>
+  </label>
+</div>
+<div class="emptynote" hidden>No games match this filter.</div>"""
+
+SCRIPT = """<script>
+(function () {
+  var list = document.getElementById('games');
+  if (!list) return;
+  var note = document.querySelector('.emptynote');
+  var filter = 'all';
+
+  function apply() {
+    var key = document.getElementById('sortby').value;
+    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
+    cards.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
+    });
+    cards.forEach(function (c) {
+      list.appendChild(c);
+      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
+      c.hidden = !show;
+    });
+    var visible = cards.filter(function (c) { return !c.hidden; }).length;
+    if (note) note.hidden = visible !== 0;
+  }
+
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      apply();
+    });
+  });
+  document.getElementById('sortby').addEventListener('change', apply);
+  apply();
+})();
+</script>"""
 
 
 def _week_key(df: pd.DataFrame) -> list[tuple[int, int]]:
@@ -123,16 +280,18 @@ def _week_key(df: pd.DataFrame) -> list[tuple[int, int]]:
 def build_league_page(league: str, refresh: bool) -> tuple[str, str]:
     """Returns (html_body, summary_line)."""
     cfg = LEAGUES[league]
-    games, unit_stats = pipeline.load_league_inputs(league, refresh=refresh, recent_only=True)
+    games, unit_stats, players = pipeline.load_league_inputs(
+        league, refresh=refresh, recent_only=True, with_players=True
+    )
     latest_season = int(games.loc[games["completed"], "season"].max())
     feats = pipeline.build_walk_forward_features(
         league, games, unit_stats, start_season=latest_season - 1
     )
     # attach scores (for grading) and dates (to pick the true upcoming week)
-    feats = feats.merge(
-        games[["game_id", "home_score", "away_score", "gameday"]],
-        on="game_id", how="left",
-    )
+    score_cols = ["game_id", "home_score", "away_score", "gameday"]
+    if "gametime" in games.columns:
+        score_cols.append("gametime")
+    feats = feats.merge(games[score_cols], on="game_id", how="left")
 
     body, summary = [], f"{league.upper()}: no upcoming games found"
     gameday = pd.to_datetime(feats["gameday"], utc=True, errors="coerce")
@@ -145,10 +304,16 @@ def build_league_page(league: str, refresh: bool) -> tuple[str, str]:
         preds = preds[~preds["completed"].astype(bool)]
         if not preds.empty:
             body.append(f"<h2>Upcoming picks &mdash; season {season}, week {week}</h2>")
-            for _, row in preds.sort_values("pred_margin", key=abs, ascending=False).iterrows():
-                body.append(_game_card(row, graded=False))
+            body.append(CONTROLS)
+            body.append('<div id="games">')
+            # chronological by default; the sort control reorders client-side
+            for _, row in preds.sort_values("gameday").iterrows():
+                body.append(_game_card(row, graded=False, league=league, players=players))
+            body.append("</div>")
+            best = preds.loc[preds["pred_margin"].abs().idxmax()]
+            best_pick = best.home_team if best.pred_margin > 0 else best.away_team
             summary = (f"{league.upper()}: week {week} &mdash; {len(preds)} games, "
-                       f"top pick {preds.loc[preds['pred_margin'].abs().idxmax(), 'home_team']}")
+                       f"top pick {odds.format_line(best_pick, best.pred_margin)}")
 
     if not body:
         body.append('<h2>Upcoming picks</h2><div class="card"><div class="meta">'
@@ -164,9 +329,10 @@ def build_league_page(league: str, refresh: bool) -> tuple[str, str]:
             hits = ((graded["pred_margin"] > 0) == (graded["margin"] > 0)).sum()
             body.append(f"<h2>Last completed week graded &mdash; season {season}, week {week} "
                         f"({hits}/{len(graded)} straight-up)</h2>")
-            for _, row in graded.sort_values("pred_margin", key=abs, ascending=False).iterrows():
-                body.append(_game_card(row, graded=True))
+            for _, row in graded.sort_values("gameday").iterrows():
+                body.append(_game_card(row, graded=True, league=league, players=players))
 
+    body.append(SCRIPT)
     return "\n".join(body), summary
 
 

@@ -47,6 +47,8 @@ NFL_PBP_COLUMNS = [
     "game_id", "season", "week", "home_team", "away_team",
     "posteam", "defteam", "play_type", "pass", "rush",
     "epa", "success", "qb_dropback", "sack", "yards_gained",
+    # player attribution, for the key-players breakdown
+    "passer_player_name", "rusher_player_name", "receiver_player_name",
 ]
 
 

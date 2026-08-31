@@ -38,6 +38,46 @@ table.units th, table.units td { text-align: right; padding: 3px 10px; border-bo
 table.units th:first-child, table.units td:first-child { text-align: left; }
 .result-hit { color: var(--good); font-weight: 700; }
 .result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
 .leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .leagues a.card { display: block; text-decoration: none; color: inherit; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
@@ -45,213 +85,421 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a></nav></header>
-<div class="stamp">Updated 2026-08-31 04:50 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 05:18 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <h2>Upcoming picks &mdash; season 2026, week 1</h2>
-<div class="card">
-<div class="teams">NO @ DET</div>
-<div class="pick">Pick: <strong>DET by 8.9</strong> &middot; 75% win probability</div>
-<div class="meta">Power ratings: DET +3.6, NO -2.4</div>
-<div class="meta">Market: DET -7.0 &middot; <span class="meta">model +1.9 toward DET</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>DET</th><th>NO</th></tr>
-<tr><td>Pass offense</td><td>+0.158</td><td>-0.070</td></tr>
-<tr><td>Pass defense</td><td>+0.026</td><td>+0.031</td></tr>
-<tr><td>Rush offense</td><td>+0.007</td><td>-0.080</td></tr>
-<tr><td>Rush defense</td><td>+0.003</td><td>+0.024</td></tr>
-</table>
+<div class="controls">
+  <div class="ctl-group" role="group" aria-label="Filter games">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pickem">Pick'ems</button>
+    <button class="chip" data-filter="value">Value vs market</button>
+    <button class="chip" data-filter="upset">Upset picks</button>
+  </div>
+  <label class="ctl-sort">Sort:
+    <select id="sortby">
+      <option value="kick">Kickoff (chronological)</option>
+      <option value="prob">Win probability</option>
+      <option value="margin">Projected margin</option>
+      <option value="edge">Edge vs market</option>
+    </select>
+  </label>
 </div>
-<div class="card">
-<div class="teams">CLE @ JAX</div>
-<div class="pick">Pick: <strong>JAX by 8.5</strong> &middot; 74% win probability</div>
-<div class="meta">Power ratings: JAX +2.4, CLE -3.9</div>
-<div class="meta">Market: JAX -7.5 &middot; <span class="meta">model +1.0 toward JAX</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>JAX</th><th>CLE</th></tr>
-<tr><td>Pass offense</td><td>+0.031</td><td>-0.271</td></tr>
-<tr><td>Pass defense</td><td>+0.050</td><td>+0.116</td></tr>
-<tr><td>Rush offense</td><td>-0.005</td><td>-0.031</td></tr>
-<tr><td>Rush defense</td><td>-0.020</td><td>+0.034</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">WAS @ PHI</div>
-<div class="pick">Pick: <strong>PHI by 7.9</strong> &middot; 73% win probability</div>
-<div class="meta">Power ratings: PHI +2.8, WAS -2.2</div>
-<div class="meta">Market: PHI -4.5 &middot; <span class="edge-pos">model +3.4 toward PHI</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>PHI</th><th>WAS</th></tr>
-<tr><td>Pass offense</td><td>+0.041</td><td>+0.025</td></tr>
-<tr><td>Pass defense</td><td>+0.125</td><td>-0.132</td></tr>
-<tr><td>Rush offense</td><td>+0.019</td><td>+0.047</td></tr>
-<tr><td>Rush defense</td><td>+0.044</td><td>-0.063</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">ARI @ LAC</div>
-<div class="pick">Pick: <strong>LAC by 6.5</strong> &middot; 69% win probability</div>
-<div class="meta">Power ratings: LAC +0.6, ARI -2.9</div>
-<div class="meta">Market: LAC -10.5 &middot; <span class="edge-pos">model -4.0 toward ARI</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>LAC</th><th>ARI</th></tr>
-<tr><td>Pass offense</td><td>-0.037</td><td>-0.001</td></tr>
-<tr><td>Pass defense</td><td>+0.053</td><td>-0.084</td></tr>
-<tr><td>Rush offense</td><td>+0.017</td><td>-0.006</td></tr>
-<tr><td>Rush defense</td><td>+0.035</td><td>-0.030</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">NE @ SEA</div>
-<div class="pick">Pick: <strong>SEA by 5.9</strong> &middot; 67% win probability</div>
-<div class="meta">Power ratings: SEA +6.0, NE +2.5</div>
-<div class="meta">Market: SEA -3.5 &middot; <span class="edge-pos">model +2.4 toward SEA</span></div><table class="units">
+<div class="emptynote" hidden>No games match this filter.</div>
+<div id="games">
+<div class="card game" data-kick="1788912000" data-prob="0.6725" data-margin="5.897" data-edge="2.397" data-tags="">
+<div class="cardhead"><div class="teams">NE @ SEA</div>
+<div class="kick">Wed, Sep 9 &middot; 8:20 PM ET</div></div>
+<div class="pick">Pick: <strong>SEA -6</strong> &middot; 67% win probability &middot; <span class="meta">ML -230</span></div>
+<div class="chips"></div>
+<div class="meta">Power ratings: SEA +6.0, NE +2.5
+&middot; raw projection 5.9</div>
+<div class="meta">Market: SEA -3.5 &middot; <span class="meta">model +2.4 toward SEA</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for SEA, 3.5 points of separation before adjustments. SEA then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>SEA by 6</strong> and gives them a 67% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward SEA, projected at +0.027 EPA per dropback against this defense versus -0.056 the other way. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at SEA -3.5. The model leans 2.4 points toward SEA, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>SEA:</strong> QB <strong>S.Darnold</strong> is driving the offense at +0.145 EPA per dropback over 599 plays; the passing game runs through <strong>J.Smith-Njigba</strong> (+0.51 EPA/target), <strong>A.Barner</strong> (+0.46 EPA/target); on the ground <strong>Z.Charbonnet</strong> has been inefficient (-0.006 EPA per carry).</li><li><strong>NE:</strong> QB <strong>D.Maye</strong> is driving the offense at +0.176 EPA per dropback over 682 plays; the passing game runs through <strong>S.Diggs</strong> (+0.58 EPA/target), <strong>H.Henry</strong> (+0.42 EPA/target); on the ground <strong>T.Henderson</strong> has been inefficient (-0.013 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>NE rush offense vs SEA run defense.</strong> The offense grades roughly league average (+0.003 EPA/play) against a defense that grades above average (+0.074). Net -0.071 per play on the ground favors SEA.</li><li><strong>NE pass offense vs SEA pass defense.</strong> The offense grades above average (+0.075 EPA/play) against a defense that grades strong (+0.131). Net -0.056 per play through the air favors SEA.</li><li><strong>SEA rush offense vs NE run defense.</strong> The offense grades roughly league average (-0.025 EPA/play) against a defense that grades roughly league average (+0.027). Net -0.052 per play on the ground favors NE.</li></ul>
+<h4>Unit ratings</h4><table class="units">
 <tr><th>EPA/play vs avg</th><th>SEA</th><th>NE</th></tr>
 <tr><td>Pass offense</td><td>+0.080</td><td>+0.075</td></tr>
 <tr><td>Pass defense</td><td>+0.131</td><td>+0.053</td></tr>
 <tr><td>Rush offense</td><td>-0.025</td><td>+0.003</td></tr>
 <tr><td>Rush defense</td><td>+0.074</td><td>+0.027</td></tr>
 </table>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">ATL @ PIT</div>
-<div class="pick">Pick: <strong>PIT by 4.2</strong> &middot; 62% win probability</div>
-<div class="meta">Power ratings: PIT -0.2, ATL -1.8</div>
-<div class="meta">Market: PIT -3.0 &middot; <span class="meta">model +1.2 toward PIT</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>PIT</th><th>ATL</th></tr>
-<tr><td>Pass offense</td><td>-0.022</td><td>-0.033</td></tr>
-<tr><td>Pass defense</td><td>-0.027</td><td>+0.007</td></tr>
-<tr><td>Rush offense</td><td>+0.006</td><td>-0.019</td></tr>
-<tr><td>Rush defense</td><td>+0.010</td><td>-0.021</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">SF @ LA (neutral site)</div>
-<div class="pick">Pick: <strong>LA by 3.8</strong> &middot; 61% win probability</div>
-<div class="meta">Power ratings: LA +4.6, SF +1.4</div>
-<div class="meta">Market: LA -3.5 &middot; <span class="meta">model +0.3 toward LA</span></div><table class="units">
+<div class="card game" data-kick="1788998400" data-prob="0.6145" data-margin="3.842" data-edge="0.342" data-tags="">
+<div class="cardhead"><div class="teams">SF @ LA (neutral site)</div>
+<div class="kick">Thu, Sep 10 &middot; 8:35 PM ET</div></div>
+<div class="pick">Pick: <strong>LA -4</strong> &middot; 61% win probability &middot; <span class="meta">ML -175</span></div>
+<div class="chips"><span class="tag tag-key">near 3</span></div>
+<div class="meta">Power ratings: LA +4.6, SF +1.4
+&middot; raw projection 3.8</div>
+<div class="meta">Market: LA -3.5 &middot; <span class="meta">model +0.3 toward LA</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for LA, 3.2 points of separation before adjustments. Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>LA by 4</strong> and gives them a 61% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward LA, projected at +0.176 EPA per dropback against this defense versus +0.077 the other way; and LA has the better ground matchup at +0.068 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at LA -3.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>LA:</strong> QB <strong>M.Stafford</strong> is driving the offense at +0.221 EPA per dropback over 741 plays; the passing game runs through <strong>P.Nacua</strong> (+0.62 EPA/target), <strong>D.Adams</strong> (+0.23 EPA/target); on the ground <strong>B.Corum</strong> has been productive (+0.084 EPA per carry).</li><li><strong>SF:</strong> QB <strong>B.Purdy</strong> is driving the offense at +0.127 EPA per dropback over 359 plays; the passing game runs through <strong>C.McCaffrey</strong> (+0.33 EPA/target), <strong>G.Kittle</strong> (+0.65 EPA/target); on the ground <strong>B.Robinson</strong> has been inefficient (-0.032 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>LA pass offense vs SF pass defense.</strong> The offense grades strong (+0.143 EPA/play) against a defense that grades roughly league average (-0.033). Net +0.176 per play through the air favors LA.</li><li><strong>SF pass offense vs LA pass defense.</strong> The offense grades strong (+0.115 EPA/play) against a defense that grades roughly league average (+0.038). Net +0.077 per play through the air favors SF.</li><li><strong>LA rush offense vs SF run defense.</strong> The offense grades roughly league average (+0.025 EPA/play) against a defense that grades roughly league average (-0.042). Net +0.068 per play on the ground favors LA.</li></ul>
+<h4>Unit ratings</h4><table class="units">
 <tr><th>EPA/play vs avg</th><th>LA</th><th>SF</th></tr>
 <tr><td>Pass offense</td><td>+0.143</td><td>+0.115</td></tr>
 <tr><td>Pass defense</td><td>+0.038</td><td>-0.033</td></tr>
 <tr><td>Rush offense</td><td>+0.025</td><td>+0.010</td></tr>
 <tr><td>Rush defense</td><td>+0.009</td><td>-0.042</td></tr>
 </table>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">CHI @ CAR</div>
-<div class="pick">Pick: <strong>CHI by 3.1</strong> &middot; 59% win probability</div>
-<div class="meta">Power ratings: CAR -3.6, CHI +0.5</div>
-<div class="meta">Market: CAR +2.5 &middot; <span class="meta">model -0.6 toward CHI</span></div><table class="units">
+<div class="card game" data-kick="1789257600" data-prob="0.5915" data-margin="3.053" data-edge="0.553" data-tags="">
+<div class="cardhead"><div class="teams">CHI @ CAR</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>CHI -3</strong> &middot; 59% win probability &middot; <span class="meta">ML -160</span></div>
+<div class="chips"><span class="tag tag-key">near 3</span></div>
+<div class="meta">Power ratings: CAR -3.6, CHI +0.5
+&middot; raw projection 3.1</div>
+<div class="meta">Market: CAR -2.5 &middot; <span class="meta">model -0.6 toward CHI</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for CHI, 4.0 points of separation before adjustments. CAR then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>CHI by 3</strong> and gives them a 59% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward CHI, projected at +0.096 EPA per dropback against this defense versus -0.113 the other way; and CHI has the better ground matchup at +0.110 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at CHI -2.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>CAR:</strong> QB <strong>A.Dalton</strong> is a drag on the offense at -0.126 EPA per dropback over 45 plays; the passing game runs through <strong>T.McMillan</strong> (+0.23 EPA/target), <strong>J.Coker</strong> (+0.48 EPA/target); on the ground <strong>R.Dowdle</strong> has been inefficient (-0.016 EPA per carry).</li><li><strong>CHI:</strong> QB <strong>C.Williams</strong> is steady but not a difference-maker at +0.082 EPA per dropback over 686 plays; the passing game runs through <strong>C.Loveland</strong> (+0.46 EPA/target), <strong>L.Burden</strong> (+0.35 EPA/target); on the ground <strong>D.Swift</strong> has been productive (+0.049 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>CAR pass offense vs CHI pass defense.</strong> The offense grades well below average (-0.109 EPA/play) against a defense that grades roughly league average (+0.005). Net -0.113 per play through the air favors CHI.</li><li><strong>CHI rush offense vs CAR run defense.</strong> The offense grades roughly league average (+0.046 EPA/play) against a defense that grades below average (-0.064). Net +0.110 per play on the ground favors CHI.</li><li><strong>CHI pass offense vs CAR pass defense.</strong> The offense grades roughly league average (+0.021 EPA/play) against a defense that grades below average (-0.075). Net +0.096 per play through the air favors CHI.</li></ul>
+<h4>Unit ratings</h4><table class="units">
 <tr><th>EPA/play vs avg</th><th>CAR</th><th>CHI</th></tr>
 <tr><td>Pass offense</td><td>-0.109</td><td>+0.021</td></tr>
 <tr><td>Pass defense</td><td>-0.075</td><td>+0.005</td></tr>
 <tr><td>Rush offense</td><td>-0.013</td><td>+0.046</td></tr>
 <tr><td>Rush defense</td><td>-0.064</td><td>-0.004</td></tr>
 </table>
+</div></details>
 </div>
-<div class="card">
-<div class="teams">MIA @ LV</div>
-<div class="pick">Pick: <strong>MIA by 2.5</strong> &middot; 57% win probability</div>
-<div class="meta">Power ratings: LV -5.6, MIA -2.0</div>
-<div class="meta">Market: LV -3.5 &middot; <span class="edge-pos">model -6.0 toward MIA</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>LV</th><th>MIA</th></tr>
-<tr><td>Pass offense</td><td>-0.141</td><td>-0.006</td></tr>
-<tr><td>Pass defense</td><td>-0.067</td><td>-0.087</td></tr>
-<tr><td>Rush offense</td><td>-0.192</td><td>-0.054</td></tr>
-<tr><td>Rush defense</td><td>+0.043</td><td>+0.003</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">NYJ @ TEN</div>
-<div class="pick">Pick: <strong>TEN by 2.3</strong> &middot; 57% win probability</div>
-<div class="meta">Power ratings: TEN -5.6, NYJ -5.8</div>
-<div class="meta">Market: TEN -3.0 &middot; <span class="meta">model -0.7 toward NYJ</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>TEN</th><th>NYJ</th></tr>
-<tr><td>Pass offense</td><td>-0.144</td><td>-0.149</td></tr>
-<tr><td>Pass defense</td><td>-0.109</td><td>-0.137</td></tr>
-<tr><td>Rush offense</td><td>-0.033</td><td>-0.057</td></tr>
-<tr><td>Rush defense</td><td>-0.033</td><td>-0.022</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">GB @ MIN</div>
-<div class="pick">Pick: <strong>MIN by 1.6</strong> &middot; 55% win probability</div>
-<div class="meta">Power ratings: MIN +1.2, GB +1.8</div>
-<div class="meta">Market: MIN -1.5 &middot; <span class="meta">model +0.1 toward MIN</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>MIN</th><th>GB</th></tr>
-<tr><td>Pass offense</td><td>-0.139</td><td>+0.168</td></tr>
-<tr><td>Pass defense</td><td>+0.170</td><td>-0.026</td></tr>
-<tr><td>Rush offense</td><td>-0.023</td><td>+0.009</td></tr>
-<tr><td>Rush defense</td><td>+0.075</td><td>+0.034</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">DEN @ KC</div>
-<div class="pick">Pick: <strong>KC by 1.4</strong> &middot; 54% win probability</div>
-<div class="meta">Power ratings: KC +1.2, DEN +2.2</div>
-<div class="meta">Market: KC -3.0 &middot; <span class="meta">model -1.6 toward DEN</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>KC</th><th>DEN</th></tr>
-<tr><td>Pass offense</td><td>+0.014</td><td>+0.010</td></tr>
-<tr><td>Pass defense</td><td>+0.020</td><td>+0.107</td></tr>
-<tr><td>Rush offense</td><td>+0.043</td><td>+0.004</td></tr>
-<tr><td>Rush defense</td><td>+0.022</td><td>+0.014</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">DAL @ NYG</div>
-<div class="pick">Pick: <strong>NYG by 1.2</strong> &middot; 53% win probability</div>
-<div class="meta">Power ratings: NYG -2.7, DAL -1.8</div>
-<div class="meta">Market: NYG +2.5 &middot; <span class="edge-pos">model +3.7 toward NYG</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>NYG</th><th>DAL</th></tr>
-<tr><td>Pass offense</td><td>-0.079</td><td>+0.068</td></tr>
-<tr><td>Pass defense</td><td>-0.012</td><td>-0.154</td></tr>
-<tr><td>Rush offense</td><td>+0.027</td><td>-0.021</td></tr>
-<tr><td>Rush defense</td><td>-0.134</td><td>-0.089</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">BAL @ IND</div>
-<div class="pick">Pick: <strong>BAL by 0.8</strong> &middot; 52% win probability</div>
-<div class="meta">Power ratings: IND +0.7, BAL +2.7</div>
-<div class="meta">Market: IND +3.5 &middot; <span class="edge-pos">model +2.7 toward IND</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>IND</th><th>BAL</th></tr>
-<tr><td>Pass offense</td><td>+0.021</td><td>+0.081</td></tr>
-<tr><td>Pass defense</td><td>-0.041</td><td>-0.026</td></tr>
-<tr><td>Rush offense</td><td>+0.063</td><td>+0.102</td></tr>
-<tr><td>Rush defense</td><td>+0.002</td><td>+0.063</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">BUF @ HOU</div>
-<div class="pick">Pick: <strong>HOU by 0.5</strong> &middot; 51% win probability</div>
-<div class="meta">Power ratings: HOU +3.3, BUF +4.3</div>
-<div class="meta">Market: HOU +1.5 &middot; <span class="meta">model +2.0 toward HOU</span></div><table class="units">
-<tr><th>EPA/play vs avg</th><th>HOU</th><th>BUF</th></tr>
-<tr><td>Pass offense</td><td>-0.023</td><td>+0.144</td></tr>
-<tr><td>Pass defense</td><td>+0.178</td><td>+0.053</td></tr>
-<tr><td>Rush offense</td><td>-0.058</td><td>+0.121</td></tr>
-<tr><td>Rush defense</td><td>+0.065</td><td>-0.044</td></tr>
-</table>
-</div>
-<div class="card">
-<div class="teams">TB @ CIN</div>
-<div class="pick">Pick: <strong>TB by 0.3</strong> &middot; 51% win probability</div>
-<div class="meta">Power ratings: CIN -1.4, TB +0.1</div>
-<div class="meta">Market: CIN -3.5 &middot; <span class="edge-pos">model -3.8 toward TB</span></div><table class="units">
+<div class="card game" data-kick="1789257600" data-prob="0.5087" data-margin="0.287" data-edge="3.787" data-tags="pickem value upset">
+<div class="cardhead"><div class="teams">TB @ CIN</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>TB -0.5</strong> &middot; 51% win probability &middot; <span class="meta">ML -115</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span></div>
+<div class="meta">Power ratings: CIN -1.4, TB +0.1
+&middot; raw projection 0.3</div>
+<div class="meta">Market: CIN -3.5 &middot; <span class="edge-pos">model -3.8 toward TB</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.6 points between them on raw strength. CIN then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>TB by 0.5</strong> and gives them a 51% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward TB, projected at +0.141 EPA per dropback against this defense versus +0.039 the other way; and TB has the better ground matchup at +0.090 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at CIN -3.5. That is a real disagreement: the model wants 3.8 more points on TB than the market is pricing, which is where the value on this game sits.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>CIN:</strong> QB <strong>J.Burrow</strong> is steady but not a difference-maker at +0.099 EPA per dropback over 278 plays; the passing game runs through <strong>J.Chase</strong> (+0.22 EPA/target), <strong>T.Higgins</strong> (+0.36 EPA/target); on the ground <strong>S.Perine</strong> has been inefficient (-0.003 EPA per carry).</li><li><strong>TB:</strong> QB <strong>B.Mayfield</strong> is a drag on the offense at -0.006 EPA per dropback over 584 plays; the passing game runs through <strong>T.Johnson</strong> (+0.37 EPA/target), <strong>C.Godwin</strong> (+0.28 EPA/target); on the ground <strong>R.White</strong> has been productive (+0.078 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>TB pass offense vs CIN pass defense.</strong> The offense grades roughly league average (+0.038 EPA/play) against a defense that grades well below average (-0.103). Net +0.141 per play through the air favors TB.</li><li><strong>TB rush offense vs CIN run defense.</strong> The offense grades roughly league average (+0.027 EPA/play) against a defense that grades below average (-0.063). Net +0.090 per play on the ground favors TB.</li></ul>
+<h4>Unit ratings</h4><table class="units">
 <tr><th>EPA/play vs avg</th><th>CIN</th><th>TB</th></tr>
 <tr><td>Pass offense</td><td>-0.009</td><td>+0.038</td></tr>
 <tr><td>Pass defense</td><td>-0.103</td><td>-0.048</td></tr>
 <tr><td>Rush offense</td><td>+0.043</td><td>+0.027</td></tr>
 <tr><td>Rush defense</td><td>-0.063</td><td>+0.050</td></tr>
 </table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.7495" data-margin="8.884" data-edge="1.884" data-tags="lock">
+<div class="cardhead"><div class="teams">NO @ DET</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>DET -9</strong> &middot; 75% win probability &middot; <span class="meta">ML -340</span></div>
+<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="meta">Power ratings: DET +3.6, NO -2.4
+&middot; raw projection 8.9</div>
+<div class="meta">Market: DET -7 &middot; <span class="meta">model +1.9 toward DET</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for DET, 6.0 points of separation before adjustments. DET then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>DET by 9</strong> and gives them a 75% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward DET, projected at +0.127 EPA per dropback against this defense versus -0.096 the other way; and neither run game projects well, though DET is the less inefficient of the two (-0.018 vs -0.083 EPA per rush). Expect the favorite to be able to play from ahead and lean on the run late.</p><p>The market has this at DET -7. The model leans 1.9 points toward DET, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>DET:</strong> QB <strong>J.Goff</strong> is driving the offense at +0.174 EPA per dropback over 614 plays; the passing game runs through <strong>J.Williams</strong> (+0.55 EPA/target), <strong>A.St. Brown</strong> (+0.32 EPA/target); on the ground <strong>D.Montgomery</strong> has been productive (+0.003 EPA per carry).</li><li><strong>NO:</strong> QB <strong>T.Shough</strong> is a drag on the offense at -0.028 EPA per dropback over 356 plays; the passing game runs through <strong>C.Olave</strong> (+0.23 EPA/target), <strong>J.Johnson</strong> (+0.35 EPA/target); on the ground <strong>A.Estime</strong> has been productive (+0.102 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>DET pass offense vs NO pass defense.</strong> The offense grades elite (+0.158 EPA/play) against a defense that grades roughly league average (+0.031). Net +0.127 per play through the air favors DET.</li><li><strong>NO pass offense vs DET pass defense.</strong> The offense grades below average (-0.070 EPA/play) against a defense that grades roughly league average (+0.026). Net -0.096 per play through the air favors DET.</li><li><strong>NO rush offense vs DET run defense.</strong> The offense grades below average (-0.080 EPA/play) against a defense that grades roughly league average (+0.003). Net -0.083 per play on the ground favors DET.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>DET</th><th>NO</th></tr>
+<tr><td>Pass offense</td><td>+0.158</td><td>-0.070</td></tr>
+<tr><td>Pass defense</td><td>+0.026</td><td>+0.031</td></tr>
+<tr><td>Rush offense</td><td>+0.007</td><td>-0.080</td></tr>
+<tr><td>Rush defense</td><td>+0.003</td><td>+0.024</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.5148" data-margin="0.489" data-edge="1.989" data-tags="pickem">
+<div class="cardhead"><div class="teams">BUF @ HOU</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>HOU -0.5</strong> &middot; 51% win probability &middot; <span class="meta">ML -115</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span></div>
+<div class="meta">Power ratings: HOU +3.3, BUF +4.3
+&middot; raw projection 0.5</div>
+<div class="meta">Market: HOU -1.5 &middot; <span class="meta">model +2.0 toward HOU</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.0 points between them on raw strength. HOU then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>HOU by 0.5</strong> and gives them a 51% chance to win outright.</p><p>On how it plays out: BUF has the better ground matchup at +0.056 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at BUF -1.5. The model leans 2.0 points toward HOU, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>HOU:</strong> QB <strong>C.Stroud</strong> is steady but not a difference-maker at +0.030 EPA per dropback over 531 plays; the passing game runs through <strong>D.Schultz</strong> (+0.37 EPA/target), <strong>N.Collins</strong> (+0.29 EPA/target); on the ground <strong>N.Chubb</strong> has been inefficient (-0.063 EPA per carry).</li><li><strong>BUF:</strong> QB <strong>J.Allen</strong> is driving the offense at +0.130 EPA per dropback over 584 plays; the passing game runs through <strong>D.Kincaid</strong> (+0.82 EPA/target), <strong>D.Knox</strong> (+0.32 EPA/target); on the ground <strong>Ty.Johnson</strong> has been productive (+0.055 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>HOU pass offense vs BUF pass defense.</strong> The offense grades roughly league average (-0.023 EPA/play) against a defense that grades above average (+0.053). Net -0.077 per play through the air favors BUF.</li><li><strong>BUF rush offense vs HOU run defense.</strong> The offense grades strong (+0.121 EPA/play) against a defense that grades above average (+0.065). Net +0.056 per play on the ground favors BUF.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>HOU</th><th>BUF</th></tr>
+<tr><td>Pass offense</td><td>-0.023</td><td>+0.144</td></tr>
+<tr><td>Pass defense</td><td>+0.178</td><td>+0.053</td></tr>
+<tr><td>Rush offense</td><td>-0.058</td><td>+0.121</td></tr>
+<tr><td>Rush defense</td><td>+0.065</td><td>-0.044</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.5235" data-margin="0.779" data-edge="2.721" data-tags="pickem value">
+<div class="cardhead"><div class="teams">BAL @ IND</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>BAL -1</strong> &middot; 52% win probability &middot; <span class="meta">ML -120</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span></div>
+<div class="meta">Power ratings: IND +0.7, BAL +2.7
+&middot; raw projection 0.8</div>
+<div class="meta">Market: IND -3.5 &middot; <span class="edge-pos">model +2.7 toward IND</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.0 points between them on raw strength. IND then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>BAL by 1</strong> and gives them a 52% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward BAL, projected at +0.122 EPA per dropback against this defense versus +0.047 the other way; and BAL has the better ground matchup at +0.100 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at BAL -3.5. That is a real disagreement: the model wants 2.7 more points on IND than the market is pricing, which is where the value on this game sits.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>IND:</strong> QB <strong>D.Jones</strong> is driving the offense at +0.139 EPA per dropback over 409 plays; the passing game runs through <strong>A.Pierce</strong> (+0.66 EPA/target), <strong>M.Pittman</strong> (+0.20 EPA/target); on the ground <strong>J.Taylor</strong> has been productive (+0.058 EPA per carry).</li><li><strong>BAL:</strong> QB <strong>L.Jackson</strong> is steady but not a difference-maker at +0.020 EPA per dropback over 338 plays; the passing game runs through <strong>Z.Flowers</strong> (+0.39 EPA/target), <strong>D.Hopkins</strong> (+0.24 EPA/target); on the ground <strong>D.Henry</strong> has been productive (+0.030 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>BAL pass offense vs IND pass defense.</strong> The offense grades above average (+0.081 EPA/play) against a defense that grades roughly league average (-0.041). Net +0.122 per play through the air favors BAL.</li><li><strong>BAL rush offense vs IND run defense.</strong> The offense grades strong (+0.102 EPA/play) against a defense that grades roughly league average (+0.002). Net +0.100 per play on the ground favors BAL.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>IND</th><th>BAL</th></tr>
+<tr><td>Pass offense</td><td>+0.021</td><td>+0.081</td></tr>
+<tr><td>Pass defense</td><td>-0.041</td><td>-0.026</td></tr>
+<tr><td>Rush offense</td><td>+0.063</td><td>+0.102</td></tr>
+<tr><td>Rush defense</td><td>+0.002</td><td>+0.063</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.7413" data-margin="8.543" data-edge="1.043" data-tags="lock">
+<div class="cardhead"><div class="teams">CLE @ JAX</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>JAX -8.5</strong> &middot; 74% win probability &middot; <span class="meta">ML -325</span></div>
+<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="meta">Power ratings: JAX +2.4, CLE -3.9
+&middot; raw projection 8.5</div>
+<div class="meta">Market: JAX -7.5 &middot; <span class="meta">model +1.0 toward JAX</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for JAX, 6.3 points of separation before adjustments. JAX then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>JAX by 8.5</strong> and gives them a 74% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward JAX, projected at -0.085 EPA per dropback against this defense versus -0.321 the other way. Expect the favorite to be able to play from ahead and lean on the run late.</p><p>The market has this at JAX -7.5. The model leans 1.0 points toward JAX, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>JAX:</strong> QB <strong>T.Lawrence</strong> is steady but not a difference-maker at +0.053 EPA per dropback over 631 plays; the passing game runs through <strong>B.Strange</strong> (+0.46 EPA/target), <strong>P.Washington</strong> (+0.27 EPA/target); on the ground <strong>B.Tuten</strong> has been inefficient (-0.080 EPA per carry).</li><li><strong>CLE:</strong> QB <strong>D.Gabriel</strong> is a drag on the offense at -0.220 EPA per dropback over 204 plays; the passing game runs through <strong>D.Sampson</strong> (+0.17 EPA/target), <strong>C.Tillman</strong> (+0.17 EPA/target); on the ground <strong>R.Sanders</strong> has been productive (+0.033 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>CLE pass offense vs JAX pass defense.</strong> The offense grades a serious liability (-0.271 EPA/play) against a defense that grades roughly league average (+0.050). Net -0.321 per play through the air favors JAX.</li><li><strong>JAX pass offense vs CLE pass defense.</strong> The offense grades roughly league average (+0.031 EPA/play) against a defense that grades strong (+0.116). Net -0.085 per play through the air favors CLE.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>JAX</th><th>CLE</th></tr>
+<tr><td>Pass offense</td><td>+0.031</td><td>-0.271</td></tr>
+<tr><td>Pass defense</td><td>+0.050</td><td>+0.116</td></tr>
+<tr><td>Rush offense</td><td>-0.005</td><td>-0.031</td></tr>
+<tr><td>Rush defense</td><td>-0.020</td><td>+0.034</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.6248" data-margin="4.200" data-edge="1.200" data-tags="">
+<div class="cardhead"><div class="teams">ATL @ PIT</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>PIT -4</strong> &middot; 62% win probability &middot; <span class="meta">ML -185</span></div>
+<div class="chips"></div>
+<div class="meta">Power ratings: PIT -0.2, ATL -1.8
+&middot; raw projection 4.2</div>
+<div class="meta">Market: PIT -3 &middot; <span class="meta">model +1.2 toward PIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.6 points between them on raw strength. PIT then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>PIT by 4</strong> and gives them a 62% chance to win outright.</p><p>On how it plays out: PIT has the better ground matchup at +0.028 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at PIT -3. The model leans 1.2 points toward PIT, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>PIT:</strong> QB <strong>M.Rudolph</strong> is steady but not a difference-maker at +0.068 EPA per dropback over 55 plays; the passing game runs through <strong>D.Metcalf</strong> (+0.32 EPA/target), <strong>P.Freiermuth</strong> (+0.32 EPA/target); on the ground <strong>K.Gainwell</strong> has been inefficient (-0.017 EPA per carry).</li><li><strong>ATL:</strong> QB <strong>M.Penix</strong> is a drag on the offense at -0.004 EPA per dropback over 290 plays; the passing game runs through <strong>B.Robinson</strong> (+0.26 EPA/target), <strong>D.London</strong> (+0.22 EPA/target); on the ground <strong>T.Allgeier</strong> has been inefficient (-0.081 EPA per carry).</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>PIT</th><th>ATL</th></tr>
+<tr><td>Pass offense</td><td>-0.022</td><td>-0.033</td></tr>
+<tr><td>Pass defense</td><td>-0.027</td><td>+0.007</td></tr>
+<tr><td>Rush offense</td><td>+0.006</td><td>-0.019</td></tr>
+<tr><td>Rush defense</td><td>+0.010</td><td>-0.021</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.5702" data-margin="2.333" data-edge="0.667" data-tags="pickem">
+<div class="cardhead"><div class="teams">NYJ @ TEN</div>
+<div class="kick">Sun, Sep 13 &middot; 1:00 PM ET</div></div>
+<div class="pick">Pick: <strong>TEN -2.5</strong> &middot; 57% win probability &middot; <span class="meta">ML -145</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Power ratings: TEN -5.6, NYJ -5.8
+&middot; raw projection 2.3</div>
+<div class="meta">Market: TEN -3 &middot; <span class="meta">model -0.7 toward NYJ</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.2 points between them on raw strength. TEN then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>TEN by 2.5</strong> and gives them a 57% chance to win outright.</p><p>On how it plays out: neither side owns a clear schematic edge &mdash; the unit ratings are close enough that field position and turnovers likely decide it. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at TEN -3. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>TEN:</strong> QB <strong>B.Allen</strong> is a drag on the offense at -0.775 EPA per dropback over 31 plays; the passing game runs through <strong>C.Okonkwo</strong> (+0.16 EPA/target), <strong>C.Ridley</strong> (+0.34 EPA/target); on the ground <strong>T.Spears</strong> has been inefficient (-0.054 EPA per carry).</li><li><strong>NYJ:</strong> QB <strong>T.Taylor</strong> is a drag on the offense at -0.090 EPA per dropback over 147 plays; the passing game runs through <strong>M.Taylor</strong> (+0.15 EPA/target), <strong>B.Hall</strong> (+0.18 EPA/target); on the ground <strong>I.Davis</strong> has been inefficient (-0.075 EPA per carry).</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>TEN</th><th>NYJ</th></tr>
+<tr><td>Pass offense</td><td>-0.144</td><td>-0.149</td></tr>
+<tr><td>Pass defense</td><td>-0.109</td><td>-0.137</td></tr>
+<tr><td>Rush offense</td><td>-0.033</td><td>-0.057</td></tr>
+<tr><td>Rush defense</td><td>-0.033</td><td>-0.022</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.6883" data-margin="6.481" data-edge="4.019" data-tags="value upset">
+<div class="cardhead"><div class="teams">ARI @ LAC</div>
+<div class="kick">Sun, Sep 13 &middot; 4:25 PM ET</div></div>
+<div class="pick">Pick: <strong>LAC -6.5</strong> &middot; 69% win probability &middot; <span class="meta">ML -245</span></div>
+<div class="chips"><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span><span class="tag tag-key">near 7</span></div>
+<div class="meta">Power ratings: LAC +0.6, ARI -2.9
+&middot; raw projection 6.5</div>
+<div class="meta">Market: LAC -10.5 &middot; <span class="edge-pos">model -4.0 toward ARI</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for LAC, 3.5 points of separation before adjustments. LAC then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>LAC by 6.5</strong> and gives them a 69% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward LAC, projected at +0.047 EPA per dropback against this defense versus -0.054 the other way; and LAC has the better ground matchup at +0.048 EPA per rush. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at LAC -10.5. That is a real disagreement: the model wants 4.0 more points on ARI than the market is pricing, which is where the value on this game sits.</p><p>One caution: the projection sits near 7, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>LAC:</strong> QB <strong>J.Herbert</strong> is a drag on the offense at -0.015 EPA per dropback over 603 plays; the passing game runs through <strong>K.Allen</strong> (+0.23 EPA/target), <strong>Q.Johnston</strong> (+0.25 EPA/target); on the ground <strong>J.Patterson</strong> has been inefficient (-0.036 EPA per carry).</li><li><strong>ARI:</strong> QB <strong>K.Murray</strong> is steady but not a difference-maker at +0.032 EPA per dropback over 177 plays; the passing game runs through <strong>T.McBride</strong> (+0.43 EPA/target), <strong>M.Harrison</strong> (+0.42 EPA/target); on the ground <strong>T.Benson</strong> has been inefficient (-0.007 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>ARI pass offense vs LAC pass defense.</strong> The offense grades roughly league average (-0.001 EPA/play) against a defense that grades above average (+0.053). Net -0.054 per play through the air favors LAC.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>LAC</th><th>ARI</th></tr>
+<tr><td>Pass offense</td><td>-0.037</td><td>-0.001</td></tr>
+<tr><td>Pass defense</td><td>+0.053</td><td>-0.084</td></tr>
+<tr><td>Rush offense</td><td>+0.017</td><td>-0.006</td></tr>
+<tr><td>Rush defense</td><td>+0.035</td><td>-0.030</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.5745" data-margin="2.480" data-edge="5.980" data-tags="pickem value upset">
+<div class="cardhead"><div class="teams">MIA @ LV</div>
+<div class="kick">Sun, Sep 13 &middot; 4:25 PM ET</div></div>
+<div class="pick">Pick: <strong>MIA -2.5</strong> &middot; 57% win probability &middot; <span class="meta">ML -150</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Power ratings: LV -5.6, MIA -2.0
+&middot; raw projection 2.5</div>
+<div class="meta">Market: LV -3.5 &middot; <span class="edge-pos">model -6.0 toward MIA</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for MIA, 3.6 points of separation before adjustments. LV then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>MIA by 2.5</strong> and gives them a 57% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward MIA, projected at +0.062 EPA per dropback against this defense versus -0.054 the other way; and neither run game projects well, though MIA is the less inefficient of the two (-0.097 vs -0.195 EPA per rush). Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at LV -3.5. That is a real disagreement: the model wants 6.0 more points on MIA than the market is pricing, which is where the value on this game sits.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>LV:</strong> QB <strong>K.Pickett</strong> is a drag on the offense at -0.550 EPA per dropback over 52 plays; the passing game runs through <strong>B.Bowers</strong> (+0.27 EPA/target), <strong>T.Tucker</strong> (+0.24 EPA/target); on the ground <strong>A.Jeanty</strong> has been inefficient (-0.244 EPA per carry).</li><li><strong>MIA:</strong> QB <strong>T.Tagovailoa</strong> is steady but not a difference-maker at +0.019 EPA per dropback over 415 plays; the passing game runs through <strong>J.Waddle</strong> (+0.34 EPA/target), <strong>D.Waller</strong> (+0.81 EPA/target); on the ground <strong>D.Achane</strong> has been productive (+0.059 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>LV rush offense vs MIA run defense.</strong> The offense grades a serious liability (-0.192 EPA/play) against a defense that grades roughly league average (+0.003). Net -0.195 per play on the ground favors MIA.</li><li><strong>MIA rush offense vs LV run defense.</strong> The offense grades below average (-0.054 EPA/play) against a defense that grades roughly league average (+0.043). Net -0.097 per play on the ground favors LV.</li><li><strong>MIA pass offense vs LV pass defense.</strong> The offense grades roughly league average (-0.006 EPA/play) against a defense that grades below average (-0.067). Net +0.062 per play through the air favors MIA.</li><li><strong>LV pass offense vs MIA pass defense.</strong> The offense grades well below average (-0.141 EPA/play) against a defense that grades below average (-0.087). Net -0.054 per play through the air favors MIA.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>LV</th><th>MIA</th></tr>
+<tr><td>Pass offense</td><td>-0.141</td><td>-0.006</td></tr>
+<tr><td>Pass defense</td><td>-0.067</td><td>-0.087</td></tr>
+<tr><td>Rush offense</td><td>-0.192</td><td>-0.054</td></tr>
+<tr><td>Rush defense</td><td>+0.043</td><td>+0.003</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.5487" data-margin="1.615" data-edge="0.115" data-tags="pickem">
+<div class="cardhead"><div class="teams">GB @ MIN</div>
+<div class="kick">Sun, Sep 13 &middot; 4:25 PM ET</div></div>
+<div class="pick">Pick: <strong>MIN -1.5</strong> &middot; 55% win probability &middot; <span class="meta">ML -135</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span></div>
+<div class="meta">Power ratings: MIN +1.2, GB +1.8
+&middot; raw projection 1.6</div>
+<div class="meta">Market: MIN -1.5 &middot; <span class="meta">model +0.1 toward MIN</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.5 points between them on raw strength. MIN then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>MIN by 1.5</strong> and gives them a 55% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward GB, projected at -0.002 EPA per dropback against this defense versus -0.113 the other way. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at MIN -1.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>MIN:</strong> QB <strong>C.Wentz</strong> is steady but not a difference-maker at +0.034 EPA per dropback over 188 plays; the passing game runs through <strong>T.Hockenson</strong> (+0.21 EPA/target), <strong>J.Addison</strong> (+0.18 EPA/target); on the ground <strong>A.Jones</strong> has been inefficient (-0.018 EPA per carry).</li><li><strong>GB:</strong> QB <strong>J.Love</strong> is driving the offense at +0.253 EPA per dropback over 508 plays; the passing game runs through <strong>R.Doubs</strong> (+0.49 EPA/target), <strong>T.Kraft</strong> (+0.89 EPA/target); on the ground <strong>C.Brooks</strong> has been inefficient (-0.149 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>MIN pass offense vs GB pass defense.</strong> The offense grades well below average (-0.139 EPA/play) against a defense that grades roughly league average (-0.026). Net -0.113 per play through the air favors GB.</li><li><strong>GB rush offense vs MIN run defense.</strong> The offense grades roughly league average (+0.009 EPA/play) against a defense that grades above average (+0.075). Net -0.066 per play on the ground favors MIN.</li><li><strong>MIN rush offense vs GB run defense.</strong> The offense grades roughly league average (-0.023 EPA/play) against a defense that grades roughly league average (+0.034). Net -0.057 per play on the ground favors GB.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>MIN</th><th>GB</th></tr>
+<tr><td>Pass offense</td><td>-0.139</td><td>+0.168</td></tr>
+<tr><td>Pass defense</td><td>+0.170</td><td>-0.026</td></tr>
+<tr><td>Rush offense</td><td>-0.023</td><td>+0.009</td></tr>
+<tr><td>Rush defense</td><td>+0.075</td><td>+0.034</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.7251" data-margin="7.894" data-edge="3.394" data-tags="lock value">
+<div class="cardhead"><div class="teams">WAS @ PHI</div>
+<div class="kick">Sun, Sep 13 &middot; 4:25 PM ET</div></div>
+<div class="pick">Pick: <strong>PHI -8</strong> &middot; 73% win probability &middot; <span class="meta">ML -295</span></div>
+<div class="chips"><span class="tag tag-lock">lock</span><span class="tag tag-value">value</span><span class="tag tag-key">near 7</span></div>
+<div class="meta">Power ratings: PHI +2.8, WAS -2.2
+&middot; raw projection 7.9</div>
+<div class="meta">Market: PHI -4.5 &middot; <span class="edge-pos">model +3.4 toward PHI</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for PHI, 5.0 points of separation before adjustments. PHI then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>PHI by 8</strong> and gives them a 73% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward PHI, projected at +0.172 EPA per dropback against this defense versus -0.100 the other way; and PHI has the better ground matchup at +0.082 EPA per rush. Expect the favorite to be able to play from ahead and lean on the run late.</p><p>The market has this at PHI -4.5. That is a real disagreement: the model wants 3.4 more points on PHI than the market is pricing, which is where the value on this game sits.</p><p>One caution: the projection sits near 7, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>PHI:</strong> QB <strong>J.Hurts</strong> is steady but not a difference-maker at +0.043 EPA per dropback over 522 plays; the passing game runs through <strong>D.Smith</strong> (+0.43 EPA/target), <strong>D.Goedert</strong> (+0.43 EPA/target); on the ground <strong>T.Bigsby</strong> has been productive (+0.125 EPA per carry).</li><li><strong>WAS:</strong> QB <strong>J.Johnson</strong> is steady but not a difference-maker at +0.082 EPA per dropback over 54 plays; the passing game runs through <strong>T.McLaurin</strong> (+0.53 EPA/target), <strong>D.Samuel</strong> (+0.18 EPA/target); on the ground <strong>C.Rodriguez</strong> has been productive (+0.055 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>PHI pass offense vs WAS pass defense.</strong> The offense grades roughly league average (+0.041 EPA/play) against a defense that grades well below average (-0.132). Net +0.172 per play through the air favors PHI.</li><li><strong>WAS pass offense vs PHI pass defense.</strong> The offense grades roughly league average (+0.025 EPA/play) against a defense that grades strong (+0.125). Net -0.100 per play through the air favors PHI.</li><li><strong>PHI rush offense vs WAS run defense.</strong> The offense grades roughly league average (+0.019 EPA/play) against a defense that grades below average (-0.063). Net +0.082 per play on the ground favors PHI.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>PHI</th><th>WAS</th></tr>
+<tr><td>Pass offense</td><td>+0.041</td><td>+0.025</td></tr>
+<tr><td>Pass defense</td><td>+0.125</td><td>-0.132</td></tr>
+<tr><td>Rush offense</td><td>+0.019</td><td>+0.047</td></tr>
+<tr><td>Rush defense</td><td>+0.044</td><td>-0.063</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789257600" data-prob="0.5349" data-margin="1.158" data-edge="3.658" data-tags="pickem value">
+<div class="cardhead"><div class="teams">DAL @ NYG</div>
+<div class="kick">Sun, Sep 13 &middot; 8:20 PM ET</div></div>
+<div class="pick">Pick: <strong>NYG -1</strong> &middot; 53% win probability &middot; <span class="meta">ML -125</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span></div>
+<div class="meta">Power ratings: NYG -2.7, DAL -1.8
+&middot; raw projection 1.2</div>
+<div class="meta">Market: NYG -2.5 &middot; <span class="edge-pos">model +3.7 toward NYG</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.8 points between them on raw strength. NYG then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>NYG by 1</strong> and gives them a 53% chance to win outright.</p><p>On how it plays out: neither side owns a clear schematic edge &mdash; the unit ratings are close enough that field position and turnovers likely decide it. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at DAL -2.5. That is a real disagreement: the model wants 3.7 more points on NYG than the market is pricing, which is where the value on this game sits.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>NYG:</strong> QB <strong>J.Winston</strong> is driving the offense at +0.223 EPA per dropback over 69 plays; the passing game runs through <strong>D.Bellinger</strong> (+0.87 EPA/target), <strong>W.Robinson</strong> (+0.14 EPA/target); on the ground <strong>D.Singletary</strong> has been inefficient (-0.023 EPA per carry).</li><li><strong>DAL:</strong> QB <strong>D.Prescott</strong> is driving the offense at +0.167 EPA per dropback over 631 plays; the passing game runs through <strong>G.Pickens</strong> (+0.64 EPA/target), <strong>C.Lamb</strong> (+0.25 EPA/target); on the ground <strong>J.Williams</strong> has been productive (+0.048 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>NYG rush offense vs DAL run defense.</strong> The offense grades roughly league average (+0.027 EPA/play) against a defense that grades below average (-0.089). Net +0.116 per play on the ground favors NYG.</li><li><strong>DAL rush offense vs NYG run defense.</strong> The offense grades roughly league average (-0.021 EPA/play) against a defense that grades well below average (-0.134). Net +0.113 per play on the ground favors DAL.</li><li><strong>DAL pass offense vs NYG pass defense.</strong> The offense grades above average (+0.068 EPA/play) against a defense that grades roughly league average (-0.012). Net +0.080 per play through the air favors DAL.</li><li><strong>NYG pass offense vs DAL pass defense.</strong> The offense grades below average (-0.079 EPA/play) against a defense that grades a serious liability (-0.154). Net +0.075 per play through the air favors NYG.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>NYG</th><th>DAL</th></tr>
+<tr><td>Pass offense</td><td>-0.079</td><td>+0.068</td></tr>
+<tr><td>Pass defense</td><td>-0.012</td><td>-0.154</td></tr>
+<tr><td>Rush offense</td><td>+0.027</td><td>-0.021</td></tr>
+<tr><td>Rush defense</td><td>-0.134</td><td>-0.089</td></tr>
+</table>
+</div></details>
+</div>
+<div class="card game" data-kick="1789344000" data-prob="0.5437" data-margin="1.449" data-edge="1.551" data-tags="pickem">
+<div class="cardhead"><div class="teams">DEN @ KC</div>
+<div class="kick">Mon, Sep 14 &middot; 8:15 PM ET</div></div>
+<div class="pick">Pick: <strong>KC -1.5</strong> &middot; 54% win probability &middot; <span class="meta">ML -130</span></div>
+<div class="chips"><span class="tag tag-pickem">pickem</span></div>
+<div class="meta">Power ratings: KC +1.2, DEN +2.2
+&middot; raw projection 1.4</div>
+<div class="meta">Market: KC -3 &middot; <span class="meta">model -1.6 toward DEN</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.9 points between them on raw strength. KC then adds the home-field bump the model fits at 2.1 points. Rolling that together, the engine projects <strong>KC by 1.5</strong> and gives them a 54% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward DEN, projected at -0.010 EPA per dropback against this defense versus -0.093 the other way. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at KC -3. The model leans 1.6 points toward DEN, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>KC:</strong> QB <strong>P.Mahomes</strong> is driving the offense at +0.127 EPA per dropback over 537 plays; the passing game runs through <strong>T.Kelce</strong> (+0.37 EPA/target), <strong>T.Thornton</strong> (+0.71 EPA/target); on the ground <strong>K.Hunt</strong> has been productive (+0.059 EPA per carry).</li><li><strong>DEN:</strong> QB <strong>B.Nix</strong> is steady but not a difference-maker at +0.090 EPA per dropback over 684 plays; the passing game runs through <strong>C.Sutton</strong> (+0.33 EPA/target), <strong>R.Harvey</strong> (+0.24 EPA/target); on the ground <strong>J.Dobbins</strong> has been productive (+0.027 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>KC pass offense vs DEN pass defense.</strong> The offense grades roughly league average (+0.014 EPA/play) against a defense that grades strong (+0.107). Net -0.093 per play through the air favors DEN.</li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>EPA/play vs avg</th><th>KC</th><th>DEN</th></tr>
+<tr><td>Pass offense</td><td>+0.014</td><td>+0.010</td></tr>
+<tr><td>Pass defense</td><td>+0.020</td><td>+0.107</td></tr>
+<tr><td>Rush offense</td><td>+0.043</td><td>+0.004</td></tr>
+<tr><td>Rush defense</td><td>+0.022</td><td>+0.014</td></tr>
+</table>
+</div></details>
+</div>
 </div>
 <h2>Last completed week graded &mdash; season 2025, week 22 (1/1 straight-up)</h2>
-<div class="card">
-<div class="teams">SEA @ NE (neutral site)</div>
-<div class="pick">Pick: <strong>SEA by 4.2</strong> &middot; 62% win probability</div>
-<div class="meta">Power ratings: NE +3.3, SEA +7.1</div>
-<div class="meta">Market: NE +4.5 &middot; <span class="meta">model +0.3 toward NE</span></div><div class="meta">Final: NE 13&ndash;29 &middot; <span class="result-hit">HIT</span></div><table class="units">
+<div class="card game" data-kick="1770508800" data-prob="0.6249" data-margin="4.201" data-edge="0.299" data-tags="">
+<div class="cardhead"><div class="teams">SEA @ NE (neutral site)</div>
+<div class="kick">Sun, Feb 8 &middot; 6:30 PM ET</div></div>
+<div class="pick">Pick: <strong>SEA -4</strong> &middot; 62% win probability &middot; <span class="meta">ML -185</span></div>
+<div class="chips"></div>
+<div class="meta">Power ratings: NE +3.3, SEA +7.1
+&middot; raw projection 4.2</div>
+<div class="meta">Market: NE -4.5 &middot; <span class="meta">model +0.3 toward NE</span></div><div class="meta">Final: NE 13&ndash;29 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for SEA, 3.7 points of separation before adjustments. Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>SEA by 4</strong> and gives them a 62% chance to win outright.</p><p>On how it plays out: the passing game should tilt toward SEA, projected at +0.031 EPA per dropback against this defense versus -0.029 the other way. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at SEA -4.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>NE:</strong> QB <strong>D.Maye</strong> is driving the offense at +0.176 EPA per dropback over 682 plays; the passing game runs through <strong>S.Diggs</strong> (+0.58 EPA/target), <strong>H.Henry</strong> (+0.42 EPA/target); on the ground <strong>T.Henderson</strong> has been inefficient (-0.013 EPA per carry).</li><li><strong>SEA:</strong> QB <strong>S.Darnold</strong> is driving the offense at +0.145 EPA per dropback over 599 plays; the passing game runs through <strong>J.Smith-Njigba</strong> (+0.51 EPA/target), <strong>A.Barner</strong> (+0.46 EPA/target); on the ground <strong>Z.Charbonnet</strong> has been inefficient (-0.006 EPA per carry).</li></ul><h4>Key matchups</h4><ul class="factors"><li><strong>NE rush offense vs SEA run defense.</strong> The offense grades roughly league average (-0.003 EPA/play) against a defense that grades above average (+0.083). Net -0.087 per play on the ground favors SEA.</li><li><strong>SEA rush offense vs NE run defense.</strong> The offense grades roughly league average (-0.025 EPA/play) against a defense that grades roughly league average (+0.028). Net -0.053 per play on the ground favors NE.</li></ul>
+<h4>Unit ratings</h4><table class="units">
 <tr><th>EPA/play vs avg</th><th>NE</th><th>SEA</th></tr>
 <tr><td>Pass offense</td><td>+0.093</td><td>+0.086</td></tr>
 <tr><td>Pass defense</td><td>+0.055</td><td>+0.121</td></tr>
 <tr><td>Rush offense</td><td>-0.003</td><td>-0.025</td></tr>
 <tr><td>Rush defense</td><td>+0.028</td><td>+0.083</td></tr>
 </table>
+</div></details>
 </div>
+<script>
+(function () {
+  var list = document.getElementById('games');
+  if (!list) return;
+  var note = document.querySelector('.emptynote');
+  var filter = 'all';
+
+  function apply() {
+    var key = document.getElementById('sortby').value;
+    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
+    cards.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
+    });
+    cards.forEach(function (c) {
+      list.appendChild(c);
+      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
+      c.hidden = !show;
+    });
+    var visible = cards.filter(function (c) { return !c.hidden; }).length;
+    if (note) note.hidden = visible !== 0;
+  }
+
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      apply();
+    });
+  });
+  document.getElementById('sortby').addEventListener('change', apply);
+  apply();
+})();
+</script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
 ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
 </div></body></html>
