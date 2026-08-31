@@ -2,10 +2,10 @@ name: Build and deploy predictions site
 
 on:
   schedule:
-    # Tuesday and Friday 10:00 UTC — fresh picks after weekend results land
-    # and again before the weekend slate
-    - cron: "0 10 * * 2"
-    - cron: "0 10 * * 5"
+    # Every four hours. Picks are held until 24 hours before kickoff, so the
+    # site needs to rebuild often enough to release them on time and to
+    # refresh them on game day with late injury, lineup and weather news.
+    - cron: "0 */4 * * *"
   workflow_dispatch:
   push:
     branches: [main]

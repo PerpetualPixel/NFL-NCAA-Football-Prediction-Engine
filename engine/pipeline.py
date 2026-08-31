@@ -20,17 +20,27 @@ def load_league_inputs(
     league: str, refresh: bool = False, recent_only: bool = False,
     with_players: bool = False,
 ):
-    """Games table plus (NFL) unit stats; recent_only trims the play-by-play
-    download to the rating window for fast CI site builds. with_players also
-    returns per-player production for the key-players breakdown."""
+    """Games table, (NFL) unit stats, and the availability context.
+
+    recent_only trims the play-by-play download to the rating window for fast
+    CI site builds; with_players also returns per-player production for the
+    key-players breakdown."""
     games = load_games(league, refresh=refresh)
     unit_stats = players = None
     seasons = sorted(games.loc[games["completed"], "season"].unique().tolist())
     if recent_only:
         seasons = seasons[-(LEAGUES[league].rating_window_seasons + 1):]
+    availability = None
     if league == "nfl":
         pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
         unit_stats = nfl_unit_game_stats(pbp)
+        availability = {
+            "qb_values": nfl_qb_game_value(pbp),
+            "injury": nfl_injury_burden(
+                ingest.load_nfl_injuries(seasons, refresh_latest=refresh),
+                ingest.load_nfl_snaps(seasons, refresh_latest=refresh),
+            ),
+        }
         if with_players:
             players = nfl_player_production(pbp, _player_season(pbp))
     else:
@@ -45,7 +55,9 @@ def load_league_inputs(
             unit_stats = ncaa_unit_game_stats(plays)
             if with_players:
                 players = ncaa_player_production(plays, _player_season(plays))
-    return (games, unit_stats, players) if with_players else (games, unit_stats)
+    if with_players:
+        return games, unit_stats, players, availability
+    return games, unit_stats, availability
 
 
 def ncaa_normalize_plays(plays: pd.DataFrame) -> pd.DataFrame:
@@ -176,7 +188,8 @@ def load_games(league: str, refresh: bool = False) -> pd.DataFrame:
             "home_score", "away_score", "margin", "neutral", "completed",
             "game_type", "spread_line", "total_line", "home_rest", "away_rest",
             "home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds",
-            "home_qb_name", "away_qb_name", "home_coach", "away_coach",
+            "home_qb_name", "away_qb_name", "home_qb_id", "away_qb_id",
+            "home_coach", "away_coach",
             "div_game", "roof", "temp", "wind",
         ]
         return df[keep].sort_values(["season", "week", "gameday"]).reset_index(drop=True)
@@ -263,6 +276,69 @@ def _player_season(plays: pd.DataFrame, min_plays: int = 5000) -> int:
     return int(usable.index.max()) if len(usable) else int(counts.index.max())
 
 
+def _qb_state(qb_values, window, cfg, season, week):
+    """As-of quarterback ratings and each team's usual starter.
+
+    Returns (value by quarterback id, usual starter id by team). Values are
+    recency-weighted EPA per dropback, shrunk toward league average so a
+    quarterback with two good games is not rated above a proven starter.
+    """
+    if qb_values is None or qb_values.empty:
+        return {}, {}
+    prior = qb_values.merge(window[["game_id"]], on="game_id", how="inner")
+    if prior.empty:
+        return {}, {}
+    w = recency_weights(prior["season"], prior["week"], season, week,
+                        cfg.weekly_decay, cfg.prior_season_weight)
+    prior = prior.assign(_w=w * prior["dropbacks"])
+    grp = prior.groupby("passer_player_id")
+    weighted = grp.apply(lambda g: (g["epa"] * g["_w"]).sum(), include_groups=False)
+    mass = grp["_w"].sum()
+    # shrink toward zero (league average EPA) by effective dropbacks
+    values = (weighted / (mass + QB_PRIOR_DROPBACKS)).to_dict()
+
+    recent = prior[prior["season"] >= season - 1]
+    starters = {}
+    if not recent.empty:
+        idx = recent.groupby("team")["_w"].idxmax()
+        starters = dict(zip(recent.loc[idx, "team"], recent.loc[idx, "passer_player_id"]))
+    return values, starters
+
+
+def _availability_features(g, qb_now: dict, starters: dict, injury_now: dict) -> dict:
+    """Who is actually playing: quarterback quality, and whether this is the
+    team's usual starter or a replacement."""
+    out = {"qb_gap": 0.0, "qb_change": 0.0, "inj_diff": 0.0}
+    if qb_now:
+        sides = {}
+        for side, team in (("home", g.home_team), ("away", g.away_team)):
+            qb_id = getattr(g, f"{side}_qb_id", None)
+            value = qb_now.get(qb_id) if isinstance(qb_id, str) else None
+            usual = qb_now.get(starters.get(team))
+            sides[side] = (
+                value if value is not None else (usual if usual is not None else 0.0),
+                # negative when a team is starting someone worse than usual
+                (value - usual) if (value is not None and usual is not None) else 0.0,
+            )
+        out["qb_gap"] = sides["home"][0] - sides["away"][0]
+        out["qb_change"] = sides["home"][1] - sides["away"][1]
+    if injury_now:
+        # positive favors the home team: the away side is missing more
+        out["inj_diff"] = (injury_now.get(g.away_team, 0.0)
+                           - injury_now.get(g.home_team, 0.0))
+    return out
+
+
+def _weather_features(g) -> dict:
+    """Conditions only matter through how they suppress the passing game, so
+    weather enters as an interaction rather than a direct push either way."""
+    roof = str(getattr(g, "roof", "") or "").lower()
+    indoors = roof in {"dome", "closed"}
+    wind = 0.0 if indoors else float(getattr(g, "wind", 0.0) or 0.0)
+    temp = 70.0 if indoors else float(getattr(g, "temp", 60.0) or 60.0)
+    return {"wind": wind, "cold": max(0.0, 50.0 - temp) / 10.0, "indoors": float(indoors)}
+
+
 def _rank_of(team: str, ratings: dict[str, float]) -> int:
     """1 = best in the league on this rating (higher is better everywhere,
     including defense, where the solve measures EPA suppressed)."""
@@ -292,9 +368,16 @@ def build_walk_forward_features(
     games: pd.DataFrame,
     unit_stats: pd.DataFrame | None = None,
     start_season: int | None = None,
+    availability: dict | None = None,
 ) -> pd.DataFrame:
-    """For each game, attach as-of-kickoff ratings and derived features."""
+    """For each game, attach as-of-kickoff ratings and derived features.
+
+    availability carries the who-is-playing context (quarterback values and
+    injury burden); it is optional so the pipeline still runs without it.
+    """
     cfg = LEAGUES[league]
+    qb_values = (availability or {}).get("qb_values")
+    injury = (availability or {}).get("injury")
     rows = []
     for season, week in _iter_weeks(games):
         if start_season is not None and season < start_season:
@@ -340,6 +423,12 @@ def build_walk_forward_features(
                 units[f"off_{metric}"] = {k: v - off_mean for k, v in off.items()}
                 units[f"def_{metric}"] = {k: v - def_mean for k, v in deff.items()}
 
+        qb_now, starters = _qb_state(qb_values, window, cfg, season, week)
+        injury_now = {}
+        if injury is not None and not injury.empty:
+            wk = injury[(injury["season"] == season) & (injury["week"] == week)]
+            injury_now = dict(zip(wk["team"], wk["inj_burden"]))
+
         current = games[(games["season"] == season) & (games["week"] == week)]
         for g in current.itertuples(index=False):
             home, away = g.home_team, g.away_team
@@ -361,6 +450,9 @@ def build_walk_forward_features(
                 row["rest_diff"] = g.home_rest - g.away_rest
             else:
                 row["rest_diff"] = 0.0
+            row.update(_availability_features(g, qb_now, starters, injury_now))
+            row.update(_weather_features(g))
+            row["wind_pass"] = row["wind"] / 10.0 * row.get("net_pass_epa", 0.0)
             for metric in ["pass_epa", "rush_epa"]:
                 off_key, def_key = f"off_{metric}", f"def_{metric}"
                 if off_key in units and all(
@@ -379,3 +471,70 @@ def build_walk_forward_features(
                     row["unit_n"] = len(units[off_key])
             rows.append(row)
     return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# Availability context: who is actually playing, and in what conditions
+# ---------------------------------------------------------------------------
+
+# A replacement-level quarterback is worth several points a game. The model
+# was blind to this: a team starting its backup carried the same rating as
+# one starting a healthy franchise passer.
+QB_MIN_DROPBACKS = 40
+QB_PRIOR_DROPBACKS = 120.0   # shrink thin samples toward league average
+
+# How much a missing player matters, by position group. Weighted by the
+# snap share they had been playing, so a starting corner counts and a
+# third-string one barely does.
+POSITION_WEIGHT = {
+    "QB": 4.0, "LT": 1.6, "T": 1.4, "WR": 1.2, "CB": 1.2, "EDGE": 1.3,
+    "DE": 1.3, "OLB": 1.1, "S": 1.0, "G": 1.0, "C": 1.0, "TE": 0.9,
+    "RB": 0.9, "DT": 1.0, "LB": 0.9, "ILB": 0.8, "FS": 1.0, "SS": 1.0,
+}
+OUT_WEIGHT = {"Out": 1.0, "Doubtful": 0.75, "Questionable": 0.25}
+
+
+def nfl_qb_game_value(pbp: pd.DataFrame) -> pd.DataFrame:
+    """Per (game, quarterback): dropbacks and EPA per dropback."""
+    plays = pbp[pbp["passer_player_id"].notna() & pbp["epa"].notna()]
+    if plays.empty:
+        return pd.DataFrame()
+    return (
+        plays.groupby(["game_id", "season", "week", "posteam", "passer_player_id"])
+        .agg(dropbacks=("epa", "size"), epa=("epa", "mean"))
+        .reset_index()
+        .rename(columns={"posteam": "team"})
+    )
+
+
+def nfl_injury_burden(injuries: pd.DataFrame, snaps: pd.DataFrame) -> pd.DataFrame:
+    """Per (season, week, team): a weighted count of who is missing.
+
+    Availability is reported before kickoff, so this is legitimately known
+    at prediction time. Each absence is weighted by the player's recent snap
+    share and by position, then summed.
+    """
+    if injuries.empty:
+        return pd.DataFrame(columns=["season", "week", "team", "inj_burden"])
+    inj = injuries[injuries["report_status"].isin(OUT_WEIGHT)].copy()
+    if inj.empty:
+        return pd.DataFrame(columns=["season", "week", "team", "inj_burden"])
+
+    share = pd.Series(0.55, index=inj.index)  # default for an unmatched name
+    if not snaps.empty:
+        snaps = snaps.copy()
+        snaps["snap_pct"] = snaps[["offense_pct", "defense_pct"]].max(axis=1)
+        # a player's typical role, averaged over the season to date
+        role = (snaps.groupby(["season", "team", "player"])["snap_pct"]
+                .mean().rename("snap_share").reset_index())
+        inj = inj.merge(
+            role, left_on=["season", "team", "full_name"],
+            right_on=["season", "team", "player"], how="left",
+        )
+        share = inj["snap_share"].fillna(0.55).clip(0, 1)
+
+    pos_w = inj["position"].map(POSITION_WEIGHT).fillna(0.7)
+    status_w = inj["report_status"].map(OUT_WEIGHT).fillna(0.0)
+    inj["burden"] = share * pos_w * status_w
+    return (inj.groupby(["season", "week", "team"])["burden"].sum()
+            .rename("inj_burden").reset_index())

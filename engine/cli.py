@@ -20,7 +20,7 @@ _load_league_inputs = pipeline.load_league_inputs
 
 
 def cmd_ingest(args):
-    games, unit_stats = _load_league_inputs(args.league, refresh=True)
+    games, unit_stats, avail = _load_league_inputs(args.league, refresh=True)
     print(f"{args.league}: {len(games)} games, seasons "
           f"{games['season'].min()}–{games['season'].max()}")
     if unit_stats is not None:
@@ -29,9 +29,10 @@ def cmd_ingest(args):
 
 def cmd_backtest(args):
     cfg = LEAGUES[args.league]
-    games, unit_stats = _load_league_inputs(args.league)
+    games, unit_stats, avail = _load_league_inputs(args.league)
     feats = pipeline.build_walk_forward_features(
-        args.league, games, unit_stats, start_season=args.start_season
+        args.league, games, unit_stats, start_season=args.start_season,
+        availability=avail,
     )
     preds = model_mod.walk_forward_predict(feats, cfg)
     metrics = model_mod.evaluate(preds)
@@ -44,8 +45,9 @@ def cmd_backtest(args):
 
 def cmd_predict(args):
     cfg = LEAGUES[args.league]
-    games, unit_stats = _load_league_inputs(args.league, refresh=args.refresh)
-    feats = pipeline.build_walk_forward_features(args.league, games, unit_stats)
+    games, unit_stats, avail = _load_league_inputs(args.league, refresh=args.refresh)
+    feats = pipeline.build_walk_forward_features(
+        args.league, games, unit_stats, availability=avail)
     target = model_mod.predict_week(feats, cfg, args.season, args.week)
     if target.empty:
         raise SystemExit(f"no games found for {args.league} {args.season} week {args.week}")

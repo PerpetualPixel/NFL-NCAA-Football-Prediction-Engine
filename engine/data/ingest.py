@@ -59,9 +59,23 @@ NFL_PBP_COLUMNS = [
     "game_id", "season", "week", "home_team", "away_team",
     "posteam", "defteam", "play_type", "pass", "rush",
     "epa", "success", "qb_dropback", "sack", "yards_gained",
-    # player attribution, for the key-players breakdown
+    # player attribution, for the key-players breakdown and QB ratings
     "passer_player_name", "rusher_player_name", "receiver_player_name",
+    "passer_player_id",
 ]
+
+NFL_INJURIES_URL = (
+    "https://github.com/nflverse/nflverse-data/releases/download/injuries/"
+    "injuries_{year}.parquet"
+)
+NFL_SNAPS_URL = (
+    "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/"
+    "snap_counts_{year}.parquet"
+)
+INJURY_COLUMNS = ["season", "week", "team", "gsis_id", "position",
+                  "full_name", "report_status"]
+SNAP_COLUMNS = ["season", "week", "team", "player", "pfr_player_id",
+                "position", "offense_pct", "defense_pct"]
 
 
 def _download(url: str, dest: Path, retries: int = 3) -> Path:
@@ -103,6 +117,36 @@ def load_nfl_pbp(seasons: list[int], refresh_latest: bool = False) -> pd.DataFra
         df = pd.read_parquet(dest, columns=NFL_PBP_COLUMNS)
         frames.append(df)
     return pd.concat(frames, ignore_index=True)
+
+
+def _load_nfl_yearly(url: str, name: str, columns: list[str],
+                      seasons: list[int], refresh_latest: bool) -> pd.DataFrame:
+    frames = []
+    for year in seasons:
+        dest = DATA_DIR / "nfl" / f"{name}_{year}.parquet"
+        if not dest.exists() or (refresh_latest and year == max(seasons)):
+            try:
+                _download(url.format(year=year), dest)
+            except requests.HTTPError:
+                continue  # season not published yet
+        try:
+            df = pd.read_parquet(dest)
+        except (OSError, ValueError):
+            continue
+        frames.append(df[[c for c in columns if c in df.columns]])
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def load_nfl_injuries(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:
+    """Weekly injury reports (Out / Doubtful / Questionable per player)."""
+    return _load_nfl_yearly(NFL_INJURIES_URL, "injuries", INJURY_COLUMNS,
+                            seasons, refresh_latest)
+
+
+def load_nfl_snaps(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:
+    """Per-game snap shares, used to weight how much a missing player matters."""
+    return _load_nfl_yearly(NFL_SNAPS_URL, "snap_counts", SNAP_COLUMNS,
+                            seasons, refresh_latest)
 
 
 def load_ncaa_schedules(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:

@@ -147,6 +147,9 @@ table.track a:hover { color: var(--accent); }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+.card.pending { border-style: dashed; }
+.pendingnote { margin-top: 6px; font-size: 0.9rem; }
+.pendingnote strong { color: var(--accent); }
 details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
 details.more summary {
   cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
@@ -350,6 +353,9 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -
         items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in people)
         player_html = f'<h4>Players to watch</h4><ul class="factors">{items}</ul>'
 
+    avail = analysis.availability_note(row)
+    avail_html = (f'<h4>Availability &amp; conditions</h4><p class="ftext">{avail}</p>'
+                  if avail else "")
     factor_html = ""
     factors = analysis.key_factors(row)
     if factors:
@@ -367,6 +373,7 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -
 <div class="analysis">
 <h4>How the model sees it playing out</h4>{paras}
 {player_html}{factor_html}
+{avail_html}
 <h4>Unit ratings</h4>{_unit_table(row)}
 </div></details>"""
 
@@ -462,6 +469,55 @@ def week_slug(league: str, week: int, season: int | None = None, current: int | 
 
 ODDS_COLS = ["home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds"]
 
+# A pick made in August for a game in December is worthless: it cannot know
+# who is hurt, who is starting, or what the weather will be. Picks are held
+# until the day before kickoff, then refreshed on game day by the scheduled
+# rebuild so late injury and lineup news is reflected.
+RELEASE_LEAD_HOURS = 24
+
+
+EASTERN = "US/Eastern"
+
+
+def _local(ts: pd.Timestamp) -> pd.Timestamp:
+    """Kickoffs read best in US Eastern; fall back to UTC where the system
+    has no timezone database."""
+    try:
+        return ts.tz_convert(EASTERN)
+    except Exception:
+        return ts
+
+
+def _kickoff_time(row) -> pd.Timestamp:
+    """Kickoff as a UTC timestamp, for release-timing decisions."""
+    return pd.to_datetime(row.get("gameday"), utc=True, errors="coerce")
+
+
+def _is_released(kick: pd.Timestamp, now: pd.Timestamp) -> bool:
+    if pd.isna(kick):
+        return True  # no kickoff time known: nothing to hold back for
+    return now >= kick - pd.Timedelta(hours=RELEASE_LEAD_HOURS)
+
+
+def _release_label(kick: pd.Timestamp) -> str:
+    if pd.isna(kick):
+        return "soon"
+    release = _local(kick - pd.Timedelta(hours=RELEASE_LEAD_HOURS))
+    return release.strftime("%a %b %-d, %-I:%M %p")
+
+
+def _pending_card(row, kick: pd.Timestamp) -> str:
+    """A scheduled game whose pick is not out yet."""
+    when = "" if pd.isna(kick) else _local(kick).strftime("%a %b %-d, %-I:%M %p")
+    return f"""<div class="card game pending" data-kick="{0 if pd.isna(kick) else int(kick.timestamp())}"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams">{row.away_team} @ {row.home_team}</div>
+<div class="kick">{when}</div></div>
+<div class="pendingnote">Pick releases <strong>{_release_label(kick)}</strong>
+<span class="meta">&mdash; held until injury reports, starting lineups and the
+forecast are known, then refreshed on game day.</span></div>
+</div>"""
+
 
 def _add_display_names(preds: pd.DataFrame, league: str) -> pd.DataFrame:
     """Swap data-source team keys for full names with mascots.
@@ -514,12 +570,12 @@ def build_league_weeks(
     """Build every week of a season (default: the current one).
     Returns (weeks, season_summary, season)."""
     cfg = LEAGUES[league]
-    games, unit_stats, players = pipeline.load_league_inputs(
+    games, unit_stats, players, availability = pipeline.load_league_inputs(
         league, refresh=refresh, recent_only=True, with_players=True
     )
     season = int(games["season"].max()) if season is None else season
     feats = pipeline.build_walk_forward_features(
-        league, games, unit_stats, start_season=season - 1
+        league, games, unit_stats, start_season=season - 1, availability=availability
     )
     score_cols = ["game_id", "home_score", "away_score", "gameday", "game_type"]
     if "gametime" in games.columns:
@@ -554,8 +610,18 @@ def build_league_weeks(
             headline = (f'{tracking.format_record(ml)} on the moneyline, '
                         f'{tracking.format_record(ats)} against the spread')
         else:
-            status_short = " — upcoming"
-            headline = f"{len(upcoming)} games, picks below"
+            now = pd.Timestamp.now(tz="UTC")
+            kicks = pd.to_datetime(preds["gameday"], utc=True, errors="coerce")
+            released = sum(_is_released(k, now) for k in kicks)
+            if released:
+                status_short = f" — {released} of {len(preds)} picks out"
+                headline = (f"{released} of {len(preds)} picks released; the rest come out "
+                            "the day before kickoff")
+            else:
+                first = kicks.min()
+                status_short = " — upcoming"
+                headline = (f"{len(preds)} games &mdash; picks release from "
+                            f"{_release_label(first)}, one day before each kickoff")
 
         weeks.append({
             "week": week, "label": label, "season": season, "preds": preds,
@@ -588,8 +654,13 @@ def build_league_weeks(
             CONTROLS,
             '<div id="games">',
         ]
+        now = pd.Timestamp.now(tz="UTC")
         for _, row in w["preds"].sort_values("gameday").iterrows():
             graded_row = bool(row["completed"]) and pd.notna(row["margin"])
+            kick = _kickoff_time(row)
+            if not graded_row and not _is_released(kick, now):
+                body.append(_pending_card(row, kick))
+                continue
             body.append(_game_card(row, graded=graded_row, league=league, players=players))
         body += ["</div>", SCRIPT]
         (SITE_DIR / week_slug(league, w["week"], season, cur_season)).write_text(
@@ -611,7 +682,9 @@ def _week_grid(league: str, weeks: list[dict], season: int, cur_season: int) -> 
                 detail += (f' &middot; <span class="t-{grades.hit_tone(ats["hit_rate"])}">'
                            f'{tracking.format_record(ats)} ATS</span>')
         else:
-            detail = '<span class="upcoming">Picks posted</span>'
+            detail = ('<span class="upcoming">Picks out</span>'
+                      if "picks out" in w["status_short"]
+                      else '<span class="meta">Picks release day before</span>')
         tiles.append(
             f'<a class="weektile" href="{week_slug(league, w["week"], season, cur_season)}">'
             f'<div class="wt-label">{w["label"]}</div>'

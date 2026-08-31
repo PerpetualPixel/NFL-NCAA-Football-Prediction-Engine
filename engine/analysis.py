@@ -191,6 +191,44 @@ def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str,
     return out
 
 
+def availability_note(row: pd.Series) -> str:
+    """Plain-language read on quarterbacks and injuries for this game."""
+    bits = []
+    qb_change = row.get("qb_change", 0.0)
+    if pd.notna(qb_change) and abs(qb_change) >= 0.04:
+        side = row.home_team if qb_change < 0 else row.away_team
+        bits.append(
+            f"<strong>{side}</strong> is not starting its usual quarterback, or is "
+            "starting one playing below that level &mdash; the model marks them down "
+            "accordingly"
+        )
+    qb_gap = row.get("qb_gap", 0.0)
+    if pd.notna(qb_gap) and abs(qb_gap) >= 0.08:
+        better = row.home_team if qb_gap > 0 else row.away_team
+        bits.append(f"<strong>{better}</strong> has the clear edge at quarterback")
+    inj = row.get("inj_diff", 0.0)
+    if pd.notna(inj) and abs(inj) >= 1.5:
+        healthier = row.home_team if inj > 0 else row.away_team
+        bits.append(
+            f"<strong>{healthier}</strong> is the healthier side this week by the "
+            "injury report, weighted by who is actually missing"
+        )
+    wind = row.get("wind", 0.0)
+    if pd.notna(wind) and wind >= 15:
+        bits.append(f"wind is forecast around {wind:.0f} mph, which historically "
+                    "suppresses the passing game")
+    elif row.get("indoors"):
+        bits.append("played indoors, so weather is not a factor")
+    if not bits:
+        return ("Both sides are starting their usual quarterbacks with no notable "
+                "injury gap.")
+    return _sentence_case("; ".join(bits)) + "."
+
+
+def _sentence_case(text: str) -> str:
+    return text[0].upper() + text[1:] if text else text
+
+
 def key_factors(row: pd.Series) -> list[dict]:
     """Matchup breakdowns in plain language: who has the edge, how big, and
     how each unit ranks in its league."""
