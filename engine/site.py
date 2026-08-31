@@ -111,6 +111,8 @@ ul.factors { padding-left: 0; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
 .explain { font-size: 0.88rem; }
+.explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
+.explainbox summary { color: var(--muted); font-weight: 600; }
 table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
 table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
 table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -149,6 +151,17 @@ table.track a:hover { color: var(--accent); }
 .tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
 .tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+.scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
+.hero.card {
+  display: block; text-decoration: none; color: inherit;
+  border: 2px solid var(--accent); padding: 18px 20px;
+}
+.herolabel {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent);
+}
+.heroweek { font-size: 1.5rem; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
+.herogo { margin-top: 8px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
 .card.pending { border-style: dashed; }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -804,18 +817,36 @@ def _week_grid(league: str, weeks: list[dict], season: int, cur_season: int) -> 
 
 def _league_hub(league: str, by_season: list[tuple[int, list[dict]]],
                 summaries: dict[int, str], season: int) -> str:
-    """League landing page: every archived season, newest first."""
-    blocks = []
-    for i, (yr, yr_weeks) in enumerate(reversed(by_season)):
-        note = ('<div class="meta">Every week of the season, with picks before kickoff '
-                "and results after. Playoff rounds appear as they are scheduled.</div>"
-                if i == 0 else "")
-        blocks.append(
-            f'<h2>{league.upper()} &mdash; {yr} season</h2>'
-            f'<div class="card"><strong>{summaries.get(yr, "")}</strong>{note}</div>'
-            f'{_week_grid(league, yr_weeks, yr, season)}'
+    """League landing page: the current week first, then one season at a time."""
+    newest = list(reversed(by_season))
+    current_weeks = dict(by_season).get(season, [])
+    # the week a visitor actually wants: the next one still to be played
+    current = next((w for w in current_weeks if not w["complete"]),
+                   current_weeks[-1] if current_weeks else None)
+    hero = ""
+    if current:
+        hero = (
+            f'<a class="hero card" href="{week_slug(league, current["week"], season, season)}">'
+            f'<div class="herolabel">Now &middot; {season}</div>'
+            f'<div class="heroweek">{current["label"]}</div>'
+            f'<div class="meta">{current["headline"]}</div>'
+            f'<div class="herogo">View picks and breakdowns &rarr;</div></a>'
         )
-    return "\n".join(blocks)
+
+    opts = "".join(f'<option value="{yr}">{yr} season</option>' for yr, _ in newest)
+    blocks = "".join(
+        f'<section class="scoped" data-season="{yr}">'
+        f'<div class="card"><strong>{summaries.get(yr, "")}</strong></div>'
+        f'{_week_grid(league, yr_weeks, yr, season)}</section>'
+        for yr, yr_weeks in newest
+    )
+    return f"""{hero}
+<h2>Season archive</h2>
+<div class="controls scopebar">
+  <label class="ctl-sort">Season:<select id="scopeseason">{opts}</select></label>
+</div>
+{blocks}
+{TRACK_SCRIPT}"""
 
 
 def _pixel_section(week: dict, league: str, players) -> str:
@@ -852,8 +883,11 @@ def _pixel_section(week: dict, league: str, players) -> str:
 </div>"""
 
 
-def _stat_tile(title: str, big: str, tone: str, sub: str) -> str:
-    return (f'<div class="tile"><div class="tiletitle">{title}</div>'
+def _stat_tile(title: str, big: str, tone: str, sub: str,
+               league: str = "", season: int | None = None) -> str:
+    attrs = (f' data-league="{league}"' if league else "") + (
+        f' data-season="{season}"' if season is not None else "")
+    return (f'<div class="tile scoped"{attrs}><div class="tiletitle">{title}</div>'
             f'<div class="tilebig t-{tone}">{big}</div>'
             f'<div class="tilesub meta">{sub}</div></div>')
 
@@ -875,16 +909,18 @@ def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: 
     for (league, season), weeks in league_weeks.items():
         for kind, name, breakeven in (("ml", "moneyline", 0.50), ("ats", "spread", 0.524)):
             t = _totals(weeks, kind)
-            title = f"{league.upper()} {name} &middot; {season}"
+            title = name.capitalize()
             if not t["decided"]:
-                tiles.append(_stat_tile(title, "—", "mid", "no graded picks yet"))
+                tiles.append(_stat_tile(title, "—", "mid", "no graded picks yet",
+                                        league=league, season=season))
                 continue
             verb = "won" if kind == "ml" else "covered"
             tiles.append(_stat_tile(
                 title, f'{t["wins"]}-{t["losses"]}',
                 grades.hit_tone(t["hit_rate"], breakeven),
                 f'{t["hit_rate"]:.0%} of picks {verb} &middot; '
-                f'{t["profit"]:+.1f} units ({t["roi"]:+.1%} ROI)'))
+                f'{t["profit"]:+.1f} units ({t["roi"]:+.1%} ROI)',
+                league=league, season=season))
 
         for w in weeks:
             if not w["ml"]["decided"]:
@@ -911,13 +947,12 @@ def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: 
                     f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u</td>')
 
         body = "".join(
-            f'<tr class="trow" data-league="{r["league"]}" '
+            f'<tr class="trow scoped" data-league="{r["league"]}" '
+            f'data-season="{r["season"]}" '
             f'data-week="{r["season"] * 100 + r["week"]}" '
             f'data-mlrate="{r["ml"]["hit_rate"]:.4f}" data-atrate="{r["ats"]["hit_rate"]:.4f}" '
             f'data-mlprofit="{r["ml"]["profit"]:.3f}" data-atprofit="{r["ats"]["profit"]:.3f}">'
-            f'<td><span class="lgtag">{r["league"].upper()}</span>'
-            f'<a href="{r["slug"]}">{r["label"]}</a> '
-            f'<span class="meta">{r["season"]}</span></td>'
+            f'<td><a href="{r["slug"]}">{r["label"]}</a></td>'
             f'{cell(r["ml"], 0.50)}{cell(r["ats"], 0.524)}</tr>'
             for r in rows
         )
@@ -926,25 +961,32 @@ def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: 
 <th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
 <tbody>{body}</tbody></table>"""
 
+    seasons = sorted({season for _, season in league_weeks}, reverse=True)
+    season_opts = "".join(f'<option value="{y}">{y} season</option>' for y in seasons)
+    scope_bar = f"""<div class="controls scopebar">
+  <div class="ctl-group">
+    <button class="chip active" data-lgfilter="all">Both leagues</button>
+    <button class="chip" data-lgfilter="nfl">NFL</button>
+    <button class="chip" data-lgfilter="ncaa">NCAA</button>
+  </div>
+  <label class="ctl-sort">Season:<select id="scopeseason">{season_opts}</select></label>
+</div>"""
+
     return f"""<h2>Tracking &mdash; how the picks are doing</h2>
+{scope_bar}
 <div class="tiles">{''.join(tiles)}</div>
-<div class="card explain"><strong>How to read this.</strong>
+<details class="more explainbox"><summary>How to read this</summary>
 <span class="meta">Every game gets two separate picks: a <em>moneyline</em> pick (who wins the
 game outright) and a <em>spread</em> pick (which side beats the betting line). They often
 disagree, so they are tracked separately. "Units" is profit from betting one unit on every
 pick at the prices the sportsbook actually posted &mdash; positive means the picks made
 money, negative means they lost. Spread picks need about 52.4% to break even;
 <span class="t-strong">green</span> is beating that, <span class="t-bad">red</span> is
-losing money.</span></div>
+losing money.</span></details>
 <div class="controls">
-  <div class="ctl-group">
-    <button class="chip active" data-lgfilter="all">Both leagues</button>
-    <button class="chip" data-lgfilter="nfl">NFL</button>
-    <button class="chip" data-lgfilter="ncaa">NCAA</button>
-  </div>
   <label class="ctl-sort">Sort:
     <select id="tracksort">
-      <option value="week">By week</option>
+      <option value="week">Most recent week first</option>
       <option value="mlrate">Best moneyline record</option>
       <option value="atrate">Best spread record</option>
       <option value="mlprofit">Most moneyline profit</option>
@@ -970,20 +1012,21 @@ def _clv_section(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
         rate = summary["beat_rate"]
         tone = "strong" if rate >= 0.55 else "good" if rate > 0.50 else "bad"
         tiles.append(_stat_tile(
-            f"{league.upper()} closing line value &middot; {season}",
-            f"{rate:.0%}", tone,
+            "Closing line value", f"{rate:.0%}", tone,
             f'market moved toward the pick on {summary["n"]} spread picks '
-            f'&middot; {summary["avg_points"]:+.2f} pts on average'))
+            f'&middot; {summary["avg_points"]:+.2f} pts on average',
+            league=league, season=season))
     if not tiles:
         return ""
     return f"""<h2>Closing line value</h2>
-<div class="card explain"><span class="meta">The most reliable test of whether picks
+<details class="more explainbox"><summary>What closing line value means</summary>
+<span class="meta">The most reliable test of whether picks
 carry an edge. If a pick is genuinely good, the market tends to move toward that side
 before kickoff &mdash; the number taken beats the number at close. Above 50% means the
 picks are on the right side of where money goes; below 50% means the opposite, and no
 run of wins changes that verdict. Win rate over one season is mostly noise; this is not.
 Opening prices are published for college games only, so the NFL cannot be measured this
-way from free data.</span></div>
+way from free data.</span></details>
 <div class="tiles">{''.join(tiles)}</div>"""
 
 
@@ -1010,8 +1053,8 @@ def _tier_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
                     f'<span class="meta">{rec["hit_rate"]:.0%}</span></td>'
                     f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u '
                     f'<span class="meta">{rec["roi"]:+.0%}</span></td>')
-            body.append(f'<tr><td><span class="lgtag">{league.upper()}</span>{label} '
-                        f'<span class="meta">{season}</span></td>{"".join(cells)}</tr>')
+            body.append(f'<tr class="scoped" data-league="{league}" data-season="{season}">'
+                        f'<td>{label}</td>{"".join(cells)}</tr>')
 
         # Pixel's Picks are single wagers (sometimes parlays), so one column pair
         settled = [w["pixel_graded"] for w in weeks if w.get("pixel_graded")]
@@ -1019,8 +1062,8 @@ def _tier_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
             rec = pixel.record(settled)
             if rec["decided"]:
                 body.append(
-                    f'<tr><td><span class="lgtag">{league.upper()}</span>'
-                    f'<strong>Pixel&rsquo;s Picks</strong> <span class="meta">{season}</span></td>'
+                    f'<tr class="scoped" data-league="{league}" data-season="{season}">'
+                    f'<td><strong>Pixel&rsquo;s Picks</strong></td>'
                     f'<td class="num"><span class="t-{grades.hit_tone(rec["hit_rate"], 0.50)}">'
                     f'{rec["wins"]}-{rec["losses"]}</span> '
                     f'<span class="meta">{rec["hit_rate"]:.0%}</span></td>'
@@ -1030,11 +1073,12 @@ def _tier_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
     if not body:
         return ""
     return f"""<h2>Picks vs Leans</h2>
-<div class="card explain"><span class="meta">A <strong>Pick</strong> is a side where the
+<details class="more explainbox"><summary>Picks, Leans and Pixel&rsquo;s Picks explained</summary>
+<span class="meta">A <strong>Pick</strong> is a side where the
 calibrated probability beats the price &mdash; the model thinks the bet is worth making.
 A <strong>Lean</strong> is everything else: the model has an opinion and shows all its
 reasoning, but the price does not justify backing it. Leans are information, not bets.
-<strong>Pixel&rsquo;s Picks</strong> are the single highest-value play each week.</span></div>
+<strong>Pixel&rsquo;s Picks</strong> are the single highest-value play each week.</span></details>
 <table class="track">
 <thead><tr><th>Group</th><th class="num">Moneyline</th><th class="num">ML units</th>
 <th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
@@ -1063,17 +1107,18 @@ def _category_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
                     f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u '
                     f'<span class="meta">{rec["roi"]:+.0%}</span></td>')
             body.append(
-                f'<tr><td><span class="lgtag">{league.upper()}</span>{cat["label"]} '
-                f'<span class="meta">{season}</span></td>{"".join(cells)}</tr>'
+                f'<tr class="scoped" data-league="{league}" data-season="{season}">'
+                f'<td>{cat["label"]}</td>{"".join(cells)}</tr>'
             )
     if not body:
         return ""
     return f"""<h2>By pick category</h2>
-<div class="card explain"><span class="meta">Every pick is also filed into a bucket:
+<details class="more explainbox"><summary>What the buckets mean</summary>
+<span class="meta">Every pick is also filed into a bucket:
 <strong>Locks</strong> are games the model is at least 70% sure of, <strong>Value</strong>
 means it disagrees with the market by 2.5+ points, <strong>Pick'ems</strong> are near
 coin-flips, and <strong>Upsets</strong> are value picks on the market's underdog. This is
-how each bucket has actually paid.</span></div>
+how each bucket has actually paid.</span></details>
 <table class="track">
 <thead><tr><th>Category</th><th class="num">Moneyline</th><th class="num">ML units</th>
 <th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
@@ -1082,19 +1127,20 @@ how each bucket has actually paid.</span></div>
 
 TRACK_SCRIPT = """<script>
 (function () {
-  var tbody = document.querySelector('#tracktable tbody');
-  if (!tbody) return;
+  // one scope for the whole page: a season, and one or both leagues
+  var seasonSel = document.getElementById('scopeseason');
   var lg = 'all';
-  function apply() {
-    var key = document.getElementById('tracksort').value;
-    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.trow'));
-    rows.sort(function (a, b) {
-      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
-      return key === 'week' ? av - bv : bv - av;
+  function scope() {
+    var yr = seasonSel ? seasonSel.value : null;
+    document.querySelectorAll('.scoped').forEach(function (el) {
+      var okSeason = !yr || !el.dataset.season || el.dataset.season === yr;
+      var okLeague = lg === 'all' || !el.dataset.league || el.dataset.league === lg;
+      el.hidden = !(okSeason && okLeague);
     });
-    rows.forEach(function (r) {
-      tbody.appendChild(r);
-      r.hidden = !(lg === 'all' || r.dataset.league === lg);
+    document.querySelectorAll('table.track').forEach(function (t) {
+      var live = t.querySelectorAll('tbody tr.scoped:not([hidden])').length;
+      var wrap = t.closest('.tablewrap') || t;
+      wrap.hidden = live === 0;
     });
   }
   document.querySelectorAll('[data-lgfilter]').forEach(function (btn) {
@@ -1104,10 +1150,28 @@ TRACK_SCRIPT = """<script>
       });
       btn.classList.add('active');
       lg = btn.dataset.lgfilter;
-      apply();
+      scope(); if (window.__trackApply) window.__trackApply();
     });
   });
+  if (seasonSel) seasonSel.addEventListener('change', function () {
+    scope(); if (window.__trackApply) window.__trackApply();
+  });
+  scope();
+})();
+(function () {
+  var tbody = document.querySelector('#tracktable tbody');
+  if (!tbody) return;
+  var lg = 'all';
+  function apply() {
+    var key = document.getElementById('tracksort').value;
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.trow'));
+    rows.sort(function (a, b) {
+      return parseFloat(b.dataset[key]) - parseFloat(a.dataset[key]);
+    });
+    rows.forEach(function (r) { tbody.appendChild(r); });
+  }
   document.getElementById('tracksort').addEventListener('change', apply);
+  window.__trackApply = apply;
   apply();
 })();
 </script>"""
