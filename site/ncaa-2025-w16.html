@@ -131,8 +131,21 @@ table.track a:hover { color: var(--accent); }
 .tag-lock { color: var(--good); border-color: var(--good); }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .card.pending { border-style: dashed; }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
 .pendingnote { margin-top: 6px; font-size: 0.9rem; }
 .pendingnote strong { color: var(--accent); }
 details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
@@ -188,19 +201,32 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 06:07 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 06:21 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2025-w15.html">&larr; Week 15</a>
-<label class="wksel">Jump to:
+<label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html">2026 season</option><option value="ncaa-2025-w01.html" selected>2025 season</option></select></label>
+<label class="wksel">Week:
   <select id="weekpick"><option value="ncaa-2025-w01.html">Week 1 — 28-13</option><option value="ncaa-2025-w02.html">Week 2 — 38-12</option><option value="ncaa-2025-w03.html">Week 3 — 31-16</option><option value="ncaa-2025-w04.html">Week 4 — 34-16</option><option value="ncaa-2025-w05.html">Week 5 — 36-15</option><option value="ncaa-2025-w06.html">Week 6 — 38-12</option><option value="ncaa-2025-w07.html">Week 7 — 40-16</option><option value="ncaa-2025-w08.html">Week 8 — 41-18</option><option value="ncaa-2025-w09.html">Week 9 — 36-17</option><option value="ncaa-2025-w10.html">Week 10 — 31-21</option><option value="ncaa-2025-w11.html">Week 11 — 34-17</option><option value="ncaa-2025-w12.html">Week 12 — 44-14</option><option value="ncaa-2025-w13.html">Week 13 — 45-15</option><option value="ncaa-2025-w14.html">Week 14 — 51-16</option><option value="ncaa-2025-w15.html">Week 15 — 4-5</option><option value="ncaa-2025-w16.html" selected>Week 16 — 1-0</option><option value="ncaa-2025-w17.html">Bowls &amp; Playoff — 26-20</option></select>
 </label>
 <a class="wknav-btn" href="ncaa-2025-w17.html">Bowls &amp; Playoff &rarr;</a>
 </div>
 <h2>Week 16 &mdash; 2025</h2>
 <div class="weekhead">1-0 on the moneyline, 1-0 against the spread</div>
+<div class="pixel card">
+<div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
+<span class="pxprice">-200</span>
+<span class="meta">single &middot; model 62% vs
+67% implied</span><span class="outcome t-strong">WIN &middot; +0.50u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Navy Midshipmen to win outright</span> <span class="meta">Army Black Knights @ Navy Midshipmen &middot; -200 &middot; model 62%</span></li></ul>
+<details class="more"><summary>Why this is the pick</summary>
+<div class="analysis"><p class='ftext'><strong>Navy Midshipmen to win outright at -200.</strong> The model gives this 62%, while the price implies 67%. Backing it is worth doing only because of that difference, not because the side is likely to win.</p><p class='ftext'><strong>Army Black Knights @ Navy Midshipmen &mdash; Navy Midshipmen to win outright.</strong> Navy Midshipmen rates 1.7 points stronger on power ratings; the biggest matchup edge is navy midshipmen running vs army black knights run defense (a slight edge). Both sides are starting their usual quarterbacks with no notable injury gap.</p></div></details>
+</div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-filter="pick">Picks (value)</button>
+    <button class="chip" data-filter="lean">Leans</button>
     <button class="chip" data-filter="lock">Locks</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
@@ -217,7 +243,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" data-kick="1765656000" data-prob="0.6394" data-margin="5.889" data-edge="0.111" data-tags="">
+<div class="card game" data-kick="1765656000" data-prob="0.6394" data-margin="5.889" data-edge="0.111" data-tags="pixel lean">
 <div class="cardhead"><div class="teams">Army Black Knights @ Navy Midshipmen (neutral site)</div>
 <div class="kick">Sat, Dec 13</div></div>
 <div class="bets">
@@ -228,7 +254,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Navy Midshipmen -6</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Army Black Knights +6.0</div><div class="betnote meta">0.1 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"></div>
+<div class="chips"><span class="tag tag-pixel">Pixel&rsquo;s Pick</span><span class="tag tag-lean">lean</span></div>
 <div class="meta">Market line: Navy Midshipmen -6 &middot; <span class="meta">model -0.1 toward Army Black Knights</span></div><div class="meta">Final: Navy Midshipmen 17&ndash;16 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -279,6 +305,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 
   var wk = document.getElementById('weekpick');
   if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
 })();
 </script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted

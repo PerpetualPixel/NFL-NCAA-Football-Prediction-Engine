@@ -131,8 +131,21 @@ table.track a:hover { color: var(--accent); }
 .tag-lock { color: var(--good); border-color: var(--good); }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .card.pending { border-style: dashed; }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
 .pendingnote { margin-top: 6px; font-size: 0.9rem; }
 .pendingnote strong { color: var(--accent); }
 details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
@@ -188,19 +201,32 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 06:07 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 06:20 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <span class="wknav-btn disabled">&larr; Prev</span>
-<label class="wksel">Jump to:
+<label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html">2026 season</option><option value="nfl-2025-w01.html" selected>2025 season</option></select></label>
+<label class="wksel">Week:
   <select id="weekpick"><option value="nfl-2025-w01.html" selected>Week 1 — 11-5</option><option value="nfl-2025-w02.html">Week 2 — 11-5</option><option value="nfl-2025-w03.html">Week 3 — 6-10</option><option value="nfl-2025-w04.html">Week 4 — 11-4-1</option><option value="nfl-2025-w05.html">Week 5 — 4-10</option><option value="nfl-2025-w06.html">Week 6 — 8-7</option><option value="nfl-2025-w07.html">Week 7 — 11-4</option><option value="nfl-2025-w08.html">Week 8 — 12-1</option><option value="nfl-2025-w09.html">Week 9 — 9-5</option><option value="nfl-2025-w10.html">Week 10 — 9-5</option><option value="nfl-2025-w11.html">Week 11 — 11-4</option><option value="nfl-2025-w12.html">Week 12 — 8-6</option><option value="nfl-2025-w13.html">Week 13 — 10-6</option><option value="nfl-2025-w14.html">Week 14 — 7-7</option><option value="nfl-2025-w15.html">Week 15 — 10-6</option><option value="nfl-2025-w16.html">Week 16 — 8-8</option><option value="nfl-2025-w17.html">Week 17 — 6-10</option><option value="nfl-2025-w18.html">Week 18 — 9-7</option><option value="nfl-2025-w19.html">Wild Card Round — 2-4</option><option value="nfl-2025-w20.html">Divisional Round — 4-0</option><option value="nfl-2025-w21.html">Conference Championships — 2-0</option><option value="nfl-2025-w22.html">Super Bowl — 1-0</option></select>
 </label>
 <a class="wknav-btn" href="nfl-2025-w02.html">Week 2 &rarr;</a>
 </div>
 <h2>Week 1 &mdash; 2025</h2>
 <div class="weekhead">11-5 on the moneyline, 12-4 against the spread</div>
+<div class="pixel card">
+<div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
+<span class="pxprice">-118</span>
+<span class="meta">single &middot; model 62% vs
+54% implied</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Atlanta Falcons +1.5</span> <span class="meta">Tampa Bay Buccaneers @ Atlanta Falcons &middot; -118 &middot; model 62%</span></li></ul>
+<details class="more"><summary>Why this is the pick</summary>
+<div class="analysis"><p class='ftext'><strong>Atlanta Falcons +1.5 at -118.</strong> The model gives this 62%, while the price implies 54%. Backing it is worth doing only because of that difference, not because the side is likely to win.</p><p class='ftext'><strong>Tampa Bay Buccaneers @ Atlanta Falcons &mdash; Atlanta Falcons +1.5.</strong> Tampa Bay Buccaneers rates 4.4 points stronger on power ratings; the biggest matchup edge is tampa bay buccaneers passing vs atlanta falcons pass defense (a major mismatch); the model wants 4.1 more points on Atlanta Falcons than the market prices. <strong>Atlanta Falcons</strong> is the healthier side this week by the injury report, weighted by who is actually missing; played indoors, so weather is not a factor.</p><p class='ftext'>By the model's own numbers this returns +0.15 units per unit staked over the long run. That is the model's estimate, not a guarantee &mdash; the tracker records what actually happened.</p></div></details>
+</div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-filter="pick">Picks (value)</button>
+    <button class="chip" data-filter="lean">Leans</button>
     <button class="chip" data-filter="lock">Locks</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
@@ -217,7 +243,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" data-kick="1756944000" data-prob="0.7290" data-margin="8.051" data-edge="0.449" data-tags="lock">
+<div class="card game" data-kick="1756944000" data-prob="0.7290" data-margin="8.051" data-edge="0.449" data-tags="lean lock">
 <div class="cardhead"><div class="teams">Dallas Cowboys @ Philadelphia Eagles</div>
 <div class="kick">Thu, Sep 4 &middot; 8:20 PM ET</div></div>
 <div class="bets">
@@ -228,7 +254,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Philadelphia Eagles -8</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Dallas Cowboys +8.5</div><div class="betnote meta">0.4 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span></div>
 <div class="meta">Market line: Philadelphia Eagles -8.5 &middot; <span class="meta">model -0.4 toward Dallas Cowboys</span></div><div class="meta">Final: Philadelphia Eagles 24&ndash;20 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -242,7 +268,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757030400" data-prob="0.5733" data-margin="2.439" data-edge="0.561" data-tags="pickem">
+<div class="card game" data-kick="1757030400" data-prob="0.5733" data-margin="2.439" data-edge="0.561" data-tags="pick pickem">
 <div class="cardhead"><div class="teams">Kansas City Chiefs @ Los Angeles Chargers (neutral site)</div>
 <div class="kick">Fri, Sep 5 &middot; 8:00 PM ET</div></div>
 <div class="bets">
@@ -253,7 +279,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Kansas City Chiefs -2.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Los Angeles Chargers +3.0</div><div class="betnote meta">0.6 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-key">near 3</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
 <div class="meta">Market line: Los Angeles Chargers -3 &middot; <span class="meta">model +0.6 toward Los Angeles Chargers</span></div><div class="meta">Final: Los Angeles Chargers 27&ndash;21 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -267,7 +293,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.5778" data-margin="2.589" data-edge="4.089" data-tags="pickem value">
+<div class="card game" data-kick="1757203200" data-prob="0.5778" data-margin="2.589" data-edge="4.089" data-tags="pixel pick pickem value">
 <div class="cardhead"><div class="teams">Tampa Bay Buccaneers @ Atlanta Falcons</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -278,7 +304,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Atlanta Falcons -2.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Atlanta Falcons +1.5</div><div class="betnote meta">4.1 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span><span class="tag tag-key">near 3</span></div>
+<div class="chips"><span class="tag tag-pixel">Pixel&rsquo;s Pick</span><span class="tag tag-pick">pick</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-value">value</span><span class="tag tag-key">near 3</span></div>
 <div class="meta">Market line: Atlanta Falcons -1.5 &middot; <span class="edge-pos">model +4.1 toward Atlanta Falcons</span></div><div class="meta">Final: Atlanta Falcons 20&ndash;23 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -292,7 +318,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.6398" data-margin="4.723" data-edge="0.777" data-tags="">
+<div class="card game" data-kick="1757203200" data-prob="0.6398" data-margin="4.723" data-edge="0.777" data-tags="lean">
 <div class="cardhead"><div class="teams">Cincinnati Bengals @ Cleveland Browns</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -303,7 +329,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Cincinnati Bengals -4.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Cleveland Browns +5.5</div><div class="betnote meta">0.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"></div>
+<div class="chips"><span class="tag tag-lean">lean</span></div>
 <div class="meta">Market line: Cleveland Browns -5.5 &middot; <span class="meta">model +0.8 toward Cleveland Browns</span></div><div class="meta">Final: Cleveland Browns 16&ndash;17 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -317,7 +343,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.5319" data-margin="1.056" data-edge="2.556" data-tags="pickem value upset">
+<div class="card game" data-kick="1757203200" data-prob="0.5319" data-margin="1.056" data-edge="2.556" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams">Miami Dolphins @ Indianapolis Colts</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -328,7 +354,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Miami Dolphins -1</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Miami Dolphins +1.5</div><div class="betnote meta">2.6 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span></div>
 <div class="meta">Market line: Indianapolis Colts -1.5 &middot; <span class="edge-pos">model -2.6 toward Miami Dolphins</span></div><div class="meta">Final: Indianapolis Colts 33&ndash;8 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -342,7 +368,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.6892" data-margin="6.514" data-edge="2.014" data-tags="">
+<div class="card game" data-kick="1757203200" data-prob="0.6892" data-margin="6.514" data-edge="2.014" data-tags="pick">
 <div class="cardhead"><div class="teams">Carolina Panthers @ Jacksonville Jaguars</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -353,7 +379,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Jacksonville Jaguars -6.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Jacksonville Jaguars -4.5</div><div class="betnote meta">2.0 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-key">near 7</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-key">near 7</span></div>
 <div class="meta">Market line: Jacksonville Jaguars -4.5 &middot; <span class="meta">model +2.0 toward Jacksonville Jaguars</span></div><div class="meta">Final: Jacksonville Jaguars 26&ndash;10 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -367,7 +393,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.5853" data-margin="2.844" data-edge="5.344" data-tags="value upset">
+<div class="card game" data-kick="1757203200" data-prob="0.5853" data-margin="2.844" data-edge="5.344" data-tags="pick value upset">
 <div class="cardhead"><div class="teams">Las Vegas Raiders @ New England Patriots</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -378,7 +404,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Las Vegas Raiders -3</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Las Vegas Raiders +2.5</div><div class="betnote meta">5.3 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span><span class="tag tag-key">near 3</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span><span class="tag tag-key">near 3</span></div>
 <div class="meta">Market line: New England Patriots -2.5 &middot; <span class="edge-pos">model -5.3 toward Las Vegas Raiders</span></div><div class="meta">Final: New England Patriots 13&ndash;20 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -392,7 +418,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.6613" data-margin="5.493" data-edge="0.507" data-tags="">
+<div class="card game" data-kick="1757203200" data-prob="0.6613" data-margin="5.493" data-edge="0.507" data-tags="lean">
 <div class="cardhead"><div class="teams">Arizona Cardinals @ New Orleans Saints</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -403,7 +429,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Arizona Cardinals -5.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">New Orleans Saints +6.0</div><div class="betnote meta">0.5 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
-<div class="chips"></div>
+<div class="chips"><span class="tag tag-lean">lean</span></div>
 <div class="meta">Market line: New Orleans Saints -6 &middot; <span class="meta">model +0.5 toward New Orleans Saints</span></div><div class="meta">Final: New Orleans Saints 13&ndash;20 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -417,7 +443,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.5789" data-margin="2.627" data-edge="0.373" data-tags="pickem">
+<div class="card game" data-kick="1757203200" data-prob="0.5789" data-margin="2.627" data-edge="0.373" data-tags="lean pickem">
 <div class="cardhead"><div class="teams">Pittsburgh Steelers @ New York Jets</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -428,7 +454,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Pittsburgh Steelers -2.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">New York Jets +3.0</div><div class="betnote meta">0.4 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-key">near 3</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
 <div class="meta">Market line: New York Jets -3 &middot; <span class="meta">model +0.4 toward New York Jets</span></div><div class="meta">Final: New York Jets 32&ndash;34 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -442,7 +468,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.7650" data-margin="9.539" data-edge="3.539" data-tags="lock value">
+<div class="card game" data-kick="1757203200" data-prob="0.7650" data-margin="9.539" data-edge="3.539" data-tags="pick lock value">
 <div class="cardhead"><div class="teams">New York Giants @ Washington Commanders</div>
 <div class="kick">Sun, Sep 7 &middot; 1:00 PM ET</div></div>
 <div class="bets">
@@ -453,7 +479,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Washington Commanders -9.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Washington Commanders -6.0</div><div class="betnote meta">3.5 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-lock">lock</span><span class="tag tag-value">value</span><span class="tag tag-key">near 10</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-lock">lock</span><span class="tag tag-value">value</span><span class="tag tag-key">near 10</span></div>
 <div class="meta">Market line: Washington Commanders -6 &middot; <span class="edge-pos">model +3.5 toward Washington Commanders</span></div><div class="meta">Final: Washington Commanders 21&ndash;6 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -467,7 +493,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.7160" data-margin="7.537" data-edge="0.963" data-tags="lock">
+<div class="card game" data-kick="1757203200" data-prob="0.7160" data-margin="7.537" data-edge="0.963" data-tags="pick lock">
 <div class="cardhead"><div class="teams">Tennessee Titans @ Denver Broncos</div>
 <div class="kick">Sun, Sep 7 &middot; 4:05 PM ET</div></div>
 <div class="bets">
@@ -478,7 +504,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Denver Broncos -7.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Tennessee Titans +8.5</div><div class="betnote meta">1.0 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-lock">lock</span><span class="tag tag-key">near 7</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-lock">lock</span><span class="tag tag-key">near 7</span></div>
 <div class="meta">Market line: Denver Broncos -8.5 &middot; <span class="meta">model -1.0 toward Tennessee Titans</span></div><div class="meta">Final: Denver Broncos 20&ndash;12 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -492,7 +518,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.6271" data-margin="4.278" data-edge="1.778" data-tags="">
+<div class="card game" data-kick="1757203200" data-prob="0.6271" data-margin="4.278" data-edge="1.778" data-tags="pick">
 <div class="cardhead"><div class="teams">San Francisco 49ers @ Seattle Seahawks</div>
 <div class="kick">Sun, Sep 7 &middot; 4:05 PM ET</div></div>
 <div class="bets">
@@ -503,7 +529,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">San Francisco 49ers -4.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">San Francisco 49ers -2.5</div><div class="betnote meta">1.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"></div>
+<div class="chips"><span class="tag tag-pick">pick</span></div>
 <div class="meta">Market line: Seattle Seahawks -2.5 &middot; <span class="meta">model -1.8 toward San Francisco 49ers</span></div><div class="meta">Final: Seattle Seahawks 13&ndash;17 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -517,7 +543,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.5356" data-margin="1.178" data-edge="2.678" data-tags="pickem value upset">
+<div class="card game" data-kick="1757203200" data-prob="0.5356" data-margin="1.178" data-edge="2.678" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams">Detroit Lions @ Green Bay Packers</div>
 <div class="kick">Sun, Sep 7 &middot; 4:25 PM ET</div></div>
 <div class="bets">
@@ -528,7 +554,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Detroit Lions -1</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Detroit Lions +1.5</div><div class="betnote meta">2.7 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span></div>
 <div class="meta">Market line: Green Bay Packers -1.5 &middot; <span class="edge-pos">model -2.7 toward Detroit Lions</span></div><div class="meta">Final: Green Bay Packers 27&ndash;13 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -542,7 +568,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.6392" data-margin="4.705" data-edge="1.205" data-tags="">
+<div class="card game" data-kick="1757203200" data-prob="0.6392" data-margin="4.705" data-edge="1.205" data-tags="pick">
 <div class="cardhead"><div class="teams">Houston Texans @ Los Angeles Rams</div>
 <div class="kick">Sun, Sep 7 &middot; 4:25 PM ET</div></div>
 <div class="bets">
@@ -553,7 +579,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Los Angeles Rams -4.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Los Angeles Rams -3.5</div><div class="betnote meta">1.2 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"></div>
+<div class="chips"><span class="tag tag-pick">pick</span></div>
 <div class="meta">Market line: Los Angeles Rams -3.5 &middot; <span class="meta">model +1.2 toward Los Angeles Rams</span></div><div class="meta">Final: Los Angeles Rams 14&ndash;9 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -567,7 +593,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757203200" data-prob="0.5213" data-margin="0.705" data-edge="0.795" data-tags="pickem">
+<div class="card game" data-kick="1757203200" data-prob="0.5213" data-margin="0.705" data-edge="0.795" data-tags="pick pickem">
 <div class="cardhead"><div class="teams">Baltimore Ravens @ Buffalo Bills</div>
 <div class="kick">Sun, Sep 7 &middot; 8:20 PM ET</div></div>
 <div class="bets">
@@ -578,7 +604,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Baltimore Ravens -0.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Buffalo Bills +1.5</div><div class="betnote meta">0.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-pickem">pick'em</span></div>
 <div class="meta">Market line: Buffalo Bills -1.5 &middot; <span class="meta">model +0.8 toward Buffalo Bills</span></div><div class="meta">Final: Buffalo Bills 41&ndash;40 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -592,7 +618,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1757289600" data-prob="0.5693" data-margin="2.306" data-edge="0.806" data-tags="pickem">
+<div class="card game" data-kick="1757289600" data-prob="0.5693" data-margin="2.306" data-edge="0.806" data-tags="pick pickem">
 <div class="cardhead"><div class="teams">Minnesota Vikings @ Chicago Bears</div>
 <div class="kick">Mon, Sep 8 &middot; 8:15 PM ET</div></div>
 <div class="bets">
@@ -603,7 +629,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Minnesota Vikings -2.5</div>
 <div class="betnote meta">model projection</div></div>
 <div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Minnesota Vikings -1.5</div><div class="betnote meta">0.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-key">near 3</span></div>
+<div class="chips"><span class="tag tag-pick">pick</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
 <div class="meta">Market line: Chicago Bears -1.5 &middot; <span class="meta">model -0.8 toward Minnesota Vikings</span></div><div class="meta">Final: Chicago Bears 24&ndash;27 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -654,6 +680,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 
   var wk = document.getElementById('weekpick');
   if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
 })();
 </script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted

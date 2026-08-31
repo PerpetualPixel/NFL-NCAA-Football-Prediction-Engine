@@ -131,8 +131,21 @@ table.track a:hover { color: var(--accent); }
 .tag-lock { color: var(--good); border-color: var(--good); }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .card.pending { border-style: dashed; }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
 .pendingnote { margin-top: 6px; font-size: 0.9rem; }
 .pendingnote strong { color: var(--accent); }
 details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
@@ -188,19 +201,24 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 06:06 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 06:20 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-w12.html">&larr; Week 12</a>
-<label class="wksel">Jump to:
+<label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html" selected>2026 season</option><option value="nfl-2025-w01.html">2025 season</option></select></label>
+<label class="wksel">Week:
   <select id="weekpick"><option value="nfl-w01.html">Week 1 — upcoming</option><option value="nfl-w02.html">Week 2 — upcoming</option><option value="nfl-w03.html">Week 3 — upcoming</option><option value="nfl-w04.html">Week 4 — upcoming</option><option value="nfl-w05.html">Week 5 — upcoming</option><option value="nfl-w06.html">Week 6 — upcoming</option><option value="nfl-w07.html">Week 7 — upcoming</option><option value="nfl-w08.html">Week 8 — upcoming</option><option value="nfl-w09.html">Week 9 — upcoming</option><option value="nfl-w10.html">Week 10 — upcoming</option><option value="nfl-w11.html">Week 11 — upcoming</option><option value="nfl-w12.html">Week 12 — upcoming</option><option value="nfl-w13.html" selected>Week 13 — upcoming</option><option value="nfl-w14.html">Week 14 — upcoming</option><option value="nfl-w15.html">Week 15 — upcoming</option><option value="nfl-w16.html">Week 16 — upcoming</option><option value="nfl-w17.html">Week 17 — upcoming</option><option value="nfl-w18.html">Week 18 — upcoming</option></select>
 </label>
 <a class="wknav-btn" href="nfl-w14.html">Week 14 &rarr;</a>
 </div>
 <h2>Week 13 &mdash; 2026</h2>
 <div class="weekhead">14 games &mdash; picks release from Tue Dec 1, 7:00 PM, one day before each kickoff</div>
+
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-filter="pick">Picks (value)</button>
+    <button class="chip" data-filter="lean">Leans</button>
     <button class="chip" data-filter="lock">Locks</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
@@ -366,6 +384,8 @@ forecast are known, then refreshed on game day.</span></div>
 
   var wk = document.getElementById('weekpick');
   if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
 })();
 </script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted

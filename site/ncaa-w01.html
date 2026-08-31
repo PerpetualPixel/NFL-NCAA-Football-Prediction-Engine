@@ -131,8 +131,21 @@ table.track a:hover { color: var(--accent); }
 .tag-lock { color: var(--good); border-color: var(--good); }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .card.pending { border-style: dashed; }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
 .pendingnote { margin-top: 6px; font-size: 0.9rem; }
 .pendingnote strong { color: var(--accent); }
 details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
@@ -188,19 +201,24 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 06:07 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 06:21 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <span class="wknav-btn disabled">&larr; Prev</span>
-<label class="wksel">Jump to:
+<label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html" selected>2026 season</option><option value="ncaa-2025-w01.html">2025 season</option></select></label>
+<label class="wksel">Week:
   <select id="weekpick"><option value="ncaa-w01.html" selected>Week 1 — 2-2</option></select>
 </label>
 <span class="wknav-btn disabled">Next &rarr;</span>
 </div>
 <h2>Week 1 &mdash; 2026</h2>
 <div class="weekhead">2-2 on the moneyline, 0-0 against the spread</div>
+
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-filter="pick">Picks (value)</button>
+    <button class="chip" data-filter="lean">Leans</button>
     <button class="chip" data-filter="lock">Locks</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
@@ -217,7 +235,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" data-kick="1788019200" data-prob="0.7123" data-margin="9.240" data-edge="0.000" data-tags="lock">
+<div class="card game" data-kick="1788019200" data-prob="0.7123" data-margin="9.240" data-edge="0.000" data-tags="lean lock">
 <div class="cardhead"><div class="teams">North Carolina Tar Heels @ TCU Horned Frogs (neutral site)</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
@@ -228,7 +246,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">TCU Horned Frogs -9</div>
 <div class="betnote meta">model projection</div></div>
 </div>
-<div class="chips"><span class="tag tag-lock">lock</span><span class="tag tag-key">near 10</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span><span class="tag tag-key">near 10</span></div>
 <div class="meta">Final: TCU Horned Frogs 10&ndash;15 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -242,7 +260,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1788030000" data-prob="0.8904" data-margin="20.272" data-edge="0.000" data-tags="lock">
+<div class="card game" data-kick="1788030000" data-prob="0.8904" data-margin="20.272" data-edge="0.000" data-tags="lean lock">
 <div class="cardhead"><div class="teams">San José State Spartans @ USC Trojans</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
@@ -253,7 +271,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">USC Trojans -20.5</div>
 <div class="betnote meta">model projection</div></div>
 </div>
-<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span></div>
 <div class="meta">Final: USC Trojans 42&ndash;26 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -267,7 +285,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1788031800" data-prob="0.6140" data-margin="4.780" data-edge="0.000" data-tags="">
+<div class="card game" data-kick="1788031800" data-prob="0.6140" data-margin="4.780" data-edge="0.000" data-tags="lean">
 <div class="cardhead"><div class="teams">NC State Wolfpack @ Virginia Cavaliers</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
@@ -278,7 +296,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Virginia Cavaliers -5</div>
 <div class="betnote meta">model projection</div></div>
 </div>
-<div class="chips"></div>
+<div class="chips"><span class="tag tag-lean">lean</span></div>
 <div class="meta">Final: Virginia Cavaliers 34&ndash;8 &middot; <span class="result-hit">HIT</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -292,7 +310,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1788044400" data-prob="0.5282" data-margin="1.168" data-edge="0.000" data-tags="pickem">
+<div class="card game" data-kick="1788044400" data-prob="0.5282" data-margin="1.168" data-edge="0.000" data-tags="lean pickem">
 <div class="cardhead"><div class="teams">Hawai'i Rainbow Warriors @ Stanford Cardinal</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
@@ -303,7 +321,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Stanford Cardinal -1</div>
 <div class="betnote meta">model projection</div></div>
 </div>
-<div class="chips"><span class="tag tag-pickem">pickem</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span></div>
 <details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -317,7 +335,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1788044400" data-prob="0.8638" data-margin="18.107" data-edge="0.000" data-tags="lock">
+<div class="card game" data-kick="1788044400" data-prob="0.8638" data-margin="18.107" data-edge="0.000" data-tags="lean lock">
 <div class="cardhead"><div class="teams">New Mexico State Aggies @ Florida State Seminoles</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
@@ -328,7 +346,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">Florida State Seminoles -18</div>
 <div class="betnote meta">model projection</div></div>
 </div>
-<div class="chips"><span class="tag tag-lock">lock</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span></div>
 <details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -342,7 +360,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1788055200" data-prob="0.5765" data-margin="3.185" data-edge="0.000" data-tags="pickem">
+<div class="card game" data-kick="1788055200" data-prob="0.5765" data-margin="3.185" data-edge="0.000" data-tags="lean pickem">
 <div class="cardhead"><div class="teams">Memphis Tigers @ UNLV Rebels</div>
 <div class="kick">Sun, Aug 30</div></div>
 <div class="bets">
@@ -353,7 +371,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="betvalue">UNLV Rebels -3</div>
 <div class="betnote meta">model projection</div></div>
 </div>
-<div class="chips"><span class="tag tag-pickem">pickem</span><span class="tag tag-key">near 3</span></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
 <div class="meta">Final: UNLV Rebels 21&ndash;27 &middot; <span class="result-miss">MISS</span></div><details class="more">
 <summary>More info &mdash; full analysis</summary>
 <div class="analysis">
@@ -404,6 +422,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 
   var wk = document.getElementById('weekpick');
   if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
 })();
 </script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
