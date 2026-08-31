@@ -14,17 +14,9 @@ import pandas as pd
 from . import model as model_mod
 from . import pipeline, report
 from .config import LEAGUES
-from .data import ingest
 
 
-def _load_league_inputs(league: str, refresh: bool = False):
-    games = pipeline.load_games(league, refresh=refresh)
-    unit_stats = None
-    if league == "nfl":
-        seasons = sorted(games.loc[games["completed"], "season"].unique().tolist())
-        pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
-        unit_stats = pipeline.nfl_unit_game_stats(pbp)
-    return games, unit_stats
+_load_league_inputs = pipeline.load_league_inputs
 
 
 def cmd_ingest(args):
@@ -54,28 +46,28 @@ def cmd_predict(args):
     cfg = LEAGUES[args.league]
     games, unit_stats = _load_league_inputs(args.league, refresh=args.refresh)
     feats = pipeline.build_walk_forward_features(args.league, games, unit_stats)
-    target = feats[(feats["season"] == args.season) & (feats["week"] == args.week)]
+    target = model_mod.predict_week(feats, cfg, args.season, args.week)
     if target.empty:
         raise SystemExit(f"no games found for {args.league} {args.season} week {args.week}")
-    train = feats[
-        feats["completed"]
-        & ((feats["season"] < args.season)
-           | ((feats["season"] == args.season) & (feats["week"] < args.week)))
-    ]
-    fitted = model_mod.fit_margin_model(train)
-    target = target.copy()
-    target["pred_margin"] = fitted.predict(model_mod.design_matrix(target))
-    from scipy.stats import norm
-    target["home_win_prob"] = norm.cdf(target["pred_margin"] / cfg.margin_sigma)
     text = report.render_week(target, args.league, args.season, args.week)
     path = report.write_report(text, args.league, args.season, args.week)
     print(text)
     print(f"\nsaved: {path}")
 
 
+def cmd_site(args):
+    from . import site
+    out = site.build_site(refresh=not args.no_refresh)
+    print(f"site written to {out}")
+
+
 def main():
     p = argparse.ArgumentParser(prog="engine")
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    sp = sub.add_parser("site")
+    sp.add_argument("--no-refresh", action="store_true")
+    sp.set_defaults(fn=cmd_site)
 
     for name, fn in [("ingest", cmd_ingest), ("backtest", cmd_backtest), ("predict", cmd_predict)]:
         sp = sub.add_parser(name)

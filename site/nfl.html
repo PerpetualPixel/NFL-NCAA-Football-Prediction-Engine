@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFL picks — Gridiron Engine</title><style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --ink: #1a1d21; --muted: #6b7280;
+  --line: #e5e7eb; --accent: #1d4ed8; --good: #047857; --bad: #b91c1c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101317; --card: #1a1f26; --ink: #e7eaee; --muted: #9aa3af;
+    --line: #2a3138; --accent: #7aa2ff; --good: #34d399; --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+header.site { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+header.site h1 { font-size: 1.5rem; margin: 0; }
+header.site nav a { margin-right: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
+.stamp { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 14px;
+}
+.card .teams { font-size: 1.05rem; font-weight: 700; }
+.card .pick { margin: 6px 0 2px; }
+.card .pick strong { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.edge-pos { color: var(--good); font-weight: 600; }
+.edge-neg { color: var(--bad); font-weight: 600; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 420px; }
+table.units th, table.units td { text-align: right; padding: 3px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td:first-child { text-align: left; }
+.result-hit { color: var(--good); font-weight: 700; }
+.result-miss { color: var(--bad); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.leagues a.card { display: block; text-decoration: none; color: inherit; }
+footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
+</style></head>
+<body><div class="wrap">
+<header class="site"><h1>Gridiron Engine</h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a></nav></header>
+<div class="stamp">Updated 2026-08-31 04:50 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<h2>Upcoming picks &mdash; season 2026, week 1</h2>
+<div class="card">
+<div class="teams">NO @ DET</div>
+<div class="pick">Pick: <strong>DET by 8.9</strong> &middot; 75% win probability</div>
+<div class="meta">Power ratings: DET +3.6, NO -2.4</div>
+<div class="meta">Market: DET -7.0 &middot; <span class="meta">model +1.9 toward DET</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>DET</th><th>NO</th></tr>
+<tr><td>Pass offense</td><td>+0.158</td><td>-0.070</td></tr>
+<tr><td>Pass defense</td><td>+0.026</td><td>+0.031</td></tr>
+<tr><td>Rush offense</td><td>+0.007</td><td>-0.080</td></tr>
+<tr><td>Rush defense</td><td>+0.003</td><td>+0.024</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">CLE @ JAX</div>
+<div class="pick">Pick: <strong>JAX by 8.5</strong> &middot; 74% win probability</div>
+<div class="meta">Power ratings: JAX +2.4, CLE -3.9</div>
+<div class="meta">Market: JAX -7.5 &middot; <span class="meta">model +1.0 toward JAX</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>JAX</th><th>CLE</th></tr>
+<tr><td>Pass offense</td><td>+0.031</td><td>-0.271</td></tr>
+<tr><td>Pass defense</td><td>+0.050</td><td>+0.116</td></tr>
+<tr><td>Rush offense</td><td>-0.005</td><td>-0.031</td></tr>
+<tr><td>Rush defense</td><td>-0.020</td><td>+0.034</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">WAS @ PHI</div>
+<div class="pick">Pick: <strong>PHI by 7.9</strong> &middot; 73% win probability</div>
+<div class="meta">Power ratings: PHI +2.8, WAS -2.2</div>
+<div class="meta">Market: PHI -4.5 &middot; <span class="edge-pos">model +3.4 toward PHI</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>PHI</th><th>WAS</th></tr>
+<tr><td>Pass offense</td><td>+0.041</td><td>+0.025</td></tr>
+<tr><td>Pass defense</td><td>+0.125</td><td>-0.132</td></tr>
+<tr><td>Rush offense</td><td>+0.019</td><td>+0.047</td></tr>
+<tr><td>Rush defense</td><td>+0.044</td><td>-0.063</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">ARI @ LAC</div>
+<div class="pick">Pick: <strong>LAC by 6.5</strong> &middot; 69% win probability</div>
+<div class="meta">Power ratings: LAC +0.6, ARI -2.9</div>
+<div class="meta">Market: LAC -10.5 &middot; <span class="edge-pos">model -4.0 toward ARI</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>LAC</th><th>ARI</th></tr>
+<tr><td>Pass offense</td><td>-0.037</td><td>-0.001</td></tr>
+<tr><td>Pass defense</td><td>+0.053</td><td>-0.084</td></tr>
+<tr><td>Rush offense</td><td>+0.017</td><td>-0.006</td></tr>
+<tr><td>Rush defense</td><td>+0.035</td><td>-0.030</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">NE @ SEA</div>
+<div class="pick">Pick: <strong>SEA by 5.9</strong> &middot; 67% win probability</div>
+<div class="meta">Power ratings: SEA +6.0, NE +2.5</div>
+<div class="meta">Market: SEA -3.5 &middot; <span class="edge-pos">model +2.4 toward SEA</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>SEA</th><th>NE</th></tr>
+<tr><td>Pass offense</td><td>+0.080</td><td>+0.075</td></tr>
+<tr><td>Pass defense</td><td>+0.131</td><td>+0.053</td></tr>
+<tr><td>Rush offense</td><td>-0.025</td><td>+0.003</td></tr>
+<tr><td>Rush defense</td><td>+0.074</td><td>+0.027</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">ATL @ PIT</div>
+<div class="pick">Pick: <strong>PIT by 4.2</strong> &middot; 62% win probability</div>
+<div class="meta">Power ratings: PIT -0.2, ATL -1.8</div>
+<div class="meta">Market: PIT -3.0 &middot; <span class="meta">model +1.2 toward PIT</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>PIT</th><th>ATL</th></tr>
+<tr><td>Pass offense</td><td>-0.022</td><td>-0.033</td></tr>
+<tr><td>Pass defense</td><td>-0.027</td><td>+0.007</td></tr>
+<tr><td>Rush offense</td><td>+0.006</td><td>-0.019</td></tr>
+<tr><td>Rush defense</td><td>+0.010</td><td>-0.021</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">SF @ LA (neutral site)</div>
+<div class="pick">Pick: <strong>LA by 3.8</strong> &middot; 61% win probability</div>
+<div class="meta">Power ratings: LA +4.6, SF +1.4</div>
+<div class="meta">Market: LA -3.5 &middot; <span class="meta">model +0.3 toward LA</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>LA</th><th>SF</th></tr>
+<tr><td>Pass offense</td><td>+0.143</td><td>+0.115</td></tr>
+<tr><td>Pass defense</td><td>+0.038</td><td>-0.033</td></tr>
+<tr><td>Rush offense</td><td>+0.025</td><td>+0.010</td></tr>
+<tr><td>Rush defense</td><td>+0.009</td><td>-0.042</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">CHI @ CAR</div>
+<div class="pick">Pick: <strong>CHI by 3.1</strong> &middot; 59% win probability</div>
+<div class="meta">Power ratings: CAR -3.6, CHI +0.5</div>
+<div class="meta">Market: CAR +2.5 &middot; <span class="meta">model -0.6 toward CHI</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>CAR</th><th>CHI</th></tr>
+<tr><td>Pass offense</td><td>-0.109</td><td>+0.021</td></tr>
+<tr><td>Pass defense</td><td>-0.075</td><td>+0.005</td></tr>
+<tr><td>Rush offense</td><td>-0.013</td><td>+0.046</td></tr>
+<tr><td>Rush defense</td><td>-0.064</td><td>-0.004</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">MIA @ LV</div>
+<div class="pick">Pick: <strong>MIA by 2.5</strong> &middot; 57% win probability</div>
+<div class="meta">Power ratings: LV -5.6, MIA -2.0</div>
+<div class="meta">Market: LV -3.5 &middot; <span class="edge-pos">model -6.0 toward MIA</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>LV</th><th>MIA</th></tr>
+<tr><td>Pass offense</td><td>-0.141</td><td>-0.006</td></tr>
+<tr><td>Pass defense</td><td>-0.067</td><td>-0.087</td></tr>
+<tr><td>Rush offense</td><td>-0.192</td><td>-0.054</td></tr>
+<tr><td>Rush defense</td><td>+0.043</td><td>+0.003</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">NYJ @ TEN</div>
+<div class="pick">Pick: <strong>TEN by 2.3</strong> &middot; 57% win probability</div>
+<div class="meta">Power ratings: TEN -5.6, NYJ -5.8</div>
+<div class="meta">Market: TEN -3.0 &middot; <span class="meta">model -0.7 toward NYJ</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>TEN</th><th>NYJ</th></tr>
+<tr><td>Pass offense</td><td>-0.144</td><td>-0.149</td></tr>
+<tr><td>Pass defense</td><td>-0.109</td><td>-0.137</td></tr>
+<tr><td>Rush offense</td><td>-0.033</td><td>-0.057</td></tr>
+<tr><td>Rush defense</td><td>-0.033</td><td>-0.022</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">GB @ MIN</div>
+<div class="pick">Pick: <strong>MIN by 1.6</strong> &middot; 55% win probability</div>
+<div class="meta">Power ratings: MIN +1.2, GB +1.8</div>
+<div class="meta">Market: MIN -1.5 &middot; <span class="meta">model +0.1 toward MIN</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>MIN</th><th>GB</th></tr>
+<tr><td>Pass offense</td><td>-0.139</td><td>+0.168</td></tr>
+<tr><td>Pass defense</td><td>+0.170</td><td>-0.026</td></tr>
+<tr><td>Rush offense</td><td>-0.023</td><td>+0.009</td></tr>
+<tr><td>Rush defense</td><td>+0.075</td><td>+0.034</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">DEN @ KC</div>
+<div class="pick">Pick: <strong>KC by 1.4</strong> &middot; 54% win probability</div>
+<div class="meta">Power ratings: KC +1.2, DEN +2.2</div>
+<div class="meta">Market: KC -3.0 &middot; <span class="meta">model -1.6 toward DEN</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>KC</th><th>DEN</th></tr>
+<tr><td>Pass offense</td><td>+0.014</td><td>+0.010</td></tr>
+<tr><td>Pass defense</td><td>+0.020</td><td>+0.107</td></tr>
+<tr><td>Rush offense</td><td>+0.043</td><td>+0.004</td></tr>
+<tr><td>Rush defense</td><td>+0.022</td><td>+0.014</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">DAL @ NYG</div>
+<div class="pick">Pick: <strong>NYG by 1.2</strong> &middot; 53% win probability</div>
+<div class="meta">Power ratings: NYG -2.7, DAL -1.8</div>
+<div class="meta">Market: NYG +2.5 &middot; <span class="edge-pos">model +3.7 toward NYG</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>NYG</th><th>DAL</th></tr>
+<tr><td>Pass offense</td><td>-0.079</td><td>+0.068</td></tr>
+<tr><td>Pass defense</td><td>-0.012</td><td>-0.154</td></tr>
+<tr><td>Rush offense</td><td>+0.027</td><td>-0.021</td></tr>
+<tr><td>Rush defense</td><td>-0.134</td><td>-0.089</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">BAL @ IND</div>
+<div class="pick">Pick: <strong>BAL by 0.8</strong> &middot; 52% win probability</div>
+<div class="meta">Power ratings: IND +0.7, BAL +2.7</div>
+<div class="meta">Market: IND +3.5 &middot; <span class="edge-pos">model +2.7 toward IND</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>IND</th><th>BAL</th></tr>
+<tr><td>Pass offense</td><td>+0.021</td><td>+0.081</td></tr>
+<tr><td>Pass defense</td><td>-0.041</td><td>-0.026</td></tr>
+<tr><td>Rush offense</td><td>+0.063</td><td>+0.102</td></tr>
+<tr><td>Rush defense</td><td>+0.002</td><td>+0.063</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">BUF @ HOU</div>
+<div class="pick">Pick: <strong>HOU by 0.5</strong> &middot; 51% win probability</div>
+<div class="meta">Power ratings: HOU +3.3, BUF +4.3</div>
+<div class="meta">Market: HOU +1.5 &middot; <span class="meta">model +2.0 toward HOU</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>HOU</th><th>BUF</th></tr>
+<tr><td>Pass offense</td><td>-0.023</td><td>+0.144</td></tr>
+<tr><td>Pass defense</td><td>+0.178</td><td>+0.053</td></tr>
+<tr><td>Rush offense</td><td>-0.058</td><td>+0.121</td></tr>
+<tr><td>Rush defense</td><td>+0.065</td><td>-0.044</td></tr>
+</table>
+</div>
+<div class="card">
+<div class="teams">TB @ CIN</div>
+<div class="pick">Pick: <strong>TB by 0.3</strong> &middot; 51% win probability</div>
+<div class="meta">Power ratings: CIN -1.4, TB +0.1</div>
+<div class="meta">Market: CIN -3.5 &middot; <span class="edge-pos">model -3.8 toward TB</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>CIN</th><th>TB</th></tr>
+<tr><td>Pass offense</td><td>-0.009</td><td>+0.038</td></tr>
+<tr><td>Pass defense</td><td>-0.103</td><td>-0.048</td></tr>
+<tr><td>Rush offense</td><td>+0.043</td><td>+0.027</td></tr>
+<tr><td>Rush defense</td><td>-0.063</td><td>+0.050</td></tr>
+</table>
+</div>
+<h2>Last completed week graded &mdash; season 2025, week 22 (1/1 straight-up)</h2>
+<div class="card">
+<div class="teams">SEA @ NE (neutral site)</div>
+<div class="pick">Pick: <strong>SEA by 4.2</strong> &middot; 62% win probability</div>
+<div class="meta">Power ratings: NE +3.3, SEA +7.1</div>
+<div class="meta">Market: NE +4.5 &middot; <span class="meta">model +0.3 toward NE</span></div><div class="meta">Final: NE 13&ndash;29 &middot; <span class="result-hit">HIT</span></div><table class="units">
+<tr><th>EPA/play vs avg</th><th>NE</th><th>SEA</th></tr>
+<tr><td>Pass offense</td><td>+0.093</td><td>+0.086</td></tr>
+<tr><td>Pass defense</td><td>+0.055</td><td>+0.121</td></tr>
+<tr><td>Rush offense</td><td>-0.003</td><td>-0.025</td></tr>
+<tr><td>Rush defense</td><td>+0.028</td><td>+0.083</td></tr>
+</table>
+</div>
+<footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
+ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
+</div></body></html>
