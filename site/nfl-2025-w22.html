@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFL Super Bowl 2025 — Gridiron Engine</title><style>
+:root {
+  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
+  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
+  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
+    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+header.site {
+  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+}
+header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
+header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site nav a {
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
+  padding: 4px 10px; border-radius: 6px;
+}
+header.site nav a:hover { color: var(--accent); background: var(--sunken); }
+.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
+h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 14px;
+}
+.card .teams { font-size: 1.05rem; font-weight: 700; }
+.card .pick { margin: 6px 0 2px; }
+.card .pick strong { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.edge-pos { color: var(--good); font-weight: 600; }
+.edge-neg { color: var(--bad); font-weight: 600; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 480px; }
+table.units th, table.units td { text-align: center; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td.ulabel { text-align: left; }
+table.units th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.ulabel { color: var(--ink); }
+.gwrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.gletter { font-weight: 800; font-size: 0.98rem; }
+.grank { color: var(--muted); font-size: 0.74rem; }
+.gbar { height: 4px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.gbar i { display: block; height: 100%; border-radius: 3px; }
+.gnote { margin-top: 8px; font-size: 0.78rem; }
+/* one colour language across the whole site */
+.t-strong { color: var(--good); }
+.t-good { color: var(--good); opacity: 0.85; }
+.t-mid { color: var(--muted); }
+.t-poor { color: var(--warn); }
+.t-bad { color: var(--bad); }
+.gbar i.t-strong { background: var(--good); }
+.gbar i.t-good { background: var(--good); opacity: 0.7; }
+.gbar i.t-mid { background: var(--muted); }
+.gbar i.t-poor { background: var(--warn); }
+.gbar i.t-bad { background: var(--bad); }
+.bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
+.bet {
+  flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 11px;
+}
+.betlabel {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 700;
+}
+.betvalue { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+.betvalue .price { color: var(--muted); font-weight: 600; font-size: 0.88rem; }
+.betnote { font-size: 0.76rem; margin-top: 1px; }
+.outcome {
+  display: inline-block; margin-top: 5px; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.factor { margin-bottom: 11px; list-style: none; }
+ul.factors { padding-left: 0; }
+.fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fname { font-weight: 700; font-size: 0.88rem; }
+.fverdict {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ftext { font-size: 0.86rem; color: var(--ink); margin-top: 1px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
+.tilesub { font-size: 0.78rem; }
+.explain { font-size: 0.88rem; }
+table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
+table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+table.track td.num, table.track th.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.track a { color: var(--ink); text-decoration: none; }
+table.track a:hover { color: var(--accent); }
+.lgtag {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; padding: 1px 5px;
+  border-radius: 3px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px;
+}
+.result-hit { color: var(--good); font-weight: 700; }
+.result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
+.wknav {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 6px;
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+  white-space: nowrap;
+}
+.wknav-btn.disabled { color: var(--muted); opacity: 0.5; }
+.wksel { font-size: 0.85rem; color: var(--muted); }
+.wksel select {
+  font: inherit; font-size: 0.85rem; margin-left: 6px; padding: 4px 8px; max-width: 240px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.weekhead { color: var(--muted); font-size: 0.9rem; margin: -6px 0 10px; }
+.weekgrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;
+}
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.92rem; }
+.wt-detail { margin-top: 3px; }
+.wt-detail .good { color: var(--good); font-weight: 600; }
+.wt-detail .bad { color: var(--bad); font-weight: 600; }
+.wt-detail .upcoming { color: var(--accent); font-weight: 600; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.leagues a.card { display: block; text-decoration: none; color: inherit; }
+footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
+</style></head>
+<body><div class="wrap">
+<header class="site"><h1>Gridiron Engine</h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<a href="tracking.html">Tracking</a></nav></header>
+<div class="stamp">Updated 2026-08-31 05:39 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="wknav">
+<a class="wknav-btn" href="nfl-2025-w21.html">&larr; Conference Championships</a>
+<label class="wksel">Jump to:
+  <select id="weekpick"><option value="nfl-2025-w01.html">Week 1 — 12-4</option><option value="nfl-2025-w02.html">Week 2 — 12-4</option><option value="nfl-2025-w03.html">Week 3 — 11-5</option><option value="nfl-2025-w04.html">Week 4 — 9-6-1</option><option value="nfl-2025-w05.html">Week 5 — 4-10</option><option value="nfl-2025-w06.html">Week 6 — 8-7</option><option value="nfl-2025-w07.html">Week 7 — 10-5</option><option value="nfl-2025-w08.html">Week 8 — 10-3</option><option value="nfl-2025-w09.html">Week 9 — 9-5</option><option value="nfl-2025-w10.html">Week 10 — 11-3</option><option value="nfl-2025-w11.html">Week 11 — 9-6</option><option value="nfl-2025-w12.html">Week 12 — 10-4</option><option value="nfl-2025-w13.html">Week 13 — 10-6</option><option value="nfl-2025-w14.html">Week 14 — 8-6</option><option value="nfl-2025-w15.html">Week 15 — 12-4</option><option value="nfl-2025-w16.html">Week 16 — 7-9</option><option value="nfl-2025-w17.html">Week 17 — 5-11</option><option value="nfl-2025-w18.html">Week 18 — 11-5</option><option value="nfl-2025-w19.html">Wild Card Round — 5-1</option><option value="nfl-2025-w20.html">Divisional Round — 4-0</option><option value="nfl-2025-w21.html">Conference Championships — 1-1</option><option value="nfl-2025-w22.html" selected>Super Bowl — 1-0</option></select>
+</label>
+<span class="wknav-btn disabled">Next &rarr;</span>
+</div>
+<h2>Super Bowl &mdash; 2025</h2>
+<div class="weekhead">1-0 on the moneyline, 0-1 against the spread</div>
+<div class="controls">
+  <div class="ctl-group" role="group" aria-label="Filter games">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pickem">Pick'ems</button>
+    <button class="chip" data-filter="value">Value vs market</button>
+    <button class="chip" data-filter="upset">Upset picks</button>
+  </div>
+  <label class="ctl-sort">Sort:
+    <select id="sortby">
+      <option value="kick">Kickoff (chronological)</option>
+      <option value="prob">Win probability</option>
+      <option value="margin">Projected margin</option>
+      <option value="edge">Edge vs market</option>
+    </select>
+  </label>
+</div>
+<div class="emptynote" hidden>No games match this filter.</div>
+<div id="games">
+<div class="card game" data-kick="1770508800" data-prob="0.6249" data-margin="4.201" data-edge="0.299" data-tags="">
+<div class="cardhead"><div class="teams">Seattle Seahawks @ New England Patriots (neutral site)</div>
+<div class="kick">Sun, Feb 8 &middot; 6:30 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Seattle Seahawks <span class="price">-185</span></div>
+<div class="betnote meta">62% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Seattle Seahawks -4</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">New England Patriots +4.5</div><div class="betnote meta">0.3 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"></div>
+<div class="meta">Market line: New England Patriots -4.5 &middot; <span class="meta">model +0.3 toward New England Patriots</span></div><div class="meta">Final: New England Patriots 13&ndash;29 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for Seattle Seahawks, 3.7 points of separation before adjustments. Overall, New England Patriots is the 8th-rated team in the league (very good) and Seattle Seahawks is 1st (elite). Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>Seattle Seahawks by 4</strong> and gives them a 62% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Seattle Seahawks</strong> &mdash; a slight edge through the air. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Seattle Seahawks -4.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>New England Patriots:</strong> QB <strong>D.Maye</strong> has been carrying the offense, adding roughly +6.2 points a game over an average quarterback; the passing game runs through <strong>S.Diggs</strong> and <strong>H.Henry</strong>; lead back <strong>T.Henderson</strong> has held his own.</li><li><strong>Seattle Seahawks:</strong> QB <strong>S.Darnold</strong> has been playing well, adding roughly +5.1 points a game over an average quarterback; the passing game runs through <strong>J.Smith-Njigba</strong> and <strong>A.Barner</strong>; lead back <strong>Z.Charbonnet</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">New England Patriots running vs Seattle Seahawks run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">New England Patriots's running attack grades <strong>C+</strong> (18th of 32); Seattle Seahawks's run defense grades <strong>A+</strong> (1st of 32). That is a slight edge for <strong>Seattle Seahawks</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Seattle Seahawks running vs New England Patriots run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Seattle Seahawks's running attack grades <strong>C-</strong> (24th of 32); New England Patriots's run defense grades <strong>B+</strong> (11th of 32). That is a slight edge for <strong>New England Patriots</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Seattle Seahawks passing vs New England Patriots pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Seattle Seahawks's passing attack grades <strong>A-</strong> (7th of 32); New England Patriots's pass defense grades <strong>B+</strong> (9th of 32). That is essentially even for <strong>Seattle Seahawks</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New England Patriots passing vs Seattle Seahawks pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">New England Patriots's passing attack grades <strong>A-</strong> (6th of 32); Seattle Seahawks's pass defense grades <strong>A</strong> (5th of 32). That is essentially even for <strong>Seattle Seahawks</strong>.</div></li></ul>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>New England Patriots</th><th>Seattle Seahawks</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">6th</span></div><div class="gbar"><i class="t-strong" style="width:84%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">7th</span></div><div class="gbar"><i class="t-strong" style="width:81%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">9th</span></div><div class="gbar"><i class="t-good" style="width:74%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">5th</span></div><div class="gbar"><i class="t-strong" style="width:87%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">18th</span></div><div class="gbar"><i class="t-mid" style="width:45%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">24th</span></div><div class="gbar"><i class="t-poor" style="width:26%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">11th</span></div><div class="gbar"><i class="t-good" style="width:68%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">1st</span></div><div class="gbar"><i class="t-strong" style="width:100%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+</div>
+<script>
+(function () {
+  var list = document.getElementById('games');
+  if (!list) return;
+  var note = document.querySelector('.emptynote');
+  var filter = 'all';
+
+  function apply() {
+    var key = document.getElementById('sortby').value;
+    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
+    cards.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
+    });
+    cards.forEach(function (c) {
+      list.appendChild(c);
+      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
+      c.hidden = !show;
+    });
+    var visible = cards.filter(function (c) { return !c.hidden; }).length;
+    if (note) note.hidden = visible !== 0;
+  }
+
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      apply();
+    });
+  });
+  document.getElementById('sortby').addEventListener('change', apply);
+  apply();
+
+  var wk = document.getElementById('weekpick');
+  if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+})();
+</script>
+<footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
+ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
+</div></body></html>

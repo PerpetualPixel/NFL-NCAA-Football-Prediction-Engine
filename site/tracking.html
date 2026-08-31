@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracking — Gridiron Engine</title><style>
+:root {
+  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
+  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
+  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
+    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+header.site {
+  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+}
+header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
+header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site nav a {
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
+  padding: 4px 10px; border-radius: 6px;
+}
+header.site nav a:hover { color: var(--accent); background: var(--sunken); }
+.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
+h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 14px;
+}
+.card .teams { font-size: 1.05rem; font-weight: 700; }
+.card .pick { margin: 6px 0 2px; }
+.card .pick strong { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.edge-pos { color: var(--good); font-weight: 600; }
+.edge-neg { color: var(--bad); font-weight: 600; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 480px; }
+table.units th, table.units td { text-align: center; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td.ulabel { text-align: left; }
+table.units th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.ulabel { color: var(--ink); }
+.gwrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.gletter { font-weight: 800; font-size: 0.98rem; }
+.grank { color: var(--muted); font-size: 0.74rem; }
+.gbar { height: 4px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.gbar i { display: block; height: 100%; border-radius: 3px; }
+.gnote { margin-top: 8px; font-size: 0.78rem; }
+/* one colour language across the whole site */
+.t-strong { color: var(--good); }
+.t-good { color: var(--good); opacity: 0.85; }
+.t-mid { color: var(--muted); }
+.t-poor { color: var(--warn); }
+.t-bad { color: var(--bad); }
+.gbar i.t-strong { background: var(--good); }
+.gbar i.t-good { background: var(--good); opacity: 0.7; }
+.gbar i.t-mid { background: var(--muted); }
+.gbar i.t-poor { background: var(--warn); }
+.gbar i.t-bad { background: var(--bad); }
+.bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
+.bet {
+  flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 11px;
+}
+.betlabel {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 700;
+}
+.betvalue { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+.betvalue .price { color: var(--muted); font-weight: 600; font-size: 0.88rem; }
+.betnote { font-size: 0.76rem; margin-top: 1px; }
+.outcome {
+  display: inline-block; margin-top: 5px; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.factor { margin-bottom: 11px; list-style: none; }
+ul.factors { padding-left: 0; }
+.fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fname { font-weight: 700; font-size: 0.88rem; }
+.fverdict {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ftext { font-size: 0.86rem; color: var(--ink); margin-top: 1px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
+.tilesub { font-size: 0.78rem; }
+.explain { font-size: 0.88rem; }
+table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
+table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+table.track td.num, table.track th.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.track a { color: var(--ink); text-decoration: none; }
+table.track a:hover { color: var(--accent); }
+.lgtag {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; padding: 1px 5px;
+  border-radius: 3px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px;
+}
+.result-hit { color: var(--good); font-weight: 700; }
+.result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
+.wknav {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 6px;
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+  white-space: nowrap;
+}
+.wknav-btn.disabled { color: var(--muted); opacity: 0.5; }
+.wksel { font-size: 0.85rem; color: var(--muted); }
+.wksel select {
+  font: inherit; font-size: 0.85rem; margin-left: 6px; padding: 4px 8px; max-width: 240px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.weekhead { color: var(--muted); font-size: 0.9rem; margin: -6px 0 10px; }
+.weekgrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;
+}
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.92rem; }
+.wt-detail { margin-top: 3px; }
+.wt-detail .good { color: var(--good); font-weight: 600; }
+.wt-detail .bad { color: var(--bad); font-weight: 600; }
+.wt-detail .upcoming { color: var(--accent); font-weight: 600; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.leagues a.card { display: block; text-decoration: none; color: inherit; }
+footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
+</style></head>
+<body><div class="wrap">
+<header class="site"><h1>Gridiron Engine</h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<a href="tracking.html">Tracking</a></nav></header>
+<div class="stamp">Updated 2026-08-31 05:40 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<h2>Tracking &mdash; how the picks are doing</h2>
+<div class="tiles"><div class="tile"><div class="tiletitle">NFL moneyline &middot; 2026</div><div class="tilebig t-mid">—</div><div class="tilesub meta">no graded picks yet</div></div><div class="tile"><div class="tiletitle">NFL spread &middot; 2026</div><div class="tilebig t-mid">—</div><div class="tilesub meta">no graded picks yet</div></div><div class="tile"><div class="tiletitle">NFL moneyline &middot; 2025</div><div class="tilebig t-strong">179-105</div><div class="tilesub meta">63% of picks won &middot; -19.9 units (-7.0% ROI)</div></div><div class="tile"><div class="tiletitle">NFL spread &middot; 2025</div><div class="tilebig t-bad">131-153</div><div class="tilesub meta">46% of picks covered &middot; -34.1 units (-12.0% ROI)</div></div><div class="tile"><div class="tiletitle">NCAA moneyline &middot; 2026</div><div class="tilebig t-good">2-2</div><div class="tilesub meta">50% of picks won &middot; -0.2 units (-4.5% ROI)</div></div><div class="tile"><div class="tiletitle">NCAA spread &middot; 2026</div><div class="tilebig t-mid">—</div><div class="tilesub meta">no graded picks yet</div></div><div class="tile"><div class="tiletitle">NCAA moneyline &middot; 2025</div><div class="tilebig t-strong">558-243</div><div class="tilesub meta">70% of picks won &middot; +2.5 units (+0.3% ROI)</div></div><div class="tile"><div class="tiletitle">NCAA spread &middot; 2025</div><div class="tilebig t-mid">397-388</div><div class="tilesub meta">51% of picks covered &middot; -27.1 units (-3.5% ROI)</div></div></div>
+<div class="card explain"><strong>How to read this.</strong>
+<span class="meta">Every game gets two separate picks: a <em>moneyline</em> pick (who wins the
+game outright) and a <em>spread</em> pick (which side beats the betting line). They often
+disagree, so they are tracked separately. "Units" is profit from betting one unit on every
+pick at the prices the sportsbook actually posted &mdash; positive means the picks made
+money, negative means they lost. Spread picks need about 52.4% to break even;
+<span class="t-strong">green</span> is beating that, <span class="t-bad">red</span> is
+losing money.</span></div>
+<div class="controls">
+  <div class="ctl-group">
+    <button class="chip active" data-lgfilter="all">Both leagues</button>
+    <button class="chip" data-lgfilter="nfl">NFL</button>
+    <button class="chip" data-lgfilter="ncaa">NCAA</button>
+  </div>
+  <label class="ctl-sort">Sort:
+    <select id="tracksort">
+      <option value="week">By week</option>
+      <option value="mlrate">Best moneyline record</option>
+      <option value="atrate">Best spread record</option>
+      <option value="mlprofit">Most moneyline profit</option>
+      <option value="atprofit">Most spread profit</option>
+    </select>
+  </label>
+</div>
+<table class="track" id="tracktable">
+<thead><tr><th>Week</th><th class="num">Moneyline</th><th class="num">ML units</th>
+<th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
+<tbody><tr class="trow" data-league="nfl" data-week="202501" data-mlrate="0.7500" data-atrate="0.5625" data-mlprofit="3.072" data-atprofit="1.541"><td><span class="lgtag">NFL</span><a href="nfl-2025-w01.html">Week 1</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">12-4</span></td><td class="num t-strong">+3.1u</td><td class="num"><span class="t-strong">9-7</span></td><td class="num t-strong">+1.5u</td></tr><tr class="trow" data-league="nfl" data-week="202502" data-mlrate="0.7500" data-atrate="0.5625" data-mlprofit="2.098" data-atprofit="1.201"><td><span class="lgtag">NFL</span><a href="nfl-2025-w02.html">Week 2</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">12-4</span></td><td class="num t-strong">+2.1u</td><td class="num"><span class="t-strong">9-7</span></td><td class="num t-strong">+1.2u</td></tr><tr class="trow" data-league="nfl" data-week="202503" data-mlrate="0.6875" data-atrate="0.3125" data-mlprofit="0.848" data-atprofit="-6.499"><td><span class="lgtag">NFL</span><a href="nfl-2025-w03.html">Week 3</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">11-5</span></td><td class="num t-strong">+0.8u</td><td class="num"><span class="t-bad">5-11</span></td><td class="num t-bad">-6.5u</td></tr><tr class="trow" data-league="nfl" data-week="202504" data-mlrate="0.6000" data-atrate="0.4375" data-mlprofit="-2.120" data-atprofit="-2.711"><td><span class="lgtag">NFL</span><a href="nfl-2025-w04.html">Week 4</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">9-6</span></td><td class="num t-bad">-2.1u</td><td class="num"><span class="t-bad">7-9</span></td><td class="num t-bad">-2.7u</td></tr><tr class="trow" data-league="nfl" data-week="202505" data-mlrate="0.2857" data-atrate="0.5714" data-mlprofit="-8.210" data-atprofit="1.216"><td><span class="lgtag">NFL</span><a href="nfl-2025-w05.html">Week 5</a> <span class="meta">2025</span></td><td class="num"><span class="t-bad">4-10</span></td><td class="num t-bad">-8.2u</td><td class="num"><span class="t-strong">8-6</span></td><td class="num t-strong">+1.2u</td></tr><tr class="trow" data-league="nfl" data-week="202506" data-mlrate="0.5333" data-atrate="0.4000" data-mlprofit="-3.656" data-atprofit="-3.546"><td><span class="lgtag">NFL</span><a href="nfl-2025-w06.html">Week 6</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">8-7</span></td><td class="num t-bad">-3.7u</td><td class="num"><span class="t-bad">6-9</span></td><td class="num t-bad">-3.5u</td></tr><tr class="trow" data-league="nfl" data-week="202507" data-mlrate="0.6667" data-atrate="0.3333" data-mlprofit="-0.507" data-atprofit="-5.326"><td><span class="lgtag">NFL</span><a href="nfl-2025-w07.html">Week 7</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">10-5</span></td><td class="num t-mid">-0.5u</td><td class="num"><span class="t-bad">5-10</span></td><td class="num t-bad">-5.3u</td></tr><tr class="trow" data-league="nfl" data-week="202508" data-mlrate="0.7692" data-atrate="0.6154" data-mlprofit="0.928" data-atprofit="2.022"><td><span class="lgtag">NFL</span><a href="nfl-2025-w08.html">Week 8</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">10-3</span></td><td class="num t-strong">+0.9u</td><td class="num"><span class="t-strong">8-5</span></td><td class="num t-strong">+2.0u</td></tr><tr class="trow" data-league="nfl" data-week="202509" data-mlrate="0.6429" data-atrate="0.5714" data-mlprofit="0.568" data-atprofit="1.019"><td><span class="lgtag">NFL</span><a href="nfl-2025-w09.html">Week 9</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">9-5</span></td><td class="num t-good">+0.6u</td><td class="num"><span class="t-strong">8-6</span></td><td class="num t-strong">+1.0u</td></tr><tr class="trow" data-league="nfl" data-week="202510" data-mlrate="0.7857" data-atrate="0.4286" data-mlprofit="2.896" data-atprofit="-2.652"><td><span class="lgtag">NFL</span><a href="nfl-2025-w10.html">Week 10</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">11-3</span></td><td class="num t-strong">+2.9u</td><td class="num"><span class="t-bad">6-8</span></td><td class="num t-bad">-2.7u</td></tr><tr class="trow" data-league="nfl" data-week="202511" data-mlrate="0.6000" data-atrate="0.3333" data-mlprofit="-2.560" data-atprofit="-5.352"><td><span class="lgtag">NFL</span><a href="nfl-2025-w11.html">Week 11</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">9-6</span></td><td class="num t-bad">-2.6u</td><td class="num"><span class="t-bad">5-10</span></td><td class="num t-bad">-5.4u</td></tr><tr class="trow" data-league="nfl" data-week="202512" data-mlrate="0.7143" data-atrate="0.5385" data-mlprofit="-0.123" data-atprofit="0.552"><td><span class="lgtag">NFL</span><a href="nfl-2025-w12.html">Week 12</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">10-4</span></td><td class="num t-mid">-0.1u</td><td class="num"><span class="t-good">7-6</span></td><td class="num t-good">+0.6u</td></tr><tr class="trow" data-league="nfl" data-week="202513" data-mlrate="0.6250" data-atrate="0.4375" data-mlprofit="-1.455" data-atprofit="-2.652"><td><span class="lgtag">NFL</span><a href="nfl-2025-w13.html">Week 13</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">10-6</span></td><td class="num t-bad">-1.5u</td><td class="num"><span class="t-bad">7-9</span></td><td class="num t-bad">-2.7u</td></tr><tr class="trow" data-league="nfl" data-week="202514" data-mlrate="0.5714" data-atrate="0.2857" data-mlprofit="-2.478" data-atprofit="-6.448"><td><span class="lgtag">NFL</span><a href="nfl-2025-w14.html">Week 14</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">8-6</span></td><td class="num t-bad">-2.5u</td><td class="num"><span class="t-bad">4-10</span></td><td class="num t-bad">-6.4u</td></tr><tr class="trow" data-league="nfl" data-week="202515" data-mlrate="0.7500" data-atrate="0.5625" data-mlprofit="1.394" data-atprofit="1.182"><td><span class="lgtag">NFL</span><a href="nfl-2025-w15.html">Week 15</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">12-4</span></td><td class="num t-strong">+1.4u</td><td class="num"><span class="t-strong">9-7</span></td><td class="num t-strong">+1.2u</td></tr><tr class="trow" data-league="nfl" data-week="202516" data-mlrate="0.4375" data-atrate="0.2500" data-mlprofit="-5.650" data-atprofit="-8.465"><td><span class="lgtag">NFL</span><a href="nfl-2025-w16.html">Week 16</a> <span class="meta">2025</span></td><td class="num"><span class="t-bad">7-9</span></td><td class="num t-bad">-5.6u</td><td class="num"><span class="t-bad">4-12</span></td><td class="num t-bad">-8.5u</td></tr><tr class="trow" data-league="nfl" data-week="202517" data-mlrate="0.3125" data-atrate="0.5625" data-mlprofit="-8.956" data-atprofit="1.224"><td><span class="lgtag">NFL</span><a href="nfl-2025-w17.html">Week 17</a> <span class="meta">2025</span></td><td class="num"><span class="t-bad">5-11</span></td><td class="num t-bad">-9.0u</td><td class="num"><span class="t-strong">9-7</span></td><td class="num t-strong">+1.2u</td></tr><tr class="trow" data-league="nfl" data-week="202518" data-mlrate="0.6875" data-atrate="0.4375" data-mlprofit="-0.856" data-atprofit="-2.672"><td><span class="lgtag">NFL</span><a href="nfl-2025-w18.html">Week 18</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">11-5</span></td><td class="num t-bad">-0.9u</td><td class="num"><span class="t-bad">7-9</span></td><td class="num t-bad">-2.7u</td></tr><tr class="trow" data-league="nfl" data-week="202519" data-mlrate="0.8333" data-atrate="0.6667" data-mlprofit="2.492" data-atprofit="1.564"><td><span class="lgtag">NFL</span><a href="nfl-2025-w19.html">Wild Card Round</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">5-1</span></td><td class="num t-strong">+2.5u</td><td class="num"><span class="t-strong">4-2</span></td><td class="num t-strong">+1.6u</td></tr><tr class="trow" data-league="nfl" data-week="202520" data-mlrate="1.0000" data-atrate="0.5000" data-mlprofit="2.205" data-atprofit="-0.172"><td><span class="lgtag">NFL</span><a href="nfl-2025-w20.html">Divisional Round</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">4-0</span></td><td class="num t-strong">+2.2u</td><td class="num"><span class="t-mid">2-2</span></td><td class="num t-mid">-0.2u</td></tr><tr class="trow" data-league="nfl" data-week="202521" data-mlrate="0.5000" data-atrate="1.0000" data-mlprofit="-0.296" data-atprofit="1.905"><td><span class="lgtag">NFL</span><a href="nfl-2025-w21.html">Conference Championships</a> <span class="meta">2025</span></td><td class="num"><span class="t-good">1-1</span></td><td class="num t-bad">-0.3u</td><td class="num"><span class="t-strong">2-0</span></td><td class="num t-strong">+1.9u</td></tr><tr class="trow" data-league="nfl" data-week="202522" data-mlrate="1.0000" data-atrate="0.0000" data-mlprofit="0.420" data-atprofit="-1.000"><td><span class="lgtag">NFL</span><a href="nfl-2025-w22.html">Super Bowl</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">1-0</span></td><td class="num t-strong">+0.4u</td><td class="num"><span class="t-bad">0-1</span></td><td class="num t-bad">-1.0u</td></tr><tr class="trow" data-league="ncaa" data-week="202601" data-mlrate="0.5000" data-atrate="0.0000" data-mlprofit="-0.182" data-atprofit="0.000"><td><span class="lgtag">NCAA</span><a href="ncaa-w01.html">Week 1</a> <span class="meta">2026</span></td><td class="num"><span class="t-good">2-2</span></td><td class="num t-mid">-0.2u</td><td class="num meta">&mdash;</td><td class="num meta">&mdash;</td></tr><tr class="trow" data-league="ncaa" data-week="202501" data-mlrate="0.6829" data-atrate="0.5854" data-mlprofit="-4.559" data-atprofit="4.818"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w01.html">Week 1</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">28-13</span></td><td class="num t-bad">-4.6u</td><td class="num"><span class="t-strong">24-17</span></td><td class="num t-strong">+4.8u</td></tr><tr class="trow" data-league="ncaa" data-week="202502" data-mlrate="0.7600" data-atrate="0.5208" data-mlprofit="7.650" data-atprofit="-0.273"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w02.html">Week 2</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">38-12</span></td><td class="num t-strong">+7.7u</td><td class="num"><span class="t-mid">25-23</span></td><td class="num t-mid">-0.3u</td></tr><tr class="trow" data-league="ncaa" data-week="202503" data-mlrate="0.6596" data-atrate="0.5957" data-mlprofit="-7.281" data-atprofit="6.455"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w03.html">Week 3</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">31-16</span></td><td class="num t-bad">-7.3u</td><td class="num"><span class="t-strong">28-19</span></td><td class="num t-strong">+6.5u</td></tr><tr class="trow" data-league="ncaa" data-week="202504" data-mlrate="0.6800" data-atrate="0.4694" data-mlprofit="1.073" data-atprofit="-5.091"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w04.html">Week 4</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">34-16</span></td><td class="num t-good">+1.1u</td><td class="num"><span class="t-bad">23-26</span></td><td class="num t-bad">-5.1u</td></tr><tr class="trow" data-league="ncaa" data-week="202505" data-mlrate="0.7059" data-atrate="0.5510" data-mlprofit="-1.560" data-atprofit="2.545"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w05.html">Week 5</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">36-15</span></td><td class="num t-mid">-1.6u</td><td class="num"><span class="t-good">27-22</span></td><td class="num t-strong">+2.5u</td></tr><tr class="trow" data-league="ncaa" data-week="202506" data-mlrate="0.7600" data-atrate="0.4898" data-mlprofit="0.939" data-atprofit="-3.182"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w06.html">Week 6</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">38-12</span></td><td class="num t-good">+0.9u</td><td class="num"><span class="t-mid">24-25</span></td><td class="num t-bad">-3.2u</td></tr><tr class="trow" data-league="ncaa" data-week="202507" data-mlrate="0.7143" data-atrate="0.5094" data-mlprofit="1.493" data-atprofit="-1.455"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w07.html">Week 7</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">40-16</span></td><td class="num t-good">+1.5u</td><td class="num"><span class="t-mid">27-26</span></td><td class="num t-mid">-1.5u</td></tr><tr class="trow" data-league="ncaa" data-week="202508" data-mlrate="0.6949" data-atrate="0.5085" data-mlprofit="-0.622" data-atprofit="-1.727"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w08.html">Week 8</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">41-18</span></td><td class="num t-mid">-0.6u</td><td class="num"><span class="t-mid">30-29</span></td><td class="num t-mid">-1.7u</td></tr><tr class="trow" data-league="ncaa" data-week="202509" data-mlrate="0.6792" data-atrate="0.5490" data-mlprofit="-1.754" data-atprofit="2.455"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w09.html">Week 9</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">36-17</span></td><td class="num t-mid">-1.8u</td><td class="num"><span class="t-good">28-23</span></td><td class="num t-good">+2.5u</td></tr><tr class="trow" data-league="ncaa" data-week="202510" data-mlrate="0.5962" data-atrate="0.3269" data-mlprofit="-11.395" data-atprofit="-19.545"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w10.html">Week 10</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">31-21</span></td><td class="num t-bad">-11.4u</td><td class="num"><span class="t-bad">17-35</span></td><td class="num t-bad">-19.5u</td></tr><tr class="trow" data-league="ncaa" data-week="202511" data-mlrate="0.6667" data-atrate="0.5882" data-mlprofit="-1.944" data-atprofit="6.273"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w11.html">Week 11</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">34-17</span></td><td class="num t-mid">-1.9u</td><td class="num"><span class="t-strong">30-21</span></td><td class="num t-strong">+6.3u</td></tr><tr class="trow" data-league="ncaa" data-week="202512" data-mlrate="0.7586" data-atrate="0.5172" data-mlprofit="0.719" data-atprofit="-0.727"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w12.html">Week 12</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">44-14</span></td><td class="num t-good">+0.7u</td><td class="num"><span class="t-mid">30-28</span></td><td class="num t-mid">-0.7u</td></tr><tr class="trow" data-league="ncaa" data-week="202513" data-mlrate="0.7500" data-atrate="0.5085" data-mlprofit="0.988" data-atprofit="-1.727"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w13.html">Week 13</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">45-15</span></td><td class="num t-good">+1.0u</td><td class="num"><span class="t-mid">30-29</span></td><td class="num t-mid">-1.7u</td></tr><tr class="trow" data-league="ncaa" data-week="202514" data-mlrate="0.7612" data-atrate="0.4444" data-mlprofit="3.043" data-atprofit="-9.545"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w14.html">Week 14</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">51-16</span></td><td class="num t-good">+3.0u</td><td class="num"><span class="t-bad">28-35</span></td><td class="num t-bad">-9.5u</td></tr><tr class="trow" data-league="ncaa" data-week="202515" data-mlrate="0.4444" data-atrate="0.4444" data-mlprofit="-3.135" data-atprofit="-1.364"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w15.html">Week 15</a> <span class="meta">2025</span></td><td class="num"><span class="t-bad">4-5</span></td><td class="num t-bad">-3.1u</td><td class="num"><span class="t-bad">4-5</span></td><td class="num t-bad">-1.4u</td></tr><tr class="trow" data-league="ncaa" data-week="202516" data-mlrate="1.0000" data-atrate="1.0000" data-mlprofit="0.500" data-atprofit="0.909"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w16.html">Week 16</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">1-0</span></td><td class="num t-strong">+0.5u</td><td class="num"><span class="t-strong">1-0</span></td><td class="num t-strong">+0.9u</td></tr><tr class="trow" data-league="ncaa" data-week="202517" data-mlrate="0.5652" data-atrate="0.4565" data-mlprofit="18.345" data-atprofit="-5.909"><td><span class="lgtag">NCAA</span><a href="ncaa-2025-w17.html">Bowls &amp; Playoff</a> <span class="meta">2025</span></td><td class="num"><span class="t-strong">26-20</span></td><td class="num t-strong">+18.3u</td><td class="num"><span class="t-bad">21-25</span></td><td class="num t-bad">-5.9u</td></tr></tbody></table>
+<script>
+(function () {
+  var tbody = document.querySelector('#tracktable tbody');
+  if (!tbody) return;
+  var lg = 'all';
+  function apply() {
+    var key = document.getElementById('tracksort').value;
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('.trow'));
+    rows.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'week' ? av - bv : bv - av;
+    });
+    rows.forEach(function (r) {
+      tbody.appendChild(r);
+      r.hidden = !(lg === 'all' || r.dataset.league === lg);
+    });
+  }
+  document.querySelectorAll('[data-lgfilter]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('[data-lgfilter]').forEach(function (b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      lg = btn.dataset.lgfilter;
+      apply();
+    });
+  });
+  document.getElementById('tracksort').addEventListener('change', apply);
+  apply();
+})();
+</script>
+<footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
+ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
+</div></body></html>
