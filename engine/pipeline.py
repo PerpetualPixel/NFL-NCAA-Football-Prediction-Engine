@@ -16,6 +16,20 @@ from .features.ratings import recency_weights, solve_ratings
 FCS_BUCKET = "NON-FBS"
 
 
+def load_league_inputs(league: str, refresh: bool = False, recent_only: bool = False):
+    """Games table plus (NFL) unit stats; recent_only trims the play-by-play
+    download to the rating window for fast CI site builds."""
+    games = load_games(league, refresh=refresh)
+    unit_stats = None
+    if league == "nfl":
+        seasons = sorted(games.loc[games["completed"], "season"].unique().tolist())
+        if recent_only:
+            seasons = seasons[-(LEAGUES[league].rating_window_seasons + 1):]
+        pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
+        unit_stats = nfl_unit_game_stats(pbp)
+    return games, unit_stats
+
+
 # ---------------------------------------------------------------------------
 # Normalized game tables
 # ---------------------------------------------------------------------------
@@ -43,7 +57,8 @@ def load_games(league: str, refresh: bool = False) -> pd.DataFrame:
         ]
         return df[keep].sort_values(["season", "week", "gameday"]).reset_index(drop=True)
 
-    seasons = list(range(cfg.first_season, 2026))
+    import datetime as _dt
+    seasons = list(range(cfg.first_season, _dt.date.today().year + 1))
     df = ingest.load_ncaa_schedules(seasons, refresh_latest=refresh)
     # Collapse every non-FBS opponent into one bucket team so FCS blowouts
     # inform the fit without adding hundreds of one-game columns; drop games

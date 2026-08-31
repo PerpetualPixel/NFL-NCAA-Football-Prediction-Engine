@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NCAA picks — Gridiron Engine</title><style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --ink: #1a1d21; --muted: #6b7280;
+  --line: #e5e7eb; --accent: #1d4ed8; --good: #047857; --bad: #b91c1c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101317; --card: #1a1f26; --ink: #e7eaee; --muted: #9aa3af;
+    --line: #2a3138; --accent: #7aa2ff; --good: #34d399; --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+header.site { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+header.site h1 { font-size: 1.5rem; margin: 0; }
+header.site nav a { margin-right: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
+.stamp { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 14px;
+}
+.card .teams { font-size: 1.05rem; font-weight: 700; }
+.card .pick { margin: 6px 0 2px; }
+.card .pick strong { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.edge-pos { color: var(--good); font-weight: 600; }
+.edge-neg { color: var(--bad); font-weight: 600; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 420px; }
+table.units th, table.units td { text-align: right; padding: 3px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td:first-child { text-align: left; }
+.result-hit { color: var(--good); font-weight: 700; }
+.result-miss { color: var(--bad); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.leagues a.card { display: block; text-decoration: none; color: inherit; }
+footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
+</style></head>
+<body><div class="wrap">
+<header class="site"><h1>Gridiron Engine</h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a></nav></header>
+<div class="stamp">Updated 2026-08-31 04:50 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<h2>Upcoming picks</h2><div class="card"><div class="meta">No upcoming games in the schedule mirror yet &mdash; picks appear here automatically once next week's slate is published.</div></div>
+<h2>Last completed week graded &mdash; season 2026, week 1 (2/5 straight-up)</h2>
+<div class="card">
+<div class="teams">Jacksonville State @ NON-FBS</div>
+<div class="pick">Pick: <strong>Jacksonville State by 32.3</strong> &middot; 97% win probability</div>
+<div class="meta">Power ratings: NON-FBS -25.4, Jacksonville State +0.6</div>
+<div class="meta">Final: NON-FBS 33&ndash;7 &middot; <span class="result-miss">MISS</span></div>
+</div>
+<div class="card">
+<div class="teams">San José State @ USC</div>
+<div class="pick">Pick: <strong>USC by 18.9</strong> &middot; 87% win probability</div>
+<div class="meta">Power ratings: USC +6.2, San José State -5.0</div>
+<div class="meta">Final: USC 42&ndash;26 &middot; <span class="result-hit">HIT</span></div>
+</div>
+<div class="card">
+<div class="teams">North Carolina @ TCU (neutral site)</div>
+<div class="pick">Pick: <strong>TCU by 6.3</strong> &middot; 65% win probability</div>
+<div class="meta">Power ratings: TCU +2.7, North Carolina -1.9</div>
+<div class="meta">Final: TCU 10&ndash;15 &middot; <span class="result-miss">MISS</span></div>
+</div>
+<div class="card">
+<div class="teams">NC State @ Virginia</div>
+<div class="pick">Pick: <strong>Virginia by 4.4</strong> &middot; 61% win probability</div>
+<div class="meta">Power ratings: Virginia +1.7, NC State +1.0</div>
+<div class="meta">Final: Virginia 34&ndash;8 &middot; <span class="result-hit">HIT</span></div>
+</div>
+<div class="card">
+<div class="teams">Memphis @ UNLV</div>
+<div class="pick">Pick: <strong>UNLV by 2.5</strong> &middot; 56% win probability</div>
+<div class="meta">Power ratings: UNLV +2.9, Memphis +3.6</div>
+<div class="meta">Final: UNLV 21&ndash;27 &middot; <span class="result-miss">MISS</span></div>
+</div>
+<footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
+ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
+</div></body></html>

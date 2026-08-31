@@ -50,6 +50,23 @@ def walk_forward_predict(feats: pd.DataFrame, cfg: LeagueConfig) -> pd.DataFrame
     return out
 
 
+def predict_week(feats: pd.DataFrame, cfg: LeagueConfig, season: int, week: int) -> pd.DataFrame:
+    """Fit on everything before (season, week) and predict that week's games."""
+    target = feats[(feats["season"] == season) & (feats["week"] == week)]
+    train = feats[
+        feats["completed"]
+        & ((feats["season"] < season)
+           | ((feats["season"] == season) & (feats["week"] < week)))
+    ]
+    if target.empty or len(train) < MIN_TRAIN_ROWS:
+        return target.iloc[0:0]
+    fitted = fit_margin_model(train)
+    out = target.copy()
+    out["pred_margin"] = fitted.predict(design_matrix(out))
+    out["home_win_prob"] = norm.cdf(out["pred_margin"] / cfg.margin_sigma)
+    return out
+
+
 def evaluate(preds: pd.DataFrame) -> dict:
     err = preds["pred_margin"] - preds["margin"]
     home_won = (preds["margin"] > 0).astype(float)
