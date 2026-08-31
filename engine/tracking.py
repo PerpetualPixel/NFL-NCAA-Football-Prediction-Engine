@@ -15,6 +15,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from . import odds
+
 FLAT_STAKE = 1.0
 DEFAULT_ODDS = -110.0
 
@@ -74,7 +76,40 @@ def grade(preds: pd.DataFrame) -> pd.DataFrame:
         (american_profit(p) if r == "win" else -FLAT_STAKE)
         for r, p in zip(df["ats_result"], df["ats_price"])
     ]
+
+    # pick categories (lock / pickem / value / upset) travel with the graded
+    # frame so the same buckets shown on a game card can be scored later
+    edges = df["pred_margin"] - df["spread_line"]
+    df["tags"] = [
+        odds.classify(p, e if pd.notna(e) else None)
+        for p, e in zip(df["home_win_prob"], edges)
+    ]
     return df
+
+
+CATEGORY_LABELS = {
+    "lock": "Locks",
+    "value": "Value vs market",
+    "pickem": "Pick'ems",
+    "upset": "Upset picks",
+}
+
+
+def category_records(graded: pd.DataFrame) -> list[dict]:
+    """Record and ROI for each pick category, moneyline and spread separately."""
+    if graded.empty or "tags" not in graded.columns:
+        return []
+    out = []
+    for tag, label in CATEGORY_LABELS.items():
+        subset = graded[[tag in t for t in graded["tags"]]]
+        if subset.empty:
+            continue
+        row = {"tag": tag, "label": label}
+        for kind in ("ml", "ats"):
+            row[kind] = record(subset, kind)
+        if row["ml"]["decided"] or row["ats"]["decided"]:
+            out.append(row)
+    return out
 
 
 def record(graded: pd.DataFrame, kind: str) -> dict:

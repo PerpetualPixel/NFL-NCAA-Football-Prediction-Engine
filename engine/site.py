@@ -684,6 +684,8 @@ def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: 
                 "ml": ml, "ats": ats,
             })
 
+    cat_table = _category_table(league_weeks)
+
     if not rows:
         table = ('<div class="card"><div class="meta">Once games are played, every week\'s '
                  "moneyline and spread results land here.</div></div>")
@@ -738,7 +740,47 @@ losing money.</span></div>
   </label>
 </div>
 {table}
+{cat_table}
 {TRACK_SCRIPT}"""
+
+
+def _category_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
+    """How each pick bucket (Locks, Value, Pick'ems, Upsets) has actually done."""
+    body = []
+    for (league, season), weeks in league_weeks.items():
+        graded = [w["graded"] for w in weeks if len(w["graded"])]
+        if not graded:
+            continue
+        for cat in tracking.category_records(pd.concat(graded, ignore_index=True)):
+            cells = []
+            for kind, breakeven in (("ml", 0.50), ("ats", 0.524)):
+                rec = cat[kind]
+                if not rec["decided"]:
+                    cells.append('<td class="num meta">&mdash;</td>'
+                                 '<td class="num meta">&mdash;</td>')
+                    continue
+                cells.append(
+                    f'<td class="num"><span class="t-{grades.hit_tone(rec["hit_rate"], breakeven)}">'
+                    f'{rec["wins"]}-{rec["losses"]}</span> '
+                    f'<span class="meta">{rec["hit_rate"]:.0%}</span></td>'
+                    f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u '
+                    f'<span class="meta">{rec["roi"]:+.0%}</span></td>')
+            body.append(
+                f'<tr><td><span class="lgtag">{league.upper()}</span>{cat["label"]} '
+                f'<span class="meta">{season}</span></td>{"".join(cells)}</tr>'
+            )
+    if not body:
+        return ""
+    return f"""<h2>By pick category</h2>
+<div class="card explain"><span class="meta">Every pick is also filed into a bucket:
+<strong>Locks</strong> are games the model is at least 70% sure of, <strong>Value</strong>
+means it disagrees with the market by 2.5+ points, <strong>Pick'ems</strong> are near
+coin-flips, and <strong>Upsets</strong> are value picks on the market's underdog. This is
+how each bucket has actually paid.</span></div>
+<table class="track">
+<thead><tr><th>Category</th><th class="num">Moneyline</th><th class="num">ML units</th>
+<th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
+<tbody>{''.join(body)}</tbody></table>"""
 
 
 TRACK_SCRIPT = """<script>
