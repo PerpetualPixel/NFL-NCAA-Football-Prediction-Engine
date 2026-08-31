@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFL Week 16 2023 — Gridiron Engine</title><style>
+:root {
+  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
+  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
+  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
+    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+header.site {
+  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+}
+header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
+header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site nav a {
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
+  padding: 4px 10px; border-radius: 6px;
+}
+header.site nav a:hover { color: var(--accent); background: var(--sunken); }
+.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
+h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 14px;
+}
+.card .teams { font-size: 1.05rem; font-weight: 700; }
+.card .pick { margin: 6px 0 2px; }
+.card .pick strong { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.edge-pos { color: var(--good); font-weight: 600; }
+.edge-neg { color: var(--bad); font-weight: 600; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 480px; }
+table.units th, table.units td { text-align: center; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td.ulabel { text-align: left; }
+table.units th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.ulabel { color: var(--ink); }
+.gwrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.gletter { font-weight: 800; font-size: 0.98rem; }
+.grank { color: var(--muted); font-size: 0.74rem; }
+.gbar { height: 4px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.gbar i { display: block; height: 100%; border-radius: 3px; }
+.gnote { margin-top: 8px; font-size: 0.78rem; }
+/* one colour language across the whole site */
+.t-strong { color: var(--good); }
+.t-good { color: var(--good); opacity: 0.85; }
+.t-mid { color: var(--muted); }
+.t-poor { color: var(--warn); }
+.t-bad { color: var(--bad); }
+.gbar i.t-strong { background: var(--good); }
+.gbar i.t-good { background: var(--good); opacity: 0.7; }
+.gbar i.t-mid { background: var(--muted); }
+.gbar i.t-poor { background: var(--warn); }
+.gbar i.t-bad { background: var(--bad); }
+.bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
+.bet {
+  flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 11px;
+}
+.betlabel {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 700;
+}
+.betvalue { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+.betvalue .price { color: var(--muted); font-weight: 600; font-size: 0.88rem; }
+.betnote { font-size: 0.76rem; margin-top: 1px; }
+.outcome {
+  display: inline-block; margin-top: 5px; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.factor { margin-bottom: 11px; list-style: none; }
+ul.factors { padding-left: 0; }
+.fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fname { font-weight: 700; font-size: 0.88rem; }
+.fverdict {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ftext { font-size: 0.86rem; color: var(--ink); margin-top: 1px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
+.tilesub { font-size: 0.78rem; }
+.explain { font-size: 0.88rem; }
+table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
+table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+table.track td.num, table.track th.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.track a { color: var(--ink); text-decoration: none; }
+table.track a:hover { color: var(--accent); }
+.lgtag {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; padding: 1px 5px;
+  border-radius: 3px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px;
+}
+.result-hit { color: var(--good); font-weight: 700; }
+.result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-lean { color: var(--muted); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+.card.pending { border-style: dashed; }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
+.pendingnote { margin-top: 6px; font-size: 0.9rem; }
+.pendingnote strong { color: var(--accent); }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
+.wknav {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 6px;
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+  white-space: nowrap;
+}
+.wknav-btn.disabled { color: var(--muted); opacity: 0.5; }
+.wksel { font-size: 0.85rem; color: var(--muted); }
+.wksel select {
+  font: inherit; font-size: 0.85rem; margin-left: 6px; padding: 4px 8px; max-width: 240px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.weekhead { color: var(--muted); font-size: 0.9rem; margin: -6px 0 10px; }
+.weekgrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;
+}
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.92rem; }
+.wt-detail { margin-top: 3px; }
+.wt-detail .good { color: var(--good); font-weight: 600; }
+.wt-detail .bad { color: var(--bad); font-weight: 600; }
+.wt-detail .upcoming { color: var(--accent); font-weight: 600; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.leagues a.card { display: block; text-decoration: none; color: inherit; }
+footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
+</style></head>
+<body><div class="wrap">
+<header class="site"><h1>Gridiron Engine</h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<a href="tracking.html">Tracking</a></nav></header>
+<div class="stamp">Updated 2026-08-31 06:36 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="wknav">
+<a class="wknav-btn" href="nfl-2023-w15.html">&larr; Week 15</a>
+<label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html">2026 season</option><option value="nfl-2025-w01.html">2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html" selected>2023 season</option></select></label>
+<label class="wksel">Week:
+  <select id="weekpick"><option value="nfl-2023-w01.html">Week 1 — 8-8</option><option value="nfl-2023-w02.html">Week 2 — 8-8</option><option value="nfl-2023-w03.html">Week 3 — 11-5</option><option value="nfl-2023-w04.html">Week 4 — 10-6</option><option value="nfl-2023-w05.html">Week 5 — 8-6</option><option value="nfl-2023-w06.html">Week 6 — 11-4</option><option value="nfl-2023-w07.html">Week 7 — 5-8</option><option value="nfl-2023-w08.html">Week 8 — 9-7</option><option value="nfl-2023-w09.html">Week 9 — 10-4</option><option value="nfl-2023-w10.html">Week 10 — 10-4</option><option value="nfl-2023-w11.html">Week 11 — 12-2</option><option value="nfl-2023-w12.html">Week 12 — 9-7</option><option value="nfl-2023-w13.html">Week 13 — 8-5</option><option value="nfl-2023-w14.html">Week 14 — 8-7</option><option value="nfl-2023-w15.html">Week 15 — 10-6</option><option value="nfl-2023-w16.html" selected>Week 16 — 10-6</option><option value="nfl-2023-w17.html">Week 17 — 12-4</option><option value="nfl-2023-w18.html">Week 18 — 10-6</option><option value="nfl-2023-w19.html">Wild Card Round — 5-1</option><option value="nfl-2023-w20.html">Divisional Round — 3-1</option><option value="nfl-2023-w21.html">Conference Championships — 1-1</option><option value="nfl-2023-w22.html">Super Bowl — 0-1</option></select>
+</label>
+<a class="wknav-btn" href="nfl-2023-w17.html">Week 17 &rarr;</a>
+</div>
+<h2>Week 16 &mdash; 2023</h2>
+<div class="weekhead">10-6 on the moneyline, 8-7-1 against the spread</div>
+<div class="pixel card">
+<div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
+<span class="pxprice">-156</span>
+<span class="meta">2-leg parlay &middot; model 55% vs
+61% implied</span><span class="outcome t-strong">WIN &middot; +0.64u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Buffalo Bills to win outright</span> <span class="meta">Buffalo Bills @ Los Angeles Chargers &middot; -800 &middot; model 85%</span></li><li class="pxleg"><span class="pxdetail">Chicago Bears to win outright</span> <span class="meta">Arizona Cardinals @ Chicago Bears &middot; -218 &middot; model 64%</span></li></ul>
+<details class="more"><summary>Why this is the pick</summary>
+<div class="analysis"><p class='ftext'><strong>2-leg parlay at -156:</strong> Buffalo Bills to win outright + Chicago Bears to win outright. Each leg on its own is priced too short to be worth backing, so they are combined to get the price to -156. The model puts the joint chance of all legs landing at 55%, against 61% implied by the price &mdash; that gap is the reason this qualifies.</p><p class='ftext'><strong>Buffalo Bills @ Los Angeles Chargers &mdash; Buffalo Bills to win outright.</strong> Buffalo Bills rates 7.9 points stronger on power ratings; the biggest matchup edge is buffalo bills running vs los angeles chargers run defense (a major mismatch); the model wants 7.9 more points on Los Angeles Chargers than the market prices. <strong>Los Angeles Chargers</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Buffalo Bills</strong> has the clear edge at quarterback; played indoors, so weather is not a factor.</p><p class='ftext'><strong>Arizona Cardinals @ Chicago Bears &mdash; Chicago Bears to win outright.</strong> Chicago Bears rates 1.2 points stronger on power ratings; the biggest matchup edge is arizona cardinals passing vs chicago bears pass defense (a clear edge); the model wants 2.2 more points on Arizona Cardinals than the market prices. Both sides are starting their usual quarterbacks with no notable injury gap.</p></div></details>
+</div>
+<div class="controls">
+  <div class="ctl-group" role="group" aria-label="Filter games">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-filter="pick">Picks (value)</button>
+    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pickem">Pick'ems</button>
+    <button class="chip" data-filter="value">Value vs market</button>
+    <button class="chip" data-filter="upset">Upset picks</button>
+  </div>
+  <label class="ctl-sort">Sort:
+    <select id="sortby">
+      <option value="kick">Kickoff (chronological)</option>
+      <option value="prob">Win probability</option>
+      <option value="margin">Projected margin</option>
+      <option value="edge">Edge vs market</option>
+    </select>
+  </label>
+</div>
+<div class="emptynote" hidden>No games match this filter.</div>
+<div id="games">
+<div class="card game" data-kick="1703116800" data-prob="0.6212" data-margin="4.075" data-edge="0.075" data-tags="lean">
+<div class="cardhead"><div class="teams">New Orleans Saints @ Los Angeles Rams</div>
+<div class="kick">Thu, Dec 21 &middot; 8:15 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Los Angeles Rams <span class="price">-180</span></div>
+<div class="betnote meta">62% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Los Angeles Rams -4</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Los Angeles Rams -4.0</div><div class="betnote meta">0.1 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span></div>
+<div class="meta">Market line: Los Angeles Rams -4 &middot; <span class="meta">model +0.1 toward Los Angeles Rams</span></div><div class="meta">Final: Los Angeles Rams 30&ndash;22 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.1 points between them on raw strength. Overall, Los Angeles Rams is the 10th-rated team in the league (solid) and New Orleans Saints is 11th (solid). Los Angeles Rams then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Los Angeles Rams by 4</strong> and gives them a 62% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>New Orleans Saints</strong> &mdash; a slight edge through the air; and <strong>Los Angeles Rams</strong> has the better ground matchup, a slight edge on the run. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Los Angeles Rams -4. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Los Angeles Rams:</strong> QB <strong>M.Stafford</strong> has been carrying the offense, adding roughly +7.7 points a game over an average quarterback; the passing game runs through <strong>P.Nacua</strong> and <strong>D.Adams</strong>; lead back <strong>B.Corum</strong> has been efficient.</li><li><strong>New Orleans Saints:</strong> QB <strong>T.Shough</strong> has been a drag on the offense, adding roughly -1.0 points a game over an average quarterback; the passing game runs through <strong>C.Olave</strong> and <strong>J.Johnson</strong>; lead back <strong>A.Estime</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Los Angeles Rams passing vs New Orleans Saints pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Los Angeles Rams's passing attack grades <strong>B-</strong> (16th of 32); New Orleans Saints's pass defense grades <strong>A+</strong> (3rd of 32). That is a slight edge for <strong>New Orleans Saints</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Los Angeles Rams running vs New Orleans Saints run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Los Angeles Rams's running attack grades <strong>B+</strong> (11th of 32); New Orleans Saints's run defense grades <strong>C</strong> (19th of 32). That is essentially even for <strong>Los Angeles Rams</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New Orleans Saints running vs Los Angeles Rams run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">New Orleans Saints's running attack grades <strong>D+</strong> (25th of 32); Los Angeles Rams's run defense grades <strong>C+</strong> (17th of 32). That is essentially even for <strong>Los Angeles Rams</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New Orleans Saints passing vs Los Angeles Rams pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">New Orleans Saints's passing attack grades <strong>C+</strong> (17th of 32); Los Angeles Rams's pass defense grades <strong>B</strong> (14th of 32). That is essentially even for <strong>New Orleans Saints</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Los Angeles Rams</strong> is the healthier side this week by the injury report, weighted by who is actually missing; played indoors, so weather is not a factor.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Los Angeles Rams</th><th>New Orleans Saints</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">16th</span></div><div class="gbar"><i class="t-mid" style="width:52%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">17th</span></div><div class="gbar"><i class="t-mid" style="width:48%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B</span><span class="grank">14th</span></div><div class="gbar"><i class="t-mid" style="width:58%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">3rd</span></div><div class="gbar"><i class="t-strong" style="width:94%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">11th</span></div><div class="gbar"><i class="t-good" style="width:68%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">25th</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">17th</span></div><div class="gbar"><i class="t-mid" style="width:48%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">19th</span></div><div class="gbar"><i class="t-mid" style="width:42%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703289600" data-prob="0.6468" data-margin="4.971" data-edge="1.971" data-tags="lean">
+<div class="cardhead"><div class="teams">Cincinnati Bengals @ Pittsburgh Steelers</div>
+<div class="kick">Sat, Dec 23 &middot; 4:30 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Cincinnati Bengals <span class="price">-200</span></div>
+<div class="betnote meta">65% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Cincinnati Bengals -5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Cincinnati Bengals -3.0</div><div class="betnote meta">2.0 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span></div>
+<div class="meta">Market line: Pittsburgh Steelers -3 &middot; <span class="meta">model -2.0 toward Cincinnati Bengals</span></div><div class="meta">Final: Pittsburgh Steelers 34&ndash;11 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for Cincinnati Bengals, 4.6 points of separation before adjustments. Overall, Pittsburgh Steelers is the 23rd-rated team in the league (weak) and Cincinnati Bengals is 8th (very good). Pittsburgh Steelers then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Cincinnati Bengals by 5</strong> and gives them a 65% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Cincinnati Bengals</strong> &mdash; a clear edge through the air. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Cincinnati Bengals -3. The model leans 2.0 points toward Cincinnati Bengals, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Pittsburgh Steelers:</strong> QB <strong>M.Rudolph</strong> has been steady but not a difference-maker, adding roughly +2.4 points a game over an average quarterback; the passing game runs through <strong>D.Metcalf</strong> and <strong>P.Freiermuth</strong>; lead back <strong>K.Gainwell</strong> has held his own.</li><li><strong>Cincinnati Bengals:</strong> QB <strong>J.Burrow</strong> has been playing well, adding roughly +3.5 points a game over an average quarterback; the passing game runs through <strong>J.Chase</strong> and <strong>T.Higgins</strong>; lead back <strong>S.Perine</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Cincinnati Bengals passing vs Pittsburgh Steelers pass defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">Cincinnati Bengals's passing attack grades <strong>A-</strong> (7th of 32); Pittsburgh Steelers's pass defense grades <strong>C+</strong> (18th of 32). That is a clear edge for <strong>Cincinnati Bengals</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Cincinnati Bengals running vs Pittsburgh Steelers run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Cincinnati Bengals's running attack grades <strong>B</strong> (12th of 32); Pittsburgh Steelers's run defense grades <strong>B-</strong> (16th of 32). That is essentially even for <strong>Cincinnati Bengals</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Pittsburgh Steelers running vs Cincinnati Bengals run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Pittsburgh Steelers's running attack grades <strong>C</strong> (20th of 32); Cincinnati Bengals's run defense grades <strong>C</strong> (21st of 32). That is essentially even for <strong>Cincinnati Bengals</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Pittsburgh Steelers passing vs Cincinnati Bengals pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Pittsburgh Steelers's passing attack grades <strong>C-</strong> (22nd of 32); Cincinnati Bengals's pass defense grades <strong>D+</strong> (25th of 32). That is essentially even for <strong>Cincinnati Bengals</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Cincinnati Bengals</strong> has the clear edge at quarterback; <strong>Cincinnati Bengals</strong> is the healthier side this week by the injury report, weighted by who is actually missing.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Pittsburgh Steelers</th><th>Cincinnati Bengals</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">22nd</span></div><div class="gbar"><i class="t-poor" style="width:32%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">7th</span></div><div class="gbar"><i class="t-strong" style="width:81%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">18th</span></div><div class="gbar"><i class="t-mid" style="width:45%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">25th</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">20th</span></div><div class="gbar"><i class="t-poor" style="width:39%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">12th</span></div><div class="gbar"><i class="t-good" style="width:65%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">16th</span></div><div class="gbar"><i class="t-mid" style="width:52%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">21st</span></div><div class="gbar"><i class="t-poor" style="width:35%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703289600" data-prob="0.6509" data-margin="5.117" data-edge="7.883" data-tags="pixel lean value">
+<div class="cardhead"><div class="teams">Buffalo Bills @ Los Angeles Chargers</div>
+<div class="kick">Sat, Dec 23 &middot; 8:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Buffalo Bills <span class="price">-205</span></div>
+<div class="betnote meta">65% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Buffalo Bills -5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Los Angeles Chargers +13.0</div><div class="betnote meta">7.9 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-pixel">Pixel&rsquo;s Pick</span><span class="tag tag-lean">lean</span><span class="tag tag-value">value</span></div>
+<div class="meta">Market line: Los Angeles Chargers -13 &middot; <span class="edge-pos">model +7.9 toward Los Angeles Chargers</span></div><div class="meta">Final: Los Angeles Chargers 22&ndash;24 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a clear talent gap &mdash; Buffalo Bills rates 7.9 points stronger before any situational adjustment. Overall, Los Angeles Chargers is the 18th-rated team in the league (average) and Buffalo Bills is 3rd (elite). Los Angeles Chargers then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Buffalo Bills by 5</strong> and gives them a 65% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Buffalo Bills</strong> &mdash; a major mismatch through the air; and <strong>Buffalo Bills</strong> has the better ground matchup, a major mismatch on the run. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Buffalo Bills -13. That is a real disagreement: the model wants 7.9 more points on Los Angeles Chargers than the market is pricing, which is where the value on this game sits.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Los Angeles Chargers:</strong> QB <strong>J.Herbert</strong> has been a drag on the offense, adding roughly -0.5 points a game over an average quarterback; the passing game runs through <strong>K.Allen</strong> and <strong>Q.Johnston</strong>; lead back <strong>J.Patterson</strong> has held his own.</li><li><strong>Buffalo Bills:</strong> QB <strong>J.Allen</strong> has been playing well, adding roughly +4.5 points a game over an average quarterback; the passing game runs through <strong>D.Kincaid</strong> and <strong>D.Knox</strong>; lead back <strong>Ty.Johnson</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Buffalo Bills running vs Los Angeles Chargers run defense</span><span class="fverdict t-strong">a major mismatch</span></div><div class="ftext">Buffalo Bills's running attack grades <strong>A+</strong> (1st of 32); Los Angeles Chargers's run defense grades <strong>F</strong> (32nd of 32). That is a major mismatch for <strong>Buffalo Bills</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Buffalo Bills passing vs Los Angeles Chargers pass defense</span><span class="fverdict t-strong">a major mismatch</span></div><div class="ftext">Buffalo Bills's passing attack grades <strong>A+</strong> (3rd of 32); Los Angeles Chargers's pass defense grades <strong>C</strong> (19th of 32). That is a major mismatch for <strong>Buffalo Bills</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Los Angeles Chargers running vs Buffalo Bills run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Los Angeles Chargers's running attack grades <strong>D</strong> (29th of 32); Buffalo Bills's run defense grades <strong>D+</strong> (25th of 32). That is a slight edge for <strong>Buffalo Bills</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Los Angeles Chargers passing vs Buffalo Bills pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Los Angeles Chargers's passing attack grades <strong>B+</strong> (11th of 32); Buffalo Bills's pass defense grades <strong>A-</strong> (8th of 32). That is essentially even for <strong>Buffalo Bills</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Rest advantage</span><span class="fverdict t-mid">situational</span></div><div class="ftext"><strong>Los Angeles Chargers</strong> comes in with 3 more days of rest &mdash; worth a fraction of a point, but real for recovery and preparation.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Los Angeles Chargers</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Buffalo Bills</strong> has the clear edge at quarterback; played indoors, so weather is not a factor.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Los Angeles Chargers</th><th>Buffalo Bills</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">11th</span></div><div class="gbar"><i class="t-good" style="width:68%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">3rd</span></div><div class="gbar"><i class="t-strong" style="width:94%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">19th</span></div><div class="gbar"><i class="t-mid" style="width:42%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">A-</span><span class="grank">8th</span></div><div class="gbar"><i class="t-good" style="width:77%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">29th</span></div><div class="gbar"><i class="t-bad" style="width:10%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">1st</span></div><div class="gbar"><i class="t-strong" style="width:100%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">32nd</span></div><div class="gbar"><i class="t-bad" style="width:0%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">25th</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5349" data-margin="1.156" data-edge="1.844" data-tags="lean pickem">
+<div class="cardhead"><div class="teams">Indianapolis Colts @ Atlanta Falcons</div>
+<div class="kick">Sun, Dec 24 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Atlanta Falcons <span class="price">-125</span></div>
+<div class="betnote meta">53% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Atlanta Falcons -1</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Indianapolis Colts +3.0</div><div class="betnote meta">1.8 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span></div>
+<div class="meta">Market line: Atlanta Falcons -3 &middot; <span class="meta">model -1.8 toward Indianapolis Colts</span></div><div class="meta">Final: Atlanta Falcons 29&ndash;10 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.9 points between them on raw strength. Overall, Atlanta Falcons is the 24th-rated team in the league (weak) and Indianapolis Colts is 20th (weak). Atlanta Falcons then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Atlanta Falcons by 1</strong> and gives them a 53% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Indianapolis Colts</strong> &mdash; a clear edge through the air. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Atlanta Falcons -3. The model leans 1.8 points toward Indianapolis Colts, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Atlanta Falcons:</strong> QB <strong>M.Penix</strong> has been a drag on the offense, adding roughly -0.1 points a game over an average quarterback; the passing game runs through <strong>B.Robinson</strong> and <strong>D.London</strong>; lead back <strong>T.Allgeier</strong> has struggled to move the ball.</li><li><strong>Indianapolis Colts:</strong> QB <strong>D.Jones</strong> has been playing well, adding roughly +4.9 points a game over an average quarterback; the passing game runs through <strong>A.Pierce</strong> and <strong>M.Pittman</strong>; lead back <strong>J.Taylor</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Atlanta Falcons passing vs Indianapolis Colts pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Atlanta Falcons's passing attack grades <strong>C-</strong> (24th of 32); Indianapolis Colts's pass defense grades <strong>B</strong> (13th of 32). That is a slight edge for <strong>Indianapolis Colts</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Indianapolis Colts running vs Atlanta Falcons run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Indianapolis Colts's running attack grades <strong>C</strong> (21st of 32); Atlanta Falcons's run defense grades <strong>B+</strong> (10th of 32). That is essentially even for <strong>Atlanta Falcons</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Indianapolis Colts passing vs Atlanta Falcons pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Indianapolis Colts's passing attack grades <strong>C</strong> (20th of 32); Atlanta Falcons's pass defense grades <strong>D</strong> (28th of 32). That is essentially even for <strong>Indianapolis Colts</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Atlanta Falcons running vs Indianapolis Colts run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Atlanta Falcons's running attack grades <strong>C-</strong> (22nd of 32); Indianapolis Colts's run defense grades <strong>C-</strong> (23rd of 32). That is essentially even for <strong>Indianapolis Colts</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Indianapolis Colts</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; played indoors, so weather is not a factor.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Atlanta Falcons</th><th>Indianapolis Colts</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">24th</span></div><div class="gbar"><i class="t-poor" style="width:26%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">20th</span></div><div class="gbar"><i class="t-poor" style="width:39%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">28th</span></div><div class="gbar"><i class="t-bad" style="width:13%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">13th</span></div><div class="gbar"><i class="t-good" style="width:61%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">22nd</span></div><div class="gbar"><i class="t-poor" style="width:32%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">21st</span></div><div class="gbar"><i class="t-poor" style="width:35%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">10th</span></div><div class="gbar"><i class="t-good" style="width:71%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">23rd</span></div><div class="gbar"><i class="t-poor" style="width:29%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.6007" data-margin="3.368" data-edge="0.132" data-tags="lean">
+<div class="cardhead"><div class="teams">Green Bay Packers @ Carolina Panthers</div>
+<div class="kick">Sun, Dec 24 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Green Bay Packers <span class="price">-165</span></div>
+<div class="betnote meta">60% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Green Bay Packers -3.5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Carolina Panthers +3.5</div><div class="betnote meta">0.1 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Market line: Carolina Panthers -3.5 &middot; <span class="meta">model +0.1 toward Carolina Panthers</span></div><div class="meta">Final: Carolina Panthers 30&ndash;33 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for Green Bay Packers, 5.7 points of separation before adjustments. Overall, Carolina Panthers is the 32nd-rated team in the league (a real weakness) and Green Bay Packers is 15th (average). Carolina Panthers then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Green Bay Packers by 3.5</strong> and gives them a 60% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Green Bay Packers</strong> &mdash; a major mismatch through the air. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Green Bay Packers -3.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Carolina Panthers:</strong> QB <strong>A.Dalton</strong> has been a drag on the offense, adding roughly -4.4 points a game over an average quarterback; the passing game runs through <strong>T.McMillan</strong> and <strong>J.Coker</strong>; lead back <strong>R.Dowdle</strong> has held his own.</li><li><strong>Green Bay Packers:</strong> QB <strong>J.Love</strong> has been carrying the offense, adding roughly +8.9 points a game over an average quarterback; the passing game runs through <strong>R.Doubs</strong> and <strong>T.Kraft</strong>; lead back <strong>C.Brooks</strong> has struggled to move the ball.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Carolina Panthers passing vs Green Bay Packers pass defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Carolina Panthers's passing attack grades <strong>F</strong> (31st of 32); Green Bay Packers's pass defense grades <strong>C-</strong> (23rd of 32). That is a clear edge for <strong>Green Bay Packers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Green Bay Packers passing vs Carolina Panthers pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Green Bay Packers's passing attack grades <strong>B+</strong> (10th of 32); Carolina Panthers's pass defense grades <strong>B+</strong> (11th of 32). That is a slight edge for <strong>Green Bay Packers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Carolina Panthers running vs Green Bay Packers run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Carolina Panthers's running attack grades <strong>B</strong> (14th of 32); Green Bay Packers's run defense grades <strong>D</strong> (29th of 32). That is a slight edge for <strong>Carolina Panthers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Green Bay Packers running vs Carolina Panthers run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Green Bay Packers's running attack grades <strong>B-</strong> (15th of 32); Carolina Panthers's run defense grades <strong>D</strong> (28th of 32). That is a slight edge for <strong>Green Bay Packers</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Carolina Panthers</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Green Bay Packers</strong> has the clear edge at quarterback; <strong>Carolina Panthers</strong> is the healthier side this week by the injury report, weighted by who is actually missing.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Carolina Panthers</th><th>Green Bay Packers</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">31st</span></div><div class="gbar"><i class="t-bad" style="width:3%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">10th</span></div><div class="gbar"><i class="t-good" style="width:71%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">11th</span></div><div class="gbar"><i class="t-good" style="width:68%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">23rd</span></div><div class="gbar"><i class="t-poor" style="width:29%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B</span><span class="grank">14th</span></div><div class="gbar"><i class="t-mid" style="width:58%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">15th</span></div><div class="gbar"><i class="t-mid" style="width:55%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">28th</span></div><div class="gbar"><i class="t-bad" style="width:13%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">29th</span></div><div class="gbar"><i class="t-bad" style="width:10%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5220" data-margin="0.727" data-edge="3.727" data-tags="lean pickem value">
+<div class="cardhead"><div class="teams">Cleveland Browns @ Houston Texans</div>
+<div class="kick">Sun, Dec 24 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Houston Texans <span class="price">-120</span></div>
+<div class="betnote meta">52% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Houston Texans -0.5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Houston Texans +3.0</div><div class="betnote meta">3.7 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-value">value</span></div>
+<div class="meta">Market line: Houston Texans -3 &middot; <span class="edge-pos">model +3.7 toward Houston Texans</span></div><div class="meta">Final: Houston Texans 22&ndash;36 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.8 points between them on raw strength. Overall, Houston Texans is the 25th-rated team in the league (a real weakness) and Cleveland Browns is 14th (average). Houston Texans then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Houston Texans by 0.5</strong> and gives them a 52% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Cleveland Browns</strong> &mdash; a slight edge through the air; and neither run game projects well, though <strong>Cleveland Browns</strong> is the less inefficient of the two. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Cleveland Browns -3. That is a real disagreement: the model wants 3.7 more points on Houston Texans than the market is pricing, which is where the value on this game sits.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Houston Texans:</strong> QB <strong>C.Stroud</strong> has been steady but not a difference-maker, adding roughly +1.0 points a game over an average quarterback; the passing game runs through <strong>D.Schultz</strong> and <strong>N.Collins</strong>; lead back <strong>N.Chubb</strong> has struggled to move the ball.</li><li><strong>Cleveland Browns:</strong> QB <strong>D.Gabriel</strong> has been a drag on the offense, adding roughly -7.7 points a game over an average quarterback; the passing game runs through <strong>D.Sampson</strong> and <strong>C.Tillman</strong>; lead back <strong>R.Sanders</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Houston Texans passing vs Cleveland Browns pass defense</span><span class="fverdict t-bad">a major mismatch</span></div><div class="ftext">Houston Texans's passing attack grades <strong>C+</strong> (18th of 32); Cleveland Browns's pass defense grades <strong>A+</strong> (1st of 32). That is a major mismatch for <strong>Cleveland Browns</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Houston Texans running vs Cleveland Browns run defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Houston Texans's running attack grades <strong>F</strong> (31st of 32); Cleveland Browns's run defense grades <strong>A-</strong> (8th of 32). That is a clear edge for <strong>Cleveland Browns</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Cleveland Browns passing vs Houston Texans pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Cleveland Browns's passing attack grades <strong>D+</strong> (27th of 32); Houston Texans's pass defense grades <strong>C-</strong> (24th of 32). That is a slight edge for <strong>Houston Texans</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Cleveland Browns running vs Houston Texans run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Cleveland Browns's running attack grades <strong>B-</strong> (16th of 32); Houston Texans's run defense grades <strong>B</strong> (13th of 32). That is essentially even for <strong>Houston Texans</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Houston Texans</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Houston Texans</strong> has the clear edge at quarterback; <strong>Cleveland Browns</strong> is the healthier side this week by the injury report, weighted by who is actually missing; played indoors, so weather is not a factor.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Houston Texans</th><th>Cleveland Browns</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">18th</span></div><div class="gbar"><i class="t-mid" style="width:45%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">27th</span></div><div class="gbar"><i class="t-bad" style="width:16%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">24th</span></div><div class="gbar"><i class="t-poor" style="width:26%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">1st</span></div><div class="gbar"><i class="t-strong" style="width:100%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">31st</span></div><div class="gbar"><i class="t-bad" style="width:3%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">16th</span></div><div class="gbar"><i class="t-mid" style="width:52%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">13th</span></div><div class="gbar"><i class="t-good" style="width:61%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">A-</span><span class="grank">8th</span></div><div class="gbar"><i class="t-good" style="width:77%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5533" data-margin="1.770" data-edge="4.270" data-tags="lean pickem value">
+<div class="cardhead"><div class="teams">Detroit Lions @ Minnesota Vikings</div>
+<div class="kick">Sun, Dec 24 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Minnesota Vikings <span class="price">-135</span></div>
+<div class="betnote meta">55% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Minnesota Vikings -2</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Minnesota Vikings +2.5</div><div class="betnote meta">4.3 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-value">value</span></div>
+<div class="meta">Market line: Minnesota Vikings -2.5 &middot; <span class="edge-pos">model +4.3 toward Minnesota Vikings</span></div><div class="meta">Final: Minnesota Vikings 24&ndash;30 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.5 points between them on raw strength. Overall, Minnesota Vikings is the 13th-rated team in the league (solid) and Detroit Lions is 9th (solid). Minnesota Vikings then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Minnesota Vikings by 2</strong> and gives them a 55% chance to win outright.</p><p>On how it plays out: neither run game projects well, though <strong>Detroit Lions</strong> is the less inefficient of the two. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Detroit Lions -2.5. That is a real disagreement: the model wants 4.3 more points on Minnesota Vikings than the market is pricing, which is where the value on this game sits.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Minnesota Vikings:</strong> QB <strong>C.Wentz</strong> has been steady but not a difference-maker, adding roughly +1.2 points a game over an average quarterback; the passing game runs through <strong>T.Hockenson</strong> and <strong>J.Addison</strong>; lead back <strong>A.Jones</strong> has held his own.</li><li><strong>Detroit Lions:</strong> QB <strong>J.Goff</strong> has been carrying the offense, adding roughly +6.1 points a game over an average quarterback; the passing game runs through <strong>J.Williams</strong> and <strong>A.St. Brown</strong>; lead back <strong>D.Montgomery</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Minnesota Vikings passing vs Detroit Lions pass defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">Minnesota Vikings's passing attack grades <strong>B-</strong> (15th of 32); Detroit Lions's pass defense grades <strong>F</strong> (30th of 32). That is a clear edge for <strong>Minnesota Vikings</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Detroit Lions passing vs Minnesota Vikings pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Detroit Lions's passing attack grades <strong>A</strong> (5th of 32); Minnesota Vikings's pass defense grades <strong>B+</strong> (10th of 32). That is a slight edge for <strong>Detroit Lions</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Minnesota Vikings running vs Detroit Lions run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Minnesota Vikings's running attack grades <strong>D+</strong> (27th of 32); Detroit Lions's run defense grades <strong>B-</strong> (15th of 32). That is a slight edge for <strong>Detroit Lions</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Detroit Lions running vs Minnesota Vikings run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Detroit Lions's running attack grades <strong>B+</strong> (10th of 32); Minnesota Vikings's run defense grades <strong>A</strong> (4th of 32). That is essentially even for <strong>Minnesota Vikings</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext">Played indoors, so weather is not a factor.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Minnesota Vikings</th><th>Detroit Lions</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">15th</span></div><div class="gbar"><i class="t-mid" style="width:55%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">5th</span></div><div class="gbar"><i class="t-strong" style="width:87%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">10th</span></div><div class="gbar"><i class="t-good" style="width:71%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">30th</span></div><div class="gbar"><i class="t-bad" style="width:6%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">27th</span></div><div class="gbar"><i class="t-bad" style="width:16%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">10th</span></div><div class="gbar"><i class="t-good" style="width:71%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">4th</span></div><div class="gbar"><i class="t-strong" style="width:90%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">15th</span></div><div class="gbar"><i class="t-mid" style="width:55%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5615" data-margin="2.043" data-edge="0.957" data-tags="lean pickem">
+<div class="cardhead"><div class="teams">Washington Commanders @ New York Jets</div>
+<div class="kick">Sun, Dec 24 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">New York Jets <span class="price">-140</span></div>
+<div class="betnote meta">56% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">New York Jets -2</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Washington Commanders +3.0</div><div class="betnote meta">1.0 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Market line: New York Jets -3 &middot; <span class="meta">model -1.0 toward Washington Commanders</span></div><div class="meta">Final: New York Jets 30&ndash;28 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.8 points between them on raw strength. Overall, New York Jets is the 28th-rated team in the league (a real weakness) and Washington Commanders is 31st (a real weakness). New York Jets then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>New York Jets by 2</strong> and gives them a 56% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>New York Jets</strong> &mdash; a clear edge through the air; and neither run game projects well, though <strong>Washington Commanders</strong> is the less inefficient of the two. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at New York Jets -3. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>New York Jets:</strong> QB <strong>T.Taylor</strong> has been a drag on the offense, adding roughly -3.1 points a game over an average quarterback; the passing game runs through <strong>M.Taylor</strong> and <strong>B.Hall</strong>; lead back <strong>I.Davis</strong> has struggled to move the ball.</li><li><strong>Washington Commanders:</strong> QB <strong>J.Johnson</strong> has been playing well, adding roughly +2.9 points a game over an average quarterback; the passing game runs through <strong>T.McLaurin</strong> and <strong>D.Samuel</strong>; lead back <strong>C.Rodriguez</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Washington Commanders passing vs New York Jets pass defense</span><span class="fverdict t-bad">a major mismatch</span></div><div class="ftext">Washington Commanders's passing attack grades <strong>D+</strong> (25th of 32); New York Jets's pass defense grades <strong>A</strong> (4th of 32). That is a major mismatch for <strong>New York Jets</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New York Jets running vs Washington Commanders run defense</span><span class="fverdict t-bad">a major mismatch</span></div><div class="ftext">New York Jets's running attack grades <strong>F</strong> (32nd of 32); Washington Commanders's run defense grades <strong>A-</strong> (6th of 32). That is a major mismatch for <strong>Washington Commanders</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New York Jets passing vs Washington Commanders pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">New York Jets's passing attack grades <strong>F</strong> (32nd of 32); Washington Commanders's pass defense grades <strong>F</strong> (32nd of 32). That is a slight edge for <strong>Washington Commanders</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Washington Commanders running vs New York Jets run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Washington Commanders's running attack grades <strong>C+</strong> (17th of 32); New York Jets's run defense grades <strong>B+</strong> (11th of 32). That is essentially even for <strong>New York Jets</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Washington Commanders</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Washington Commanders</strong> is the healthier side this week by the injury report, weighted by who is actually missing.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>New York Jets</th><th>Washington Commanders</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">32nd</span></div><div class="gbar"><i class="t-bad" style="width:0%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">25th</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">4th</span></div><div class="gbar"><i class="t-strong" style="width:90%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">32nd</span></div><div class="gbar"><i class="t-bad" style="width:0%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">32nd</span></div><div class="gbar"><i class="t-bad" style="width:0%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">17th</span></div><div class="gbar"><i class="t-mid" style="width:48%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">11th</span></div><div class="gbar"><i class="t-good" style="width:68%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">6th</span></div><div class="gbar"><i class="t-strong" style="width:84%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5298" data-margin="0.989" data-edge="2.011" data-tags="lean pickem">
+<div class="cardhead"><div class="teams">Seattle Seahawks @ Tennessee Titans</div>
+<div class="kick">Sun, Dec 24 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Seattle Seahawks <span class="price">-125</span></div>
+<div class="betnote meta">53% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Seattle Seahawks -1</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Tennessee Titans +3.0</div><div class="betnote meta">2.0 pt edge vs market</div><span class="outcome t-mid">PUSH</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span></div>
+<div class="meta">Market line: Tennessee Titans -3 &middot; <span class="meta">model +2.0 toward Tennessee Titans</span></div><div class="meta">Final: Tennessee Titans 17&ndash;20 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.4 points between them on raw strength. Overall, Tennessee Titans is the 21st-rated team in the league (weak) and Seattle Seahawks is 17th (average). Tennessee Titans then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Seattle Seahawks by 1</strong> and gives them a 53% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Seattle Seahawks</strong> &mdash; a slight edge through the air. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Seattle Seahawks -3. The model leans 2.0 points toward Tennessee Titans, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Tennessee Titans:</strong> QB <strong>B.Allen</strong> has been a drag on the offense, adding roughly -27.1 points a game over an average quarterback; the passing game runs through <strong>C.Okonkwo</strong> and <strong>C.Ridley</strong>; lead back <strong>T.Spears</strong> has struggled to move the ball.</li><li><strong>Seattle Seahawks:</strong> QB <strong>S.Darnold</strong> has been playing well, adding roughly +5.1 points a game over an average quarterback; the passing game runs through <strong>J.Smith-Njigba</strong> and <strong>A.Barner</strong>; lead back <strong>Z.Charbonnet</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Seattle Seahawks passing vs Tennessee Titans pass defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">Seattle Seahawks's passing attack grades <strong>B</strong> (14th of 32); Tennessee Titans's pass defense grades <strong>D</strong> (29th of 32). That is a clear edge for <strong>Seattle Seahawks</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Seattle Seahawks running vs Tennessee Titans run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Seattle Seahawks's running attack grades <strong>B</strong> (13th of 32); Tennessee Titans's run defense grades <strong>A</strong> (5th of 32). That is essentially even for <strong>Tennessee Titans</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Tennessee Titans passing vs Seattle Seahawks pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Tennessee Titans's passing attack grades <strong>C</strong> (19th of 32); Seattle Seahawks's pass defense grades <strong>C</strong> (21st of 32). That is essentially even for <strong>Tennessee Titans</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Tennessee Titans running vs Seattle Seahawks run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Tennessee Titans's running attack grades <strong>C</strong> (19th of 32); Seattle Seahawks's run defense grades <strong>C+</strong> (18th of 32). That is essentially even for <strong>Seattle Seahawks</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Seattle Seahawks</strong> is the healthier side this week by the injury report, weighted by who is actually missing.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Tennessee Titans</th><th>Seattle Seahawks</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">19th</span></div><div class="gbar"><i class="t-mid" style="width:42%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B</span><span class="grank">14th</span></div><div class="gbar"><i class="t-mid" style="width:58%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">29th</span></div><div class="gbar"><i class="t-bad" style="width:10%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">21st</span></div><div class="gbar"><i class="t-poor" style="width:35%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">19th</span></div><div class="gbar"><i class="t-mid" style="width:42%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">13th</span></div><div class="gbar"><i class="t-good" style="width:61%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">5th</span></div><div class="gbar"><i class="t-strong" style="width:87%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">18th</span></div><div class="gbar"><i class="t-mid" style="width:45%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.6056" data-margin="3.537" data-edge="5.537" data-tags="lean value">
+<div class="cardhead"><div class="teams">Jacksonville Jaguars @ Tampa Bay Buccaneers</div>
+<div class="kick">Sun, Dec 24 &middot; 4:05 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Tampa Bay Buccaneers <span class="price">-170</span></div>
+<div class="betnote meta">61% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Tampa Bay Buccaneers -3.5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Tampa Bay Buccaneers +2.0</div><div class="betnote meta">5.5 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-value">value</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Market line: Tampa Bay Buccaneers -2 &middot; <span class="edge-pos">model +5.5 toward Tampa Bay Buccaneers</span></div><div class="meta">Final: Tampa Bay Buccaneers 30&ndash;12 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.6 points between them on raw strength. Overall, Tampa Bay Buccaneers is the 12th-rated team in the league (solid) and Jacksonville Jaguars is 16th (average). Tampa Bay Buccaneers then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Tampa Bay Buccaneers by 3.5</strong> and gives them a 61% chance to win outright.</p><p>On how it plays out: neither run game projects well, though <strong>Tampa Bay Buccaneers</strong> is the less inefficient of the two. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Jacksonville Jaguars -2. That is a real disagreement: the model wants 5.5 more points on Tampa Bay Buccaneers than the market is pricing, which is where the value on this game sits.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Tampa Bay Buccaneers:</strong> QB <strong>B.Mayfield</strong> has been a drag on the offense, adding roughly -0.2 points a game over an average quarterback; the passing game runs through <strong>T.Johnson</strong> and <strong>C.Godwin</strong>; lead back <strong>R.White</strong> has been efficient.</li><li><strong>Jacksonville Jaguars:</strong> QB <strong>T.Lawrence</strong> has been steady but not a difference-maker, adding roughly +1.9 points a game over an average quarterback; the passing game runs through <strong>B.Strange</strong> and <strong>P.Washington</strong>; lead back <strong>B.Tuten</strong> has struggled to move the ball.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Jacksonville Jaguars running vs Tampa Bay Buccaneers run defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Jacksonville Jaguars's running attack grades <strong>D+</strong> (26th of 32); Tampa Bay Buccaneers's run defense grades <strong>A+</strong> (2nd of 32). That is a clear edge for <strong>Tampa Bay Buccaneers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Tampa Bay Buccaneers passing vs Jacksonville Jaguars pass defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">Tampa Bay Buccaneers's passing attack grades <strong>A-</strong> (8th of 32); Jacksonville Jaguars's pass defense grades <strong>C</strong> (20th of 32). That is a clear edge for <strong>Tampa Bay Buccaneers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Jacksonville Jaguars passing vs Tampa Bay Buccaneers pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Jacksonville Jaguars's passing attack grades <strong>B</strong> (13th of 32); Tampa Bay Buccaneers's pass defense grades <strong>D+</strong> (27th of 32). That is a slight edge for <strong>Jacksonville Jaguars</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Tampa Bay Buccaneers running vs Jacksonville Jaguars run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Tampa Bay Buccaneers's running attack grades <strong>D</strong> (28th of 32); Jacksonville Jaguars's run defense grades <strong>C-</strong> (24th of 32). That is essentially even for <strong>Jacksonville Jaguars</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext">Both sides are starting their usual quarterbacks with no notable injury gap.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Tampa Bay Buccaneers</th><th>Jacksonville Jaguars</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">A-</span><span class="grank">8th</span></div><div class="gbar"><i class="t-good" style="width:77%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">13th</span></div><div class="gbar"><i class="t-good" style="width:61%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">27th</span></div><div class="gbar"><i class="t-bad" style="width:16%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">20th</span></div><div class="gbar"><i class="t-poor" style="width:39%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">28th</span></div><div class="gbar"><i class="t-bad" style="width:13%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">26th</span></div><div class="gbar"><i class="t-bad" style="width:19%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">2nd</span></div><div class="gbar"><i class="t-strong" style="width:97%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">24th</span></div><div class="gbar"><i class="t-poor" style="width:26%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5680" data-margin="2.261" data-edge="2.239" data-tags="pixel lean pickem">
+<div class="cardhead"><div class="teams">Arizona Cardinals @ Chicago Bears</div>
+<div class="kick">Sun, Dec 24 &middot; 4:25 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Chicago Bears <span class="price">-145</span></div>
+<div class="betnote meta">57% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Chicago Bears -2.5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Arizona Cardinals +4.5</div><div class="betnote meta">2.2 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-pixel">Pixel&rsquo;s Pick</span><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Market line: Chicago Bears -4.5 &middot; <span class="meta">model -2.2 toward Arizona Cardinals</span></div><div class="meta">Final: Chicago Bears 27&ndash;16 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.2 points between them on raw strength. Overall, Chicago Bears is the 27th-rated team in the league (a real weakness) and Arizona Cardinals is 29th (a real weakness). Chicago Bears then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Chicago Bears by 2.5</strong> and gives them a 57% chance to win outright.</p><p>On how it plays out: neither side owns a clear schematic edge &mdash; the unit ratings are close enough that field position and turnovers likely decide it. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Chicago Bears -4.5. The model leans 2.2 points toward Arizona Cardinals, a mild difference rather than a strong disagreement.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Chicago Bears:</strong> QB <strong>C.Williams</strong> has been playing well, adding roughly +2.9 points a game over an average quarterback; the passing game runs through <strong>C.Loveland</strong> and <strong>L.Burden</strong>; lead back <strong>D.Swift</strong> has been efficient.</li><li><strong>Arizona Cardinals:</strong> QB <strong>K.Murray</strong> has been steady but not a difference-maker, adding roughly +1.1 points a game over an average quarterback; the passing game runs through <strong>T.McBride</strong> and <strong>M.Harrison</strong>; lead back <strong>T.Benson</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Arizona Cardinals passing vs Chicago Bears pass defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Arizona Cardinals's passing attack grades <strong>D</strong> (28th of 32); Chicago Bears's pass defense grades <strong>D+</strong> (26th of 32). That is a clear edge for <strong>Chicago Bears</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Chicago Bears running vs Arizona Cardinals run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Chicago Bears's running attack grades <strong>A-</strong> (6th of 32); Arizona Cardinals's run defense grades <strong>C-</strong> (22nd of 32). That is a slight edge for <strong>Chicago Bears</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Chicago Bears passing vs Arizona Cardinals pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Chicago Bears's passing attack grades <strong>F</strong> (30th of 32); Arizona Cardinals's pass defense grades <strong>F</strong> (31st of 32). That is essentially even for <strong>Arizona Cardinals</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Arizona Cardinals running vs Chicago Bears run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Arizona Cardinals's running attack grades <strong>A</strong> (4th of 32); Chicago Bears's run defense grades <strong>B+</strong> (9th of 32). That is essentially even for <strong>Arizona Cardinals</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext">Both sides are starting their usual quarterbacks with no notable injury gap.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Chicago Bears</th><th>Arizona Cardinals</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">30th</span></div><div class="gbar"><i class="t-bad" style="width:6%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">28th</span></div><div class="gbar"><i class="t-bad" style="width:13%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">26th</span></div><div class="gbar"><i class="t-bad" style="width:19%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">31st</span></div><div class="gbar"><i class="t-bad" style="width:3%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">6th</span></div><div class="gbar"><i class="t-strong" style="width:84%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">4th</span></div><div class="gbar"><i class="t-strong" style="width:90%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">9th</span></div><div class="gbar"><i class="t-good" style="width:74%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">22nd</span></div><div class="gbar"><i class="t-poor" style="width:32%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.5282" data-margin="0.935" data-edge="0.565" data-tags="lean pickem">
+<div class="cardhead"><div class="teams">Dallas Cowboys @ Miami Dolphins</div>
+<div class="kick">Sun, Dec 24 &middot; 4:25 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Miami Dolphins <span class="price">-125</span></div>
+<div class="betnote meta">53% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Miami Dolphins -1</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Dallas Cowboys +1.5</div><div class="betnote meta">0.6 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span></div>
+<div class="meta">Market line: Miami Dolphins -1.5 &middot; <span class="meta">model -0.6 toward Dallas Cowboys</span></div><div class="meta">Final: Miami Dolphins 22&ndash;20 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.7 points between them on raw strength. Overall, Miami Dolphins is the 6th-rated team in the league (very good) and Dallas Cowboys is 2nd (elite). Miami Dolphins then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Miami Dolphins by 1</strong> and gives them a 53% chance to win outright.</p><p>On how it plays out: <strong>Dallas Cowboys</strong> has the better ground matchup, a slight edge on the run. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Miami Dolphins -1.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Miami Dolphins:</strong> QB <strong>T.Tagovailoa</strong> has been steady but not a difference-maker, adding roughly +0.7 points a game over an average quarterback; the passing game runs through <strong>J.Waddle</strong> and <strong>D.Waller</strong>; lead back <strong>D.Achane</strong> has been efficient.</li><li><strong>Dallas Cowboys:</strong> QB <strong>D.Prescott</strong> has been carrying the offense, adding roughly +5.8 points a game over an average quarterback; the passing game runs through <strong>G.Pickens</strong> and <strong>C.Lamb</strong>; lead back <strong>J.Williams</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Dallas Cowboys passing vs Miami Dolphins pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Dallas Cowboys's passing attack grades <strong>A-</strong> (6th of 32); Miami Dolphins's pass defense grades <strong>B+</strong> (9th of 32). That is a slight edge for <strong>Dallas Cowboys</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Miami Dolphins passing vs Dallas Cowboys pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Miami Dolphins's passing attack grades <strong>A+</strong> (2nd of 32); Dallas Cowboys's pass defense grades <strong>A</strong> (5th of 32). That is a slight edge for <strong>Miami Dolphins</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Dallas Cowboys running vs Miami Dolphins run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Dallas Cowboys's running attack grades <strong>A-</strong> (8th of 32); Miami Dolphins's run defense grades <strong>B</strong> (12th of 32). That is essentially even for <strong>Dallas Cowboys</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Miami Dolphins running vs Dallas Cowboys run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Miami Dolphins's running attack grades <strong>B+</strong> (9th of 32); Dallas Cowboys's run defense grades <strong>A+</strong> (3rd of 32). That is essentially even for <strong>Dallas Cowboys</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext">Wind is forecast around 15 mph, which historically suppresses the passing game.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Miami Dolphins</th><th>Dallas Cowboys</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">2nd</span></div><div class="gbar"><i class="t-strong" style="width:97%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">6th</span></div><div class="gbar"><i class="t-strong" style="width:84%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">9th</span></div><div class="gbar"><i class="t-good" style="width:74%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">5th</span></div><div class="gbar"><i class="t-strong" style="width:87%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">9th</span></div><div class="gbar"><i class="t-good" style="width:74%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">A-</span><span class="grank">8th</span></div><div class="gbar"><i class="t-good" style="width:77%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">12th</span></div><div class="gbar"><i class="t-good" style="width:65%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">3rd</span></div><div class="gbar"><i class="t-strong" style="width:94%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703376000" data-prob="0.6446" data-margin="4.895" data-edge="2.105" data-tags="lean">
+<div class="cardhead"><div class="teams">New England Patriots @ Denver Broncos</div>
+<div class="kick">Sun, Dec 24 &middot; 8:15 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Denver Broncos <span class="price">-200</span></div>
+<div class="betnote meta">64% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Denver Broncos -5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">New England Patriots +7.0</div><div class="betnote meta">2.1 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span></div>
+<div class="meta">Market line: Denver Broncos -7 &middot; <span class="meta">model -2.1 toward New England Patriots</span></div><div class="meta">Final: Denver Broncos 23&ndash;26 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 0.5 points between them on raw strength. Overall, Denver Broncos is the 22nd-rated team in the league (weak) and New England Patriots is 26th (a real weakness). Denver Broncos then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Denver Broncos by 5</strong> and gives them a 64% chance to win outright.</p><p>On how it plays out: neither run game projects well, though <strong>New England Patriots</strong> is the less inefficient of the two. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Denver Broncos -7. The model leans 2.1 points toward New England Patriots, a mild difference rather than a strong disagreement.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Denver Broncos:</strong> QB <strong>B.Nix</strong> has been playing well, adding roughly +3.1 points a game over an average quarterback; the passing game runs through <strong>C.Sutton</strong> and <strong>R.Harvey</strong>; lead back <strong>J.Dobbins</strong> has been efficient.</li><li><strong>New England Patriots:</strong> QB <strong>D.Maye</strong> has been carrying the offense, adding roughly +6.2 points a game over an average quarterback; the passing game runs through <strong>S.Diggs</strong> and <strong>H.Henry</strong>; lead back <strong>T.Henderson</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Denver Broncos running vs New England Patriots run defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Denver Broncos's running attack grades <strong>C+</strong> (18th of 32); New England Patriots's run defense grades <strong>A+</strong> (1st of 32). That is a clear edge for <strong>New England Patriots</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New England Patriots passing vs Denver Broncos pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">New England Patriots's passing attack grades <strong>D+</strong> (26th of 32); Denver Broncos's pass defense grades <strong>C-</strong> (22nd of 32). That is a slight edge for <strong>Denver Broncos</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Denver Broncos passing vs New England Patriots pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Denver Broncos's passing attack grades <strong>C-</strong> (23rd of 32); New England Patriots's pass defense grades <strong>B-</strong> (15th of 32). That is a slight edge for <strong>New England Patriots</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New England Patriots running vs Denver Broncos run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">New England Patriots's running attack grades <strong>C-</strong> (24th of 32); Denver Broncos's run defense grades <strong>D+</strong> (26th of 32). That is essentially even for <strong>Denver Broncos</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Denver Broncos</strong> has the clear edge at quarterback; <strong>Denver Broncos</strong> is the healthier side this week by the injury report, weighted by who is actually missing.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Denver Broncos</th><th>New England Patriots</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">23rd</span></div><div class="gbar"><i class="t-poor" style="width:29%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">26th</span></div><div class="gbar"><i class="t-bad" style="width:19%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">22nd</span></div><div class="gbar"><i class="t-poor" style="width:32%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">15th</span></div><div class="gbar"><i class="t-mid" style="width:55%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">18th</span></div><div class="gbar"><i class="t-mid" style="width:45%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">24th</span></div><div class="gbar"><i class="t-poor" style="width:26%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">26th</span></div><div class="gbar"><i class="t-bad" style="width:19%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">1st</span></div><div class="gbar"><i class="t-strong" style="width:100%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703462400" data-prob="0.7207" data-margin="7.721" data-edge="3.279" data-tags="lean lock value upset">
+<div class="cardhead"><div class="teams">Las Vegas Raiders @ Kansas City Chiefs</div>
+<div class="kick">Mon, Dec 25 &middot; 1:00 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Kansas City Chiefs <span class="price">-290</span></div>
+<div class="betnote meta">72% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Kansas City Chiefs -7.5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Las Vegas Raiders +11.0</div><div class="betnote meta">3.3 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span><span class="tag tag-key">near 7</span></div>
+<div class="meta">Market line: Kansas City Chiefs -11 &middot; <span class="edge-pos">model -3.3 toward Las Vegas Raiders</span></div><div class="meta">Final: Kansas City Chiefs 14&ndash;20 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a meaningful but not overwhelming edge for Kansas City Chiefs, 5.8 points of separation before adjustments. Overall, Kansas City Chiefs is the 5th-rated team in the league (very good) and Las Vegas Raiders is 19th (average). Kansas City Chiefs then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Kansas City Chiefs by 7.5</strong> and gives them a 72% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Kansas City Chiefs</strong> &mdash; a major mismatch through the air; and <strong>Kansas City Chiefs</strong> has the better ground matchup, a clear edge on the run. Expect the favorite to be able to play from ahead and lean on the run late.</p><p>The market has this at Kansas City Chiefs -11. That is a real disagreement: the model wants 3.3 more points on Las Vegas Raiders than the market is pricing, which is where the value on this game sits.</p><p>One caution: the projection sits near 7, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Kansas City Chiefs:</strong> QB <strong>P.Mahomes</strong> has been playing well, adding roughly +4.5 points a game over an average quarterback; the passing game runs through <strong>T.Kelce</strong> and <strong>T.Thornton</strong>; lead back <strong>K.Hunt</strong> has been efficient.</li><li><strong>Las Vegas Raiders:</strong> QB <strong>K.Pickett</strong> has been a drag on the offense, adding roughly -19.2 points a game over an average quarterback; the passing game runs through <strong>B.Bowers</strong> and <strong>T.Tucker</strong>; lead back <strong>A.Jeanty</strong> has struggled to move the ball.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Kansas City Chiefs passing vs Las Vegas Raiders pass defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">Kansas City Chiefs's passing attack grades <strong>A</strong> (4th of 32); Las Vegas Raiders's pass defense grades <strong>C+</strong> (17th of 32). That is a clear edge for <strong>Kansas City Chiefs</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Las Vegas Raiders passing vs Kansas City Chiefs pass defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Las Vegas Raiders's passing attack grades <strong>C</strong> (21st of 32); Kansas City Chiefs's pass defense grades <strong>A-</strong> (7th of 32). That is a clear edge for <strong>Kansas City Chiefs</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Kansas City Chiefs running vs Las Vegas Raiders run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Kansas City Chiefs's running attack grades <strong>A</strong> (5th of 32); Las Vegas Raiders's run defense grades <strong>C</strong> (20th of 32). That is a slight edge for <strong>Kansas City Chiefs</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Las Vegas Raiders running vs Kansas City Chiefs run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Las Vegas Raiders's running attack grades <strong>F</strong> (30th of 32); Kansas City Chiefs's run defense grades <strong>F</strong> (30th of 32). That is essentially even for <strong>Kansas City Chiefs</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Rest advantage</span><span class="fverdict t-mid">situational</span></div><div class="ftext"><strong>Las Vegas Raiders</strong> comes in with 3 more days of rest &mdash; worth a fraction of a point, but real for recovery and preparation.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Las Vegas Raiders</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Kansas City Chiefs</strong> has the clear edge at quarterback.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Kansas City Chiefs</th><th>Las Vegas Raiders</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">4th</span></div><div class="gbar"><i class="t-strong" style="width:90%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">21st</span></div><div class="gbar"><i class="t-poor" style="width:35%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">7th</span></div><div class="gbar"><i class="t-strong" style="width:81%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C+</span><span class="grank">17th</span></div><div class="gbar"><i class="t-mid" style="width:48%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A</span><span class="grank">5th</span></div><div class="gbar"><i class="t-strong" style="width:87%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">30th</span></div><div class="gbar"><i class="t-bad" style="width:6%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">30th</span></div><div class="gbar"><i class="t-bad" style="width:6%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C</span><span class="grank">20th</span></div><div class="gbar"><i class="t-poor" style="width:39%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703462400" data-prob="0.7810" data-margin="10.238" data-edge="3.762" data-tags="lean lock value upset">
+<div class="cardhead"><div class="teams">New York Giants @ Philadelphia Eagles</div>
+<div class="kick">Mon, Dec 25 &middot; 4:30 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">Philadelphia Eagles <span class="price">-410</span></div>
+<div class="betnote meta">78% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">Philadelphia Eagles -10</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">New York Giants +14.0</div><div class="betnote meta">3.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span><span class="tag tag-value">value</span><span class="tag tag-upset">upset</span><span class="tag tag-key">near 10</span></div>
+<div class="meta">Market line: Philadelphia Eagles -14 &middot; <span class="edge-pos">model -3.8 toward New York Giants</span></div><div class="meta">Final: Philadelphia Eagles 33&ndash;25 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see a clear talent gap &mdash; Philadelphia Eagles rates 8.6 points stronger before any situational adjustment. Overall, Philadelphia Eagles is the 7th-rated team in the league (very good) and New York Giants is 30th (a real weakness). Philadelphia Eagles then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>Philadelphia Eagles by 10</strong> and gives them a 78% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>Philadelphia Eagles</strong> &mdash; a major mismatch through the air; and <strong>Philadelphia Eagles</strong> has the better ground matchup, a major mismatch on the run. Expect the favorite to be able to play from ahead and lean on the run late.</p><p>The market has this at Philadelphia Eagles -14. That is a real disagreement: the model wants 3.8 more points on New York Giants than the market is pricing, which is where the value on this game sits.</p><p>One caution: the projection sits near 10, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Philadelphia Eagles:</strong> QB <strong>J.Hurts</strong> has been steady but not a difference-maker, adding roughly +1.5 points a game over an average quarterback; the passing game runs through <strong>D.Smith</strong> and <strong>D.Goedert</strong>; lead back <strong>T.Bigsby</strong> has been efficient.</li><li><strong>New York Giants:</strong> QB <strong>J.Winston</strong> has been carrying the offense, adding roughly +7.8 points a game over an average quarterback; the passing game runs through <strong>D.Bellinger</strong> and <strong>W.Robinson</strong>; lead back <strong>D.Singletary</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Philadelphia Eagles running vs New York Giants run defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">Philadelphia Eagles's running attack grades <strong>A+</strong> (3rd of 32); New York Giants's run defense grades <strong>F</strong> (31st of 32). That is a clear edge for <strong>Philadelphia Eagles</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New York Giants passing vs Philadelphia Eagles pass defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">New York Giants's passing attack grades <strong>D</strong> (29th of 32); Philadelphia Eagles's pass defense grades <strong>B</strong> (12th of 32). That is a clear edge for <strong>Philadelphia Eagles</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Philadelphia Eagles passing vs New York Giants pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Philadelphia Eagles's passing attack grades <strong>B+</strong> (9th of 32); New York Giants's pass defense grades <strong>B-</strong> (16th of 32). That is a slight edge for <strong>Philadelphia Eagles</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">New York Giants running vs Philadelphia Eagles run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">New York Giants's running attack grades <strong>C-</strong> (23rd of 32); Philadelphia Eagles's run defense grades <strong>D+</strong> (27th of 32). That is essentially even for <strong>Philadelphia Eagles</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>Philadelphia Eagles</strong> has the clear edge at quarterback; <strong>New York Giants</strong> is the healthier side this week by the injury report, weighted by who is actually missing.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>Philadelphia Eagles</th><th>New York Giants</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B+</span><span class="grank">9th</span></div><div class="gbar"><i class="t-good" style="width:74%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">29th</span></div><div class="gbar"><i class="t-bad" style="width:10%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">12th</span></div><div class="gbar"><i class="t-good" style="width:65%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B-</span><span class="grank">16th</span></div><div class="gbar"><i class="t-mid" style="width:52%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">3rd</span></div><div class="gbar"><i class="t-strong" style="width:94%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">C-</span><span class="grank">23rd</span></div><div class="gbar"><i class="t-poor" style="width:29%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">27th</span></div><div class="gbar"><i class="t-bad" style="width:16%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">31st</span></div><div class="gbar"><i class="t-bad" style="width:3%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+<div class="card game" data-kick="1703462400" data-prob="0.7131" data-margin="7.424" data-edge="0.924" data-tags="lean lock">
+<div class="cardhead"><div class="teams">Baltimore Ravens @ San Francisco 49ers</div>
+<div class="kick">Mon, Dec 25 &middot; 8:15 PM ET</div></div>
+<div class="bets">
+<div class="bet"><div class="betlabel">Moneyline pick</div>
+<div class="betvalue">San Francisco 49ers <span class="price">-280</span></div>
+<div class="betnote meta">71% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Projected line</div>
+<div class="betvalue">San Francisco 49ers -7.5</div>
+<div class="betnote meta">model projection</div></div>
+<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">San Francisco 49ers -6.5</div><div class="betnote meta">0.9 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-lock">lock</span><span class="tag tag-key">near 7</span></div>
+<div class="meta">Market line: San Francisco 49ers -6.5 &middot; <span class="meta">model +0.9 toward San Francisco 49ers</span></div><div class="meta">Final: San Francisco 49ers 19&ndash;33 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>More info &mdash; full analysis</summary>
+<div class="analysis">
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.9 points between them on raw strength. Overall, San Francisco 49ers is the 1st-rated team in the league (elite) and Baltimore Ravens is 4th (elite). San Francisco 49ers then adds the home-field bump the model fits at 2.3 points. Rolling that together, the engine projects <strong>San Francisco 49ers by 7.5</strong> and gives them a 71% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>San Francisco 49ers</strong> &mdash; a major mismatch through the air. Expect the favorite to be able to play from ahead and lean on the run late.</p><p>The market has this at San Francisco 49ers -6.5. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 7, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Players to watch</h4><ul class="factors"><li><strong>San Francisco 49ers:</strong> QB <strong>B.Purdy</strong> has been playing well, adding roughly +4.4 points a game over an average quarterback; the passing game runs through <strong>C.McCaffrey</strong> and <strong>G.Kittle</strong>; lead back <strong>B.Robinson</strong> has held his own.</li><li><strong>Baltimore Ravens:</strong> QB <strong>L.Jackson</strong> has been steady but not a difference-maker, adding roughly +0.7 points a game over an average quarterback; the passing game runs through <strong>Z.Flowers</strong> and <strong>D.Hopkins</strong>; lead back <strong>D.Henry</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">San Francisco 49ers passing vs Baltimore Ravens pass defense</span><span class="fverdict t-strong">a major mismatch</span></div><div class="ftext">San Francisco 49ers's passing attack grades <strong>A+</strong> (1st of 32); Baltimore Ravens's pass defense grades <strong>A-</strong> (6th of 32). That is a major mismatch for <strong>San Francisco 49ers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Baltimore Ravens running vs San Francisco 49ers run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Baltimore Ravens's running attack grades <strong>A+</strong> (2nd of 32); San Francisco 49ers's run defense grades <strong>A-</strong> (7th of 32). That is a slight edge for <strong>Baltimore Ravens</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Baltimore Ravens passing vs San Francisco 49ers pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Baltimore Ravens's passing attack grades <strong>B</strong> (12th of 32); San Francisco 49ers's pass defense grades <strong>A+</strong> (2nd of 32). That is a slight edge for <strong>San Francisco 49ers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">San Francisco 49ers running vs Baltimore Ravens run defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">San Francisco 49ers's running attack grades <strong>A-</strong> (7th of 32); Baltimore Ravens's run defense grades <strong>B</strong> (14th of 32). That is a slight edge for <strong>San Francisco 49ers</strong>.</div></li></ul>
+<h4>Availability &amp; conditions</h4><p class="ftext"><strong>San Francisco 49ers</strong> has the clear edge at quarterback.</p>
+<h4>Unit ratings</h4><table class="units">
+<tr><th>Unit grades</th><th>San Francisco 49ers</th><th>Baltimore Ravens</th></tr>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">1st</span></div><div class="gbar"><i class="t-strong" style="width:100%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">B</span><span class="grank">12th</span></div><div class="gbar"><i class="t-good" style="width:65%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">2nd</span></div><div class="gbar"><i class="t-strong" style="width:97%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">6th</span></div><div class="gbar"><i class="t-strong" style="width:84%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">7th</span></div><div class="gbar"><i class="t-strong" style="width:81%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A+</span><span class="grank">2nd</span></div><div class="gbar"><i class="t-strong" style="width:97%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">7th</span></div><div class="gbar"><i class="t-strong" style="width:81%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">B</span><span class="grank">14th</span></div><div class="gbar"><i class="t-mid" style="width:58%"></i></div></td></tr></table>
+<div class="meta gnote">Grades compare each unit to the rest of the league
+(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
+</div></details>
+</div>
+</div>
+<script>
+(function () {
+  var list = document.getElementById('games');
+  if (!list) return;
+  var note = document.querySelector('.emptynote');
+  var filter = 'all';
+
+  function apply() {
+    var key = document.getElementById('sortby').value;
+    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
+    cards.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
+    });
+    cards.forEach(function (c) {
+      list.appendChild(c);
+      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
+      c.hidden = !show;
+    });
+    var visible = cards.filter(function (c) { return !c.hidden; }).length;
+    if (note) note.hidden = visible !== 0;
+  }
+
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      apply();
+    });
+  });
+  document.getElementById('sortby').addEventListener('change', apply);
+  apply();
+
+  var wk = document.getElementById('weekpick');
+  if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
+})();
+</script>
+<footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
+ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
+</div></body></html>

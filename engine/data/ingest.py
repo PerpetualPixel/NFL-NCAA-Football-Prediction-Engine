@@ -281,10 +281,18 @@ def ncaa_game_odds(schedule: pd.DataFrame, refresh: bool = False) -> pd.DataFram
         # book posts the home side as e.g. -2.5; the engine's convention is
         # positive when the home team is favored
         (-consensus(spread & is_home, "lines", "spread_line")),
+        # the number the market opened at, for closing-line-value tracking
+        (-consensus(spread & is_home, "opening_lines", "open_spread_line")),
         consensus(total, "lines", "total_line"),
         consensus(money & is_home, "odds", "home_moneyline"),
         consensus(money & is_away, "odds", "away_moneyline"),
         consensus(spread & is_home, "odds", "home_spread_odds"),
         consensus(spread & is_away, "odds", "away_spread_odds"),
     ], axis=1).reset_index()
+    # American odds are undefined between -100 and +100; consensus medians
+    # across books occasionally produce 0 or other impossible values, which
+    # would otherwise be treated as a real price
+    for col in ("home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds"):
+        if col in out.columns:
+            out[col] = out[col].where(out[col].abs() >= 100)
     return out

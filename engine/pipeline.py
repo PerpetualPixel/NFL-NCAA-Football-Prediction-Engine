@@ -18,7 +18,7 @@ FCS_BUCKET = "NON-FBS"
 
 def load_league_inputs(
     league: str, refresh: bool = False, recent_only: bool = False,
-    with_players: bool = False,
+    with_players: bool = False, history_seasons: int | None = None,
 ):
     """Games table, (NFL) unit stats, and the availability context.
 
@@ -29,7 +29,8 @@ def load_league_inputs(
     unit_stats = players = None
     seasons = sorted(games.loc[games["completed"], "season"].unique().tolist())
     if recent_only:
-        seasons = seasons[-(LEAGUES[league].rating_window_seasons + 1):]
+        span = history_seasons or (LEAGUES[league].rating_window_seasons + 1)
+        seasons = seasons[-span:]
     availability = None
     if league == "nfl":
         pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
@@ -226,7 +227,8 @@ def load_games(league: str, refresh: bool = False) -> pd.DataFrame:
     ].rename(columns={"season_type": "game_type"})
     odds_df = ingest.ncaa_game_odds(out, refresh=refresh)
     out = out.merge(odds_df, on="game_id", how="left")
-    for col in ["spread_line", "total_line", "home_moneyline", "away_moneyline",
+    for col in ["spread_line", "open_spread_line", "total_line",
+                "home_moneyline", "away_moneyline",
                 "home_spread_odds", "away_spread_odds"]:
         if col not in out.columns:
             out[col] = np.nan
