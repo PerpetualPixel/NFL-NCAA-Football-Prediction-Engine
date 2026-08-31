@@ -96,6 +96,8 @@ ul.factors { padding-left: 0; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
 .explain { font-size: 0.88rem; }
+.explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
+.explainbox summary { color: var(--muted); font-weight: 600; }
 table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
 table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
 table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -134,6 +136,17 @@ table.track a:hover { color: var(--accent); }
 .tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
 .tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+.scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
+.hero.card {
+  display: block; text-decoration: none; color: inherit;
+  border: 2px solid var(--accent); padding: 18px 20px;
+}
+.herolabel {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent);
+}
+.heroweek { font-size: 1.5rem; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
+.herogo { margin-top: 8px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
 .card.pending { border-style: dashed; }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -201,7 +214,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 06:37 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-08-31 11:00 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2023-w14.html">&larr; Week 14</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html">2026 season</option><option value="ncaa-2025-w01.html">2025 season</option><option value="ncaa-2024-w01.html">2024 season</option><option value="ncaa-2023-w01.html" selected>2023 season</option></select></label>
