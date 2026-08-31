@@ -69,13 +69,22 @@ def _leg(row, kind, pick, price, prob, detail):
     }
 
 
-def candidate_legs(preds: pd.DataFrame, margin_sigma: float) -> list[dict]:
+def candidate_legs(preds: pd.DataFrame, margin_sigma: float,
+                   relaxed: bool = False) -> list[dict]:
     """Every leg worth considering this week.
 
     Probabilities are the calibrated ones where available: the raw model
     numbers systematically overrate its own disagreements with the price,
     which is what makes confident-looking picks lose.
+
+    The relaxed pool drops the confidence thresholds. It is never used to
+    choose a pick on its own — only to find partners to parlay a short-priced
+    favourite with, so the combined price can reach the floor.
     """
+    min_ml = 0.0 if relaxed else MIN_ML_PROB
+    min_ats = 0.0 if relaxed else MIN_ATS_PROB
+    min_edge = 0.0 if relaxed else MIN_EDGE_POINTS
+    max_gap = 1.0 if relaxed else MAX_DISAGREEMENT
     legs = []
     for row in preds.itertuples():
         cal_ml = getattr(row, "ml_cal", np.nan)
@@ -87,8 +96,8 @@ def candidate_legs(preds: pd.DataFrame, margin_sigma: float) -> list[dict]:
         pick = row.home_team if home_favored else row.away_team
         if pd.notna(cal_ml):
             prob = float(cal_ml)
-        if (pd.notna(price) and prob >= MIN_ML_PROB
-                and prob - implied_probability(price) <= MAX_DISAGREEMENT):
+        if (pd.notna(price) and prob >= min_ml
+                and prob - implied_probability(price) <= max_gap):
             legs.append(_leg(row, "ML", pick, price, prob,
                              f"{pick} to win outright"))
 
@@ -105,8 +114,8 @@ def candidate_legs(preds: pd.DataFrame, margin_sigma: float) -> list[dict]:
             price = -110.0 if pd.isna(price) else price
             if pd.notna(cal_ats):
                 cover = float(cal_ats)
-            if (cover >= MIN_ATS_PROB and abs(edge) >= MIN_EDGE_POINTS
-                    and cover - implied_probability(price) <= MAX_DISAGREEMENT):
+            if (cover >= min_ats and abs(edge) >= min_edge
+                    and cover - implied_probability(price) <= max_gap):
                 legs.append(_leg(row, "ATS", side, price, cover,
                                  f"{side} {line:+.1f}"))
     return legs
@@ -121,43 +130,69 @@ def _combo_quality(combo: tuple[dict, ...]) -> tuple[float, float]:
     return ev, -abs(dec - TARGET_DECIMAL)
 
 
+def _clears_floor(combo) -> bool:
+    dec = math.prod(leg["decimal"] for leg in combo)
+    return decimal_to_american(dec) >= MIN_COMBINED_AMERICAN
+
+
+def _score(combo) -> tuple:
+    """Rank floor-clearing combinations: value first, then confidence, then
+    proximity to even money."""
+    dec = math.prod(leg["decimal"] for leg in combo)
+    joint = math.prod(leg["prob"] for leg in combo)
+    ev = joint * (dec - 1.0) - (1.0 - joint)
+    return (ev > 0, ev, joint, -abs(dec - TARGET_DECIMAL))
+
+
+def _best_combo(anchors: list[dict], partners: list[dict]) -> tuple | None:
+    """Smallest combination that clears the price floor.
+
+    At least one leg always comes from `anchors`, so a pick is never built
+    entirely from legs that failed the confidence thresholds.
+    """
+    if not anchors:
+        return None
+    pool = anchors + [p for p in partners
+                      if p["game_id"] not in {a["game_id"] for a in anchors}]
+    for size in range(1, MAX_LEGS + 1):
+        best = None
+        for combo in itertools.combinations(pool, size):
+            if len({leg["game_id"] for leg in combo}) != size:
+                continue  # legs from one game are not independent
+            if not any(leg in anchors for leg in combo):
+                continue
+            if not _clears_floor(combo):
+                continue
+            score = _score(combo)
+            if best is None or score > best[0]:
+                best = (score, combo)
+        if best is not None:
+            return best[1]
+    return None
+
+
 def select(preds: pd.DataFrame, margin_sigma: float) -> dict | None:
-    """Choose this week's pick: a single leg when the price allows, otherwise
-    the smallest parlay of high-conviction legs that clears the odds floor."""
-    legs = candidate_legs(preds, margin_sigma)
-    if not legs:
+    """Choose this week's pick.
+
+    The price floor is not negotiable: a short-priced favourite is only ever
+    published parlayed with enough alongside it to reach -175 or better. If
+    no combination can reach the floor, there is no pick — publishing one at
+    -575 would break the promise the pick makes.
+    """
+    strict = candidate_legs(preds, margin_sigma)
+    if not strict:
         return None
 
-    # value is the point: a leg only qualifies if the calibrated probability
-    # beats the price. Falling back to "most confident" would reintroduce
-    # exactly the heavy favorites that lose money.
-    valued = [leg for leg in legs if leg["ev"] > 0]
-    pool = sorted(valued or legs, key=lambda l: -l["ev"])[:8]
+    # value legs are the preferred anchors; confident ones are the fallback
+    valued = [leg for leg in strict if leg["ev"] > 0]
+    partners = candidate_legs(preds, margin_sigma, relaxed=True)
 
-    best = None
-    for size in range(1, MAX_LEGS + 1):
-        for combo in itertools.combinations(pool, size):
-            # never two legs from the same game: they are not independent
-            if len({leg["game_id"] for leg in combo}) != size:
-                continue
-            dec = math.prod(leg["decimal"] for leg in combo)
-            if decimal_to_american(dec) < MIN_COMBINED_AMERICAN:
-                continue  # still too short a price even combined
-            quality = _combo_quality(combo)
-            if best is None or quality > best[0]:
-                best = (quality, combo)
-        if best is not None:
-            break  # prefer the fewest legs that clear the floor
+    combo = _best_combo(sorted(valued, key=lambda l: -l["ev"])[:8], partners)
+    if combo is None:
+        combo = _best_combo(sorted(strict, key=lambda l: -l["prob"])[:8], partners)
+    if combo is None:
+        return None
 
-    if best is None:
-        # nothing cleared the floor even parlayed; take the most confident
-        # pair so the week still has a pick, and let the price speak
-        combo = tuple(sorted(pool, key=lambda l: -l["prob"])[:2])
-        if not combo:
-            return None
-        best = (_combo_quality(combo), combo)
-
-    combo = best[1]
     dec = math.prod(leg["decimal"] for leg in combo)
     joint = math.prod(leg["prob"] for leg in combo)
     return {
