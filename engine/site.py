@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import analysis, grades, model as model_mod
-from . import odds, pipeline, teams, tracking
+from . import analysis, calibrate, grades, model as model_mod
+from . import odds, pipeline, pixel, teams, tracking
 from .config import LEAGUES
 
 SITE_DIR = Path(__file__).resolve().parents[1] / "site"
@@ -146,7 +146,23 @@ table.track a:hover { color: var(--accent); }
 .tag-lock { color: var(--good); border-color: var(--good); }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-lean { color: var(--muted); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+.card.pending { border-style: dashed; }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
+.pendingnote { margin-top: 6px; font-size: 0.9rem; }
+.pendingnote strong { color: var(--accent); }
 details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
 details.more summary {
   cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
@@ -266,7 +282,7 @@ def _kickoff(row: pd.Series) -> tuple[str, float]:
 
 
 def _game_card(row: pd.Series, graded: bool, league: str,
-               players: pd.DataFrame | None = None) -> str:
+               players: pd.DataFrame | None = None, is_pixel: bool = False) -> str:
     home_favored = row.pred_margin > 0
     pick = row.home_team if home_favored else row.away_team
     prob = row.home_win_prob if home_favored else 1 - row.home_win_prob
@@ -283,8 +299,16 @@ def _game_card(row: pd.Series, graded: bool, league: str,
                   f'&middot; <span class="{cls}">model {edge:+.1f} toward {side}</span></div>')
 
     tags = odds.classify(prob, edge)
+    tier = "lean"
+    if row.get("ml_tier") == "pick" or row.get("ats_tier") == "pick":
+        tier = "pick"
+    tags = [tier] + tags
+    if is_pixel:
+        tags = ["pixel"] + tags
     key = odds.near_key_number(row.pred_margin, league)
-    chips = "".join(f'<span class="tag tag-{t}">{t}</span>' for t in tags)
+    label = {"pixel": "Pixel&rsquo;s Pick", "pick": "pick", "lean": "lean",
+             "lock": "lock", "pickem": "pick'em", "value": "value", "upset": "upset"}
+    chips = "".join(f'<span class="tag tag-{t}">{label.get(t, t)}</span>' for t in tags)
     if key:
         chips += f'<span class="tag tag-key">near {key}</span>'
 
@@ -350,6 +374,9 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -
         items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in people)
         player_html = f'<h4>Players to watch</h4><ul class="factors">{items}</ul>'
 
+    avail = analysis.availability_note(row)
+    avail_html = (f'<h4>Availability &amp; conditions</h4><p class="ftext">{avail}</p>'
+                  if avail else "")
     factor_html = ""
     factors = analysis.key_factors(row)
     if factors:
@@ -367,6 +394,7 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -
 <div class="analysis">
 <h4>How the model sees it playing out</h4>{paras}
 {player_html}{factor_html}
+{avail_html}
 <h4>Unit ratings</h4>{_unit_table(row)}
 </div></details>"""
 
@@ -374,6 +402,9 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -
 CONTROLS = """<div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-filter="pick">Picks (value)</button>
+    <button class="chip" data-filter="lean">Leans</button>
     <button class="chip" data-filter="lock">Locks</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
@@ -426,6 +457,8 @@ SCRIPT = """<script>
 
   var wk = document.getElementById('weekpick');
   if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
 })();
 </script>"""
 
@@ -462,6 +495,55 @@ def week_slug(league: str, week: int, season: int | None = None, current: int | 
 
 ODDS_COLS = ["home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds"]
 
+# A pick made in August for a game in December is worthless: it cannot know
+# who is hurt, who is starting, or what the weather will be. Picks are held
+# until the day before kickoff, then refreshed on game day by the scheduled
+# rebuild so late injury and lineup news is reflected.
+RELEASE_LEAD_HOURS = 24
+
+
+EASTERN = "US/Eastern"
+
+
+def _local(ts: pd.Timestamp) -> pd.Timestamp:
+    """Kickoffs read best in US Eastern; fall back to UTC where the system
+    has no timezone database."""
+    try:
+        return ts.tz_convert(EASTERN)
+    except Exception:
+        return ts
+
+
+def _kickoff_time(row) -> pd.Timestamp:
+    """Kickoff as a UTC timestamp, for release-timing decisions."""
+    return pd.to_datetime(row.get("gameday"), utc=True, errors="coerce")
+
+
+def _is_released(kick: pd.Timestamp, now: pd.Timestamp) -> bool:
+    if pd.isna(kick):
+        return True  # no kickoff time known: nothing to hold back for
+    return now >= kick - pd.Timedelta(hours=RELEASE_LEAD_HOURS)
+
+
+def _release_label(kick: pd.Timestamp) -> str:
+    if pd.isna(kick):
+        return "soon"
+    release = _local(kick - pd.Timedelta(hours=RELEASE_LEAD_HOURS))
+    return release.strftime("%a %b %-d, %-I:%M %p")
+
+
+def _pending_card(row, kick: pd.Timestamp) -> str:
+    """A scheduled game whose pick is not out yet."""
+    when = "" if pd.isna(kick) else _local(kick).strftime("%a %b %-d, %-I:%M %p")
+    return f"""<div class="card game pending" data-kick="{0 if pd.isna(kick) else int(kick.timestamp())}"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams">{row.away_team} @ {row.home_team}</div>
+<div class="kick">{when}</div></div>
+<div class="pendingnote">Pick releases <strong>{_release_label(kick)}</strong>
+<span class="meta">&mdash; held until injury reports, starting lineups and the
+forecast are known, then refreshed on game day.</span></div>
+</div>"""
+
 
 def _add_display_names(preds: pd.DataFrame, league: str) -> pd.DataFrame:
     """Swap data-source team keys for full names with mascots.
@@ -483,7 +565,27 @@ def _add_display_names(preds: pd.DataFrame, league: str) -> pd.DataFrame:
     return df
 
 
-def _week_nav(league: str, weeks: list[dict], current: int, cur_season: int) -> str:
+def _season_select(league: str, season: int, seasons: list[tuple[int, list[dict]]],
+                   cur_season: int) -> str:
+    """Season dropdown, so a past season is one click away."""
+    if len(seasons) < 2:
+        return ""
+    opts = []
+    for yr, yr_weeks in seasons:
+        if not yr_weeks:
+            continue
+        target = week_slug(league, yr_weeks[0]["week"], yr, cur_season)
+        sel = " selected" if yr == season else ""
+        opts.append(f'<option value="{target}"{sel}>{yr} season</option>')
+    if len(opts) < 2:
+        return ""
+    return (f'<label class="wksel">Season:<select id="seasonpick">{"".join(opts)}'
+            "</select></label>")
+
+
+def _week_nav(league: str, weeks: list[dict], current: int, cur_season: int,
+              seasons: list[tuple[int, list[dict]]] | None = None,
+              season: int | None = None) -> str:
     """Dropdown + prev/next links across every week of the season."""
     slug = lambda w: week_slug(league, w["week"], w["season"], cur_season)
     options = []
@@ -499,9 +601,12 @@ def _week_nav(league: str, weeks: list[dict], current: int, cur_season: int) -> 
     next_link = (f'<a class="wknav-btn" href="{slug(weeks[idx+1])}">'
                  f'{weeks[idx+1]["label"]} &rarr;</a>' if idx < len(weeks) - 1 else
                  '<span class="wknav-btn disabled">Next &rarr;</span>')
+    season_sel = (_season_select(league, season, seasons, cur_season)
+                  if seasons and season is not None else "")
     return f"""<div class="wknav">
 {prev_link}
-<label class="wksel">Jump to:
+{season_sel}
+<label class="wksel">Week:
   <select id="weekpick">{''.join(options)}</select>
 </label>
 {next_link}
@@ -509,17 +614,18 @@ def _week_nav(league: str, weeks: list[dict], current: int, cur_season: int) -> 
 
 
 def build_league_weeks(
-    league: str, refresh: bool, season: int | None = None
+    league: str, refresh: bool, season: int | None = None,
+    write_pages: bool = True, seed_history: pd.DataFrame | None = None,
 ) -> tuple[list[dict], str, int]:
     """Build every week of a season (default: the current one).
     Returns (weeks, season_summary, season)."""
     cfg = LEAGUES[league]
-    games, unit_stats, players = pipeline.load_league_inputs(
+    games, unit_stats, players, availability = pipeline.load_league_inputs(
         league, refresh=refresh, recent_only=True, with_players=True
     )
     season = int(games["season"].max()) if season is None else season
     feats = pipeline.build_walk_forward_features(
-        league, games, unit_stats, start_season=season - 1
+        league, games, unit_stats, start_season=season - 1, availability=availability
     )
     score_cols = ["game_id", "home_score", "away_score", "gameday", "game_type"]
     if "gametime" in games.columns:
@@ -531,6 +637,10 @@ def build_league_weeks(
     season_weeks = sorted(feats.loc[feats["season"] == season, "week"].unique())
 
     weeks = []
+    # calibration starts from last season's settled games, so week 1 is not
+    # flying blind while this season accumulates results
+    settled: list[pd.DataFrame] = ([seed_history] if seed_history is not None
+                                   and len(seed_history) else [])
     for week in season_weeks:
         week = int(week)
         preds = model_mod.predict_week(feats, cfg, season, week)
@@ -540,7 +650,18 @@ def build_league_weeks(
                         | preds["away_team"].eq(pipeline.FCS_BUCKET))]
         if preds.empty:
             continue
-        preds = tracking.grade(preds)
+        preds = tracking.grade(preds, margin_sigma=cfg.margin_sigma)
+        # calibrate against everything already settled this build
+        history = (pd.concat(settled, ignore_index=True) if settled
+                   else preds.iloc[0:0])
+        for kind in ("ml", "ats"):
+            preds[f"{kind}_cal"] = calibrate.fit_and_apply(history, preds, kind)
+            preds[f"{kind}_ev"] = calibrate.expected_value(
+                preds[f"{kind}_cal"], preds[f"{kind}_price"])
+        preds = tracking.assign_tiers(preds)
+        done_rows = preds[preds["ml_result"].isin(["win", "loss"])]
+        if len(done_rows):
+            settled.append(done_rows)
         preds = _add_display_names(preds, league)
         types = set(preds["game_type"].dropna().astype(str))
         label = week_label(league, week, types)
@@ -554,11 +675,26 @@ def build_league_weeks(
             headline = (f'{tracking.format_record(ml)} on the moneyline, '
                         f'{tracking.format_record(ats)} against the spread')
         else:
-            status_short = " — upcoming"
-            headline = f"{len(upcoming)} games, picks below"
+            now = pd.Timestamp.now(tz="UTC")
+            kicks = pd.to_datetime(preds["gameday"], utc=True, errors="coerce")
+            released = sum(_is_released(k, now) for k in kicks)
+            if released:
+                status_short = f" — {released} of {len(preds)} picks out"
+                headline = (f"{released} of {len(preds)} picks released; the rest come out "
+                            "the day before kickoff")
+            else:
+                first = kicks.min()
+                status_short = " — upcoming"
+                headline = (f"{len(preds)} games &mdash; picks release from "
+                            f"{_release_label(first)}, one day before each kickoff")
+
+        pick = pixel.select(preds, cfg.margin_sigma)
+        graded_pick = pixel.grade(pick, graded) if pick is not None else None
+        pixel_ids = {leg["game_id"] for leg in pick["legs"]} if pick else set()
 
         weeks.append({
             "week": week, "label": label, "season": season, "preds": preds,
+            "pixel": pick, "pixel_graded": graded_pick, "pixel_ids": pixel_ids,
             "graded": graded, "status_short": status_short, "headline": headline,
             "ml": ml, "ats": ats,
             "complete": len(graded) > 0 and len(upcoming) == 0,
@@ -578,26 +714,45 @@ def build_league_weeks(
     else:
         season_summary = f"{season} season &mdash; no completed games yet"
 
-    # write each week's page
-    cur_season = int(games["season"].max())
     for w in weeks:
+        w["players"] = players
+    if not write_pages:
+        return weeks, season_summary, season
+
+    cur_season = int(games["season"].max())
+    write_week_pages(league, weeks, season, cur_season, [(season, weeks)])
+    return weeks, season_summary, season
+
+
+def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: int,
+                     season_index: list[tuple[int, list[dict]]]) -> None:
+    """Render one page per week, with week and season navigation."""
+    for w in weeks:
+        players = w.get("players")
         body = [
-            _week_nav(league, weeks, w["week"], cur_season),
+            _week_nav(league, weeks, w["week"], cur_season,
+                      seasons=season_index, season=season),
             f'<h2>{w["label"]} &mdash; {season}</h2>',
             f'<div class="weekhead">{w["headline"]}</div>',
+            _pixel_section(w, league, players),
             CONTROLS,
             '<div id="games">',
         ]
+        now = pd.Timestamp.now(tz="UTC")
         for _, row in w["preds"].sort_values("gameday").iterrows():
             graded_row = bool(row["completed"]) and pd.notna(row["margin"])
-            body.append(_game_card(row, graded=graded_row, league=league, players=players))
+            kick = _kickoff_time(row)
+            if not graded_row and not _is_released(kick, now):
+                body.append(_pending_card(row, kick))
+                continue
+            body.append(_game_card(row, graded=graded_row, league=league,
+                                   players=players,
+                                   is_pixel=row["game_id"] in w["pixel_ids"]))
         body += ["</div>", SCRIPT]
         (SITE_DIR / week_slug(league, w["week"], season, cur_season)).write_text(
             _page(f'{league.upper()} {w["label"]} {season} — Gridiron Engine',
                   "\n".join(body))
         )
-
-    return weeks, season_summary, season
 
 
 def _week_grid(league: str, weeks: list[dict], season: int, cur_season: int) -> str:
@@ -611,7 +766,9 @@ def _week_grid(league: str, weeks: list[dict], season: int, cur_season: int) -> 
                 detail += (f' &middot; <span class="t-{grades.hit_tone(ats["hit_rate"])}">'
                            f'{tracking.format_record(ats)} ATS</span>')
         else:
-            detail = '<span class="upcoming">Picks posted</span>'
+            detail = ('<span class="upcoming">Picks out</span>'
+                      if "picks out" in w["status_short"]
+                      else '<span class="meta">Picks release day before</span>')
         tiles.append(
             f'<a class="weektile" href="{week_slug(league, w["week"], season, cur_season)}">'
             f'<div class="wt-label">{w["label"]}</div>'
@@ -638,6 +795,40 @@ def _league_hub(league: str, weeks: list[dict], season_summary: str,
 Playoff rounds appear as they are scheduled.</div></div>
 {_week_grid(league, weeks, season, season)}
 {prior}"""
+
+
+def _pixel_section(week: dict, league: str, players) -> str:
+    """The week's headline pick, with the full case for it."""
+    pick = week.get("pixel")
+    if not pick:
+        return ""
+    graded = week.get("pixel_graded")
+    price = pixel.format_american(pick["american"])
+    legs = "".join(
+        f'<li class="pxleg"><span class="pxdetail">{leg["detail"]}</span> '
+        f'<span class="meta">{leg["matchup"]} &middot; '
+        f'{pixel.format_american(leg["price"])} &middot; model {leg["prob"]:.0%}</span></li>'
+        for leg in pick["legs"]
+    )
+    kind = (f'{len(pick["legs"])}-leg parlay' if pick["is_parlay"] else "single")
+    outcome = ""
+    if graded and graded.get("result"):
+        tone = {"win": "strong", "loss": "bad", "push": "mid"}[graded["result"]]
+        outcome = (f'<span class="outcome t-{tone}">{graded["result"].upper()}'
+                   f' &middot; {graded["profit"]:+.2f}u</span>')
+    rationale = "".join(
+        f"<p class='ftext'>{p}</p>"
+        for p in analysis.pixel_rationale(pick, week["preds"], league)
+    )
+    return f"""<div class="pixel card">
+<div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
+<span class="pxprice">{price}</span>
+<span class="meta">{kind} &middot; model {pick["prob"]:.0%} vs
+{pixel.implied_probability(pick["american"]):.0%} implied</span>{outcome}</div>
+<ul class="pxlegs">{legs}</ul>
+<details class="more"><summary>Why this is the pick</summary>
+<div class="analysis">{rationale}</div></details>
+</div>"""
 
 
 def _stat_tile(title: str, big: str, tone: str, sub: str) -> str:
@@ -684,7 +875,7 @@ def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: 
                 "ml": ml, "ats": ats,
             })
 
-    cat_table = _category_table(league_weeks)
+    cat_table = _tier_table(league_weeks) + _category_table(league_weeks)
 
     if not rows:
         table = ('<div class="card"><div class="meta">Once games are played, every week\'s '
@@ -742,6 +933,60 @@ losing money.</span></div>
 {table}
 {cat_table}
 {TRACK_SCRIPT}"""
+
+
+def _tier_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
+    """Picks (the model saw value at the price) against Leans (it had an
+    opinion but the price did not justify a bet), plus Pixel's Picks."""
+    body = []
+    for (league, season), weeks in league_weeks.items():
+        graded = [w["graded"] for w in weeks if len(w["graded"])]
+        if not graded:
+            continue
+        allg = pd.concat(graded, ignore_index=True)
+        for tier, label in (("pick", "Picks (value)"), ("lean", "Leans")):
+            cells = []
+            for kind, breakeven in (("ml", 0.50), ("ats", 0.524)):
+                rec = tracking.tier_record(allg, kind, tier)
+                if not rec["decided"]:
+                    cells.append('<td class="num meta">&mdash;</td>'
+                                 '<td class="num meta">&mdash;</td>')
+                    continue
+                cells.append(
+                    f'<td class="num"><span class="t-{grades.hit_tone(rec["hit_rate"], breakeven)}">'
+                    f'{rec["wins"]}-{rec["losses"]}</span> '
+                    f'<span class="meta">{rec["hit_rate"]:.0%}</span></td>'
+                    f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u '
+                    f'<span class="meta">{rec["roi"]:+.0%}</span></td>')
+            body.append(f'<tr><td><span class="lgtag">{league.upper()}</span>{label} '
+                        f'<span class="meta">{season}</span></td>{"".join(cells)}</tr>')
+
+        # Pixel's Picks are single wagers (sometimes parlays), so one column pair
+        settled = [w["pixel_graded"] for w in weeks if w.get("pixel_graded")]
+        if settled:
+            rec = pixel.record(settled)
+            if rec["decided"]:
+                body.append(
+                    f'<tr><td><span class="lgtag">{league.upper()}</span>'
+                    f'<strong>Pixel&rsquo;s Picks</strong> <span class="meta">{season}</span></td>'
+                    f'<td class="num"><span class="t-{grades.hit_tone(rec["hit_rate"], 0.50)}">'
+                    f'{rec["wins"]}-{rec["losses"]}</span> '
+                    f'<span class="meta">{rec["hit_rate"]:.0%}</span></td>'
+                    f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u '
+                    f'<span class="meta">{rec["roi"]:+.0%}</span></td>'
+                    f'<td class="num meta">&mdash;</td><td class="num meta">&mdash;</td></tr>')
+    if not body:
+        return ""
+    return f"""<h2>Picks vs Leans</h2>
+<div class="card explain"><span class="meta">A <strong>Pick</strong> is a side where the
+calibrated probability beats the price &mdash; the model thinks the bet is worth making.
+A <strong>Lean</strong> is everything else: the model has an opinion and shows all its
+reasoning, but the price does not justify backing it. Leans are information, not bets.
+<strong>Pixel&rsquo;s Picks</strong> are the single highest-value play each week.</span></div>
+<table class="track">
+<thead><tr><th>Group</th><th class="num">Moneyline</th><th class="num">ML units</th>
+<th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
+<tbody>{''.join(body)}</tbody></table>"""
 
 
 def _category_table(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
@@ -824,14 +1069,23 @@ def build_site(out_dir: Path = SITE_DIR, refresh: bool = True) -> Path:
     league_weeks: dict[tuple[str, int], list[dict]] = {}
     cur_season: dict[str, int] = {}
     for league in ("nfl", "ncaa"):
-        weeks, season_summary, season = build_league_weeks(league, refresh)
+        # build last season first: it supplies the tracking page's history and
+        # seeds this season's calibration
+        probe, _, season = build_league_weeks(league, refresh, write_pages=False)
         cur_season[league] = season
-        league_weeks[(league, season)] = weeks
-        # the prior season gives the tracking page real history to show while
-        # the current one is still getting started
         prior_weeks, prior_summary, prior_season = build_league_weeks(
-            league, refresh=False, season=season - 1
-        )
+            league, refresh=False, season=season - 1, write_pages=False)
+        seed = (pd.concat([w["graded"] for w in prior_weeks if len(w["graded"])],
+                          ignore_index=True)
+                if prior_weeks else None)
+        weeks, season_summary, season = build_league_weeks(
+            league, refresh=False, write_pages=False, seed_history=seed)
+        league_weeks[(league, season)] = weeks
+
+        index = [(season, weeks)] + ([(prior_season, prior_weeks)] if prior_weeks else [])
+        write_week_pages(league, weeks, season, season, index)
+        if prior_weeks:
+            write_week_pages(league, prior_weeks, prior_season, season, index)
         if prior_weeks:
             league_weeks[(league, prior_season)] = prior_weeks
 

@@ -13,7 +13,11 @@ from sklearn.linear_model import Ridge
 
 from .config import LeagueConfig
 
-FEATURE_COLS = ["rating_diff", "hfa_ind", "rest_diff", "net_pass_epa", "net_rush_epa"]
+FEATURE_COLS = [
+    "rating_diff", "hfa_ind", "rest_diff", "net_pass_epa", "net_rush_epa",
+    # who is actually playing, and in what conditions
+    "qb_gap", "qb_change", "inj_diff", "wind_pass",
+]
 MIN_TRAIN_ROWS = 200
 
 

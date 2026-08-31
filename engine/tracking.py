@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 
 from . import odds
 
@@ -28,7 +29,7 @@ def american_profit(odds: float, stake: float = FLAT_STAKE) -> float:
     return stake * (odds / 100.0 if odds > 0 else 100.0 / abs(odds))
 
 
-def grade(preds: pd.DataFrame) -> pd.DataFrame:
+def grade(preds: pd.DataFrame, margin_sigma: float = 13.5) -> pd.DataFrame:
     """Add moneyline and spread pick columns plus their outcomes.
 
     Only completed games are graded; upcoming games keep NaN results so the
@@ -61,6 +62,8 @@ def grade(preds: pd.DataFrame) -> pd.DataFrame:
     df["ats_pick"] = np.where(has_line, np.where(take_home, df["home_team"], df["away_team"]), None)
     df["ats_line"] = np.where(has_line, np.where(take_home, -df["spread_line"], df["spread_line"]), np.nan)
     df["ats_edge"] = np.where(has_line, (df["pred_margin"] - df["spread_line"]).abs(), np.nan)
+    # the model's own chance that its spread side covers
+    df["ats_prob"] = np.where(has_line, norm.cdf(df["ats_edge"] / margin_sigma), np.nan)
     if "home_spread_odds" in df.columns:
         df["ats_price"] = np.where(take_home, df["home_spread_odds"], df["away_spread_odds"])
     else:
@@ -85,6 +88,31 @@ def grade(preds: pd.DataFrame) -> pd.DataFrame:
         for p, e in zip(df["home_win_prob"], edges)
     ]
     return df
+
+
+# A play is only a "Pick" when the calibrated probability says the price is
+# worth taking. Everything else the model has an opinion on is a "Lean":
+# shown with all its reasoning, but not put forward as a bet.
+PICK_EV_THRESHOLD = 0.0
+
+
+def assign_tiers(graded: pd.DataFrame) -> pd.DataFrame:
+    """Label each side Pick or Lean, per bet type, from calibrated EV."""
+    df = graded.copy()
+    for kind in ("ml", "ats"):
+        ev = df.get(f"{kind}_ev")
+        if ev is None:
+            df[f"{kind}_tier"] = "lean"
+            continue
+        df[f"{kind}_tier"] = np.where(ev > PICK_EV_THRESHOLD, "pick", "lean")
+    return df
+
+
+def tier_record(graded: pd.DataFrame, kind: str, tier: str) -> dict:
+    col = f"{kind}_tier"
+    if col not in graded.columns:
+        return record(graded.iloc[0:0], kind)
+    return record(graded[graded[col] == tier], kind)
 
 
 CATEGORY_LABELS = {

@@ -191,6 +191,44 @@ def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str,
     return out
 
 
+def availability_note(row: pd.Series) -> str:
+    """Plain-language read on quarterbacks and injuries for this game."""
+    bits = []
+    qb_change = row.get("qb_change", 0.0)
+    if pd.notna(qb_change) and abs(qb_change) >= 0.04:
+        side = row.home_team if qb_change < 0 else row.away_team
+        bits.append(
+            f"<strong>{side}</strong> is not starting its usual quarterback, or is "
+            "starting one playing below that level &mdash; the model marks them down "
+            "accordingly"
+        )
+    qb_gap = row.get("qb_gap", 0.0)
+    if pd.notna(qb_gap) and abs(qb_gap) >= 0.08:
+        better = row.home_team if qb_gap > 0 else row.away_team
+        bits.append(f"<strong>{better}</strong> has the clear edge at quarterback")
+    inj = row.get("inj_diff", 0.0)
+    if pd.notna(inj) and abs(inj) >= 1.5:
+        healthier = row.home_team if inj > 0 else row.away_team
+        bits.append(
+            f"<strong>{healthier}</strong> is the healthier side this week by the "
+            "injury report, weighted by who is actually missing"
+        )
+    wind = row.get("wind", 0.0)
+    if pd.notna(wind) and wind >= 15:
+        bits.append(f"wind is forecast around {wind:.0f} mph, which historically "
+                    "suppresses the passing game")
+    elif row.get("indoors"):
+        bits.append("played indoors, so weather is not a factor")
+    if not bits:
+        return ("Both sides are starting their usual quarterbacks with no notable "
+                "injury gap.")
+    return _sentence_case("; ".join(bits)) + "."
+
+
+def _sentence_case(text: str) -> str:
+    return text[0].upper() + text[1:] if text else text
+
+
 def key_factors(row: pd.Series) -> list[dict]:
     """Matchup breakdowns in plain language: who has the edge, how big, and
     how each unit ranks in its league."""
@@ -239,3 +277,69 @@ def key_factors(row: pd.Series) -> list[dict]:
                      "and preparation."),
         })
     return out
+
+
+def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str) -> list[str]:
+    """The case for a Pixel's Pick: why these legs, why this price.
+
+    A high-confidence tag is only worth something if the reasoning behind it
+    is visible, so this spells out the model's probability against the price,
+    what the matchup says, and — for a parlay — why the legs were combined.
+    """
+    from . import pixel
+
+    by_id = preds.set_index("game_id")
+    paras = []
+
+    price = pixel.format_american(pick["american"])
+    implied = pixel.implied_probability(pick["american"])
+    if pick["is_parlay"]:
+        names = " + ".join(leg["detail"] for leg in pick["legs"])
+        paras.append(
+            f"<strong>{len(pick['legs'])}-leg parlay at {price}:</strong> {names}. "
+            f"Each leg on its own is priced too short to be worth backing, so they are "
+            f"combined to get the price to {price}. The model puts the joint chance of "
+            f"all legs landing at {pick['prob']:.0%}, against {implied:.0%} implied by "
+            f"the price &mdash; that gap is the reason this qualifies."
+        )
+    else:
+        leg = pick["legs"][0]
+        paras.append(
+            f"<strong>{leg['detail']} at {price}.</strong> The model gives this "
+            f"{leg['prob']:.0%}, while the price implies {implied:.0%}. Backing it is "
+            "worth doing only because of that difference, not because the side is "
+            "likely to win."
+        )
+
+    for leg in pick["legs"]:
+        if leg["game_id"] not in by_id.index:
+            continue
+        row = by_id.loc[leg["game_id"]]
+        bits = []
+        gap = row.get("home_rating", 0) - row.get("away_rating", 0)
+        stronger = row["home_team"] if gap > 0 else row["away_team"]
+        bits.append(f"{stronger} rates {abs(gap):.1f} points stronger on power ratings")
+        factors = key_factors(row)
+        if factors:
+            top = factors[0]
+            bits.append(f"the biggest matchup edge is {top['title'].lower()} "
+                        f"({top['verdict']})")
+        if pd.notna(row.get("spread_line")):
+            edge = row["pred_margin"] - row["spread_line"]
+            if abs(edge) >= 1:
+                side = row["home_team"] if edge > 0 else row["away_team"]
+                bits.append(f"the model wants {abs(edge):.1f} more points on {side} "
+                            "than the market prices")
+        note = availability_note(row)
+        paras.append(
+            f"<strong>{leg['matchup']} &mdash; {leg['detail']}.</strong> "
+            + _sentence_case("; ".join(bits)) + ". " + note
+        )
+
+    if pick["ev"] > 0:
+        paras.append(
+            f"By the model's own numbers this returns {pick['ev']:+.2f} units per unit "
+            "staked over the long run. That is the model's estimate, not a guarantee "
+            "&mdash; the tracker records what actually happened."
+        )
+    return paras
