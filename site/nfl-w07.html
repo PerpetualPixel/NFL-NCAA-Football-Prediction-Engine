@@ -156,6 +156,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +223,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:35 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-09-03 05:43 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-w06.html">&larr; Week 6</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html" selected>2026 season</option><option value="nfl-2025-w01.html">2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html">2023 season</option></select></label>
@@ -234,6 +243,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis"><p class='ftext'><strong>2-leg parlay at +153:</strong> Houston Texans to win outright + Chicago Bears to win outright. Each leg on its own is priced too short to be worth backing, so they are combined to get the price to +153. The model puts the joint chance of all legs landing at 35%, against 39% implied by the price &mdash; that gap is the reason this qualifies.</p><p class='ftext'><strong>New York Giants @ Houston Texans &mdash; Houston Texans to win outright.</strong> Houston Texans rates 5.7 points stronger on power ratings; the biggest matchup edge is new york giants passing vs houston texans pass defense (a major mismatch); the model wants 1.6 more points on Houston Texans than the market prices. Both sides are starting their usual quarterbacks with no notable injury gap.</p><p class='ftext'><strong>New England Patriots @ Chicago Bears &mdash; Chicago Bears to win outright.</strong> New England Patriots rates 2.0 points stronger on power ratings; the biggest matchup edge is new england patriots passing vs chicago bears pass defense (a slight edge); the model wants 1.4 more points on New England Patriots than the market prices. Both sides are starting their usual quarterbacks with no notable injury gap.</p></div></details>
 </div>
+
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>

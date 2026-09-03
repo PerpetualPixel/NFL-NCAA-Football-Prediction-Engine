@@ -156,6 +156,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +223,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:36 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-09-03 05:44 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2023-w11.html">&larr; Week 11</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html">2026 season</option><option value="ncaa-2025-w01.html">2025 season</option><option value="ncaa-2024-w01.html">2024 season</option><option value="ncaa-2023-w01.html" selected>2023 season</option></select></label>
@@ -234,6 +243,36 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis"><p class='ftext'><strong>Southern Mississippi +18.5 at -110.</strong> The model gives this 67%, while the price implies 52%. Backing it is worth doing only because of that difference, not because the side is likely to win.</p><p class='ftext'><strong>Southern Mississippi @ Mississippi State Bulldogs &mdash; Southern Mississippi +18.5.</strong> Mississippi State Bulldogs rates 7.0 points stronger on power ratings; the model wants 7.4 more points on Southern Mississippi than the market prices. Both sides are starting their usual quarterbacks with no notable injury gap.</p><p class='ftext'>By the model's own numbers this returns +0.28 units per unit staked over the long run. That is the model's estimate, not a guarantee &mdash; the tracker records what actually happened.</p></div></details>
 </div>
+<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+<h3 class="slothead">Saturday</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+115</span>
+<span class="meta">4 legs &middot; model
+42% to hit</span><span class="outcome t-strong">WIN &middot; +1.15u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Ball State Cardinals</span> <span class="meta">Kent State Golden Flashes @ Ball State Cardinals &middot; -498 &middot; model 81%</span></li><li class="pxleg"><span class="pxdetail">Colorado State Rams</span> <span class="meta">Nevada Wolf Pack @ Colorado State Rams &middot; -482 &middot; model 81%</span></li><li class="pxleg"><span class="pxdetail">Missouri Tigers</span> <span class="meta">Florida Gators @ Missouri Tigers &middot; -472 &middot; model 80%</span></li><li class="pxleg"><span class="pxdetail">Western Kentucky Hilltoppers</span> <span class="meta">Sam Houston State @ Western Kentucky Hilltoppers &middot; -442 &middot; model 80%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#2</span>
+<span class="pxprice">+153</span>
+<span class="meta">4 legs &middot; model
+35% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">South Alabama Jaguars</span> <span class="meta">Marshall Thundering Herd @ South Alabama Jaguars &middot; -402 &middot; model 78%</span></li><li class="pxleg"><span class="pxdetail">James Madison Dukes</span> <span class="meta">Appalachian State @ James Madison Dukes &middot; -398 &middot; model 78%</span></li><li class="pxleg"><span class="pxdetail">Georgia Bulldogs</span> <span class="meta">Georgia Bulldogs @ Tennessee Volunteers &middot; -380 &middot; model 77%</span></li><li class="pxleg"><span class="pxdetail">SMU Mustangs</span> <span class="meta">SMU Mustangs @ Memphis Tigers &middot; -358 &middot; model 76%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#3</span>
+<span class="pxprice">+119</span>
+<span class="meta">3 legs &middot; model
+42% to hit</span><span class="outcome t-strong">WIN &middot; +1.19u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Jacksonville State Gamecocks</span> <span class="meta">Louisiana Tech Bulldogs @ Jacksonville State Gamecocks &middot; -345 &middot; model 75%</span></li><li class="pxleg"><span class="pxdetail">Tulane Green Wave</span> <span class="meta">Tulane Green Wave @ Florida Atlantic Owls &middot; -342 &middot; model 75%</span></li><li class="pxleg"><span class="pxdetail">Middle Tennessee Blue Raiders</span> <span class="meta">UTEP Miners @ Middle Tennessee Blue Raiders &middot; -320 &middot; model 74%</span></li></ul></div><h3 class="slothead">Weeknight</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+104</span>
+<span class="meta">3 legs &middot; model
+45% to hit</span><span class="outcome t-strong">WIN &middot; +1.04u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Ohio Bobcats</span> <span class="meta">Central Michigan Chippewas @ Ohio Bobcats &middot; -422 &middot; model 79%</span></li><li class="pxleg"><span class="pxdetail">Toledo Rockets</span> <span class="meta">Toledo Rockets @ Bowling Green Falcons &middot; -380 &middot; model 77%</span></li><li class="pxleg"><span class="pxdetail">Miami (OH) RedHawks</span> <span class="meta">Buffalo Bulls @ Miami (OH) RedHawks &middot; -324 &middot; model 74%</span></li></ul></div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>

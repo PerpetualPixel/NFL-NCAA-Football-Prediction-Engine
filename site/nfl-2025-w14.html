@@ -156,6 +156,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +223,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:35 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-09-03 05:43 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-2025-w13.html">&larr; Week 13</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html">2026 season</option><option value="nfl-2025-w01.html" selected>2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html">2023 season</option></select></label>
@@ -234,6 +243,31 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis"><p class='ftext'><strong>2-leg parlay at -171:</strong> Tampa Bay Buccaneers to win outright + Seattle Seahawks to win outright. Each leg on its own is priced too short to be worth backing, so they are combined to get the price to -171. The model puts the joint chance of all legs landing at 61%, against 63% implied by the price &mdash; that gap is the reason this qualifies.</p><p class='ftext'><strong>New Orleans Saints @ Tampa Bay Buccaneers &mdash; Tampa Bay Buccaneers to win outright.</strong> Tampa Bay Buccaneers rates 6.0 points stronger on power ratings; the biggest matchup edge is new orleans saints running vs tampa bay buccaneers run defense (a clear edge); the model wants 2.9 more points on Tampa Bay Buccaneers than the market prices. <strong>Tampa Bay Buccaneers</strong> has the clear edge at quarterback.</p><p class='ftext'><strong>Seattle Seahawks @ Atlanta Falcons &mdash; Seattle Seahawks to win outright.</strong> Seattle Seahawks rates 7.4 points stronger on power ratings; the biggest matchup edge is atlanta falcons passing vs seattle seahawks pass defense (a clear edge); the model wants 1.7 more points on Atlanta Falcons than the market prices. <strong>Seattle Seahawks</strong> has the clear edge at quarterback; <strong>Seattle Seahawks</strong> is the healthier side this week by the injury report, weighted by who is actually missing; played indoors, so weather is not a factor.</p></div></details>
 </div>
+<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+<h3 class="slothead">Sunday</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+161</span>
+<span class="meta">4 legs &middot; model
+36% to hit</span><span class="outcome t-strong">WIN &middot; +1.61u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Los Angeles Rams</span> <span class="meta">Los Angeles Rams @ Arizona Cardinals &middot; -500 &middot; model 82%</span></li><li class="pxleg"><span class="pxdetail">Denver Broncos</span> <span class="meta">Denver Broncos @ Las Vegas Raiders &middot; -470 &middot; model 81%</span></li><li class="pxleg"><span class="pxdetail">Green Bay Packers</span> <span class="meta">Chicago Bears @ Green Bay Packers &middot; -305 &middot; model 74%</span></li><li class="pxleg"><span class="pxdetail">Buffalo Bills</span> <span class="meta">Cincinnati Bengals @ Buffalo Bills &middot; -285 &middot; model 72%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#2</span>
+<span class="pxprice">+197</span>
+<span class="meta">3 legs &middot; model
+31% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Baltimore Ravens</span> <span class="meta">Pittsburgh Steelers @ Baltimore Ravens &middot; -270 &middot; model 71%</span></li><li class="pxleg"><span class="pxdetail">Kansas City Chiefs</span> <span class="meta">Houston Texans @ Kansas City Chiefs &middot; -218 &middot; model 67%</span></li><li class="pxleg"><span class="pxdetail">Cleveland Browns</span> <span class="meta">Tennessee Titans @ Cleveland Browns &middot; -205 &middot; model 66%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#3</span>
+<span class="pxprice">+192</span>
+<span class="meta">2 legs &middot; model
+32% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Miami Dolphins</span> <span class="meta">Miami Dolphins @ New York Jets &middot; -148 &middot; model 57%</span></li><li class="pxleg"><span class="pxdetail">Indianapolis Colts</span> <span class="meta">Indianapolis Colts @ Jacksonville Jaguars &middot; -135 &middot; model 55%</span></li></ul></div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>

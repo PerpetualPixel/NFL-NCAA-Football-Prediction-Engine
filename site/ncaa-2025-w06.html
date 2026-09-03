@@ -156,6 +156,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +223,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:37 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-09-03 05:44 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2025-w05.html">&larr; Week 5</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html">2026 season</option><option value="ncaa-2025-w01.html" selected>2025 season</option><option value="ncaa-2024-w01.html">2024 season</option><option value="ncaa-2023-w01.html">2023 season</option></select></label>
@@ -234,6 +243,31 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis"><p class='ftext'><strong>Boise State Broncos +21.5 at -110.</strong> The model gives this 66%, while the price implies 52%. Backing it is worth doing only because of that difference, not because the side is likely to win.</p><p class='ftext'><strong>Boise State Broncos @ Notre Dame Fighting Irish &mdash; Boise State Broncos +21.5.</strong> Notre Dame Fighting Irish rates 8.1 points stronger on power ratings; the biggest matchup edge is boise state broncos passing vs notre dame fighting irish pass defense (a slight edge); the model wants 7.0 more points on Boise State Broncos than the market prices. Both sides are starting their usual quarterbacks with no notable injury gap.</p><p class='ftext'>By the model's own numbers this returns +0.27 units per unit staked over the long run. That is the model's estimate, not a guarantee &mdash; the tracker records what actually happened.</p></div></details>
 </div>
+<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+<h3 class="slothead">Saturday</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+115</span>
+<span class="meta">4 legs &middot; model
+39% to hit</span><span class="outcome t-strong">WIN &middot; +1.15u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Navy Midshipmen</span> <span class="meta">Air Force Falcons @ Navy Midshipmen &middot; -500 &middot; model 80%</span></li><li class="pxleg"><span class="pxdetail">Nebraska Cornhuskers</span> <span class="meta">Michigan State Spartans @ Nebraska Cornhuskers &middot; -485 &middot; model 80%</span></li><li class="pxleg"><span class="pxdetail">Western Michigan Broncos</span> <span class="meta">Western Michigan Broncos @ Massachusetts Minutemen &middot; -470 &middot; model 78%</span></li><li class="pxleg"><span class="pxdetail">Northwestern Wildcats</span> <span class="meta">UL Monroe Warhawks @ Northwestern Wildcats &middot; -440 &middot; model 78%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#2</span>
+<span class="pxprice">+131</span>
+<span class="meta">3 legs &middot; model
+37% to hit</span><span class="outcome t-strong">WIN &middot; +1.31u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Buffalo Bulls</span> <span class="meta">Eastern Michigan Eagles @ Buffalo Bulls &middot; -350 &middot; model 74%</span></li><li class="pxleg"><span class="pxdetail">Illinois Fighting Illini</span> <span class="meta">Illinois Fighting Illini @ Purdue Boilermakers &middot; -320 &middot; model 73%</span></li><li class="pxleg"><span class="pxdetail">UConn Huskies</span> <span class="meta">Florida International Panthers @ UConn Huskies &middot; -270 &middot; model 69%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#3</span>
+<span class="pxprice">+169</span>
+<span class="meta">3 legs &middot; model
+31% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Central Michigan Chippewas</span> <span class="meta">Central Michigan Chippewas @ Akron Zips &middot; -270 &middot; model 68%</span></li><li class="pxleg"><span class="pxdetail">UTSA Roadrunners</span> <span class="meta">UTSA Roadrunners @ Temple Owls &middot; -250 &middot; model 67%</span></li><li class="pxleg"><span class="pxdetail">Pittsburgh Panthers</span> <span class="meta">Boston College Eagles @ Pittsburgh Panthers &middot; -250 &middot; model 67%</span></li></ul></div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>

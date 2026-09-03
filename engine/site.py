@@ -171,6 +171,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -726,10 +735,17 @@ def build_league_weeks(
         pick = pixel.select(preds, cfg.margin_sigma)
         graded_pick = pixel.grade(pick, graded) if pick is not None else None
         pixel_ids = {leg["game_id"] for leg in pick["legs"]} if pick else set()
+        # the board picks up where the headline pick leaves off
+        board = pixel.build_board(preds, cfg.margin_sigma, league,
+                                  exclude_game_ids=pixel_ids)
+        for slot in board:
+            for parlay in slot["parlays"]:
+                parlay["graded"] = pixel.grade(parlay, graded)
 
         weeks.append({
             "week": week, "label": label, "season": season, "preds": preds,
             "pixel": pick, "pixel_graded": graded_pick, "pixel_ids": pixel_ids,
+            "board": board,
             "graded": graded, "status_short": status_short, "headline": headline,
             "ml": ml, "ats": ats,
             "complete": len(graded) > 0 and len(upcoming) == 0,
@@ -770,6 +786,7 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
             f'<h2>{w["label"]} &mdash; {season}</h2>',
             f'<div class="weekhead">{w["headline"]}</div>',
             _pixel_section(w, league, players),
+            _board_section(w),
             CONTROLS,
             '<div id="games">',
         ]
@@ -881,6 +898,48 @@ def _pixel_section(week: dict, league: str, players) -> str:
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis">{rationale}</div></details>
 </div>"""
+
+
+def _board_section(week: dict) -> str:
+    """The week's confidence parlays, grouped by the day they play."""
+    board = week.get("board") or []
+    if not board:
+        return ""
+    groups = []
+    for slot in board:
+        cards = []
+        for i, parlay in enumerate(slot["parlays"], 1):
+            graded = parlay.get("graded")
+            outcome = ""
+            if graded and graded.get("result"):
+                tone = {"win": "strong", "loss": "bad", "push": "mid"}[graded["result"]]
+                outcome = (f'<span class="outcome t-{tone}">{graded["result"].upper()}'
+                           f' &middot; {graded["profit"]:+.2f}u</span>')
+            legs = "".join(
+                f'<li class="pxleg"><span class="pxdetail">{leg["pick"]}</span> '
+                f'<span class="meta">{leg["matchup"]} &middot; '
+                f'{pixel.format_american(leg["price"])} &middot; model '
+                f'{leg["prob"]:.0%}</span></li>'
+                for leg in parlay["legs"]
+            )
+            cards.append(f"""<div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#{i}</span>
+<span class="pxprice">{pixel.format_american(parlay["american"])}</span>
+<span class="meta">{len(parlay["legs"])} legs &middot; model
+{parlay["prob"]:.0%} to hit</span>{outcome}</div>
+<ul class="pxlegs">{legs}</ul></div>""")
+        groups.append(f'<h3 class="slothead">{slot["slot"]}</h3>{"".join(cards)}')
+
+    return f"""<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+{"".join(groups)}"""
 
 
 def _stat_tile(title: str, big: str, tone: str, sub: str,

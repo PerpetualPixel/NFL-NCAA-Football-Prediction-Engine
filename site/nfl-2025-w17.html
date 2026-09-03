@@ -156,6 +156,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +223,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:35 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Updated 2026-09-03 05:43 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-2025-w16.html">&larr; Week 16</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html">2026 season</option><option value="nfl-2025-w01.html" selected>2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html">2023 season</option></select></label>
@@ -234,6 +243,31 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis"><p class='ftext'><strong>Kansas City Chiefs +13.5 at -115.</strong> The model gives this 61%, while the price implies 53%. Backing it is worth doing only because of that difference, not because the side is likely to win.</p><p class='ftext'><strong>Denver Broncos @ Kansas City Chiefs &mdash; Kansas City Chiefs +13.5.</strong> Kansas City Chiefs rates 0.4 points stronger on power ratings; the biggest matchup edge is kansas city chiefs running vs denver broncos run defense (essentially even); the model wants 15.0 more points on Kansas City Chiefs than the market prices. <strong>Kansas City Chiefs</strong> is not starting its usual quarterback, or is starting one playing below that level &mdash; the model marks them down accordingly; <strong>Denver Broncos</strong> has the clear edge at quarterback.</p><p class='ftext'>By the model's own numbers this returns +0.13 units per unit staked over the long run. That is the model's estimate, not a guarantee &mdash; the tracker records what actually happened.</p></div></details>
 </div>
+<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+<h3 class="slothead">Sunday</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+165</span>
+<span class="meta">4 legs &middot; model
+35% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">New England Patriots</span> <span class="meta">New England Patriots @ New York Jets &middot; -950 &middot; model 91%</span></li><li class="pxleg"><span class="pxdetail">Cincinnati Bengals</span> <span class="meta">Arizona Cardinals @ Cincinnati Bengals &middot; -345 &middot; model 75%</span></li><li class="pxleg"><span class="pxdetail">Seattle Seahawks</span> <span class="meta">Seattle Seahawks @ Carolina Panthers &middot; -305 &middot; model 73%</span></li><li class="pxleg"><span class="pxdetail">Tampa Bay Buccaneers</span> <span class="meta">Tampa Bay Buccaneers @ Miami Dolphins &middot; -250 &middot; model 70%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#2</span>
+<span class="pxprice">+121</span>
+<span class="meta">2 legs &middot; model
+42% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Pittsburgh Steelers</span> <span class="meta">Pittsburgh Steelers @ Cleveland Browns &middot; -205 &middot; model 65%</span></li><li class="pxleg"><span class="pxdetail">San Francisco 49ers</span> <span class="meta">Chicago Bears @ San Francisco 49ers &middot; -205 &middot; model 64%</span></li></ul></div><h3 class="slothead">Thursday, Monday &amp; standalone nights</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+230</span>
+<span class="meta">4 legs &middot; model
+27% to hit</span><span class="outcome t-bad">LOSS &middot; -1.00u</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Dallas Cowboys</span> <span class="meta">Dallas Cowboys @ Washington Commanders &middot; -500 &middot; model 83%</span></li><li class="pxleg"><span class="pxdetail">Los Angeles Rams</span> <span class="meta">Los Angeles Rams @ Atlanta Falcons &middot; -380 &middot; model 78%</span></li><li class="pxleg"><span class="pxdetail">Detroit Lions</span> <span class="meta">Detroit Lions @ Minnesota Vikings &middot; -360 &middot; model 75%</span></li><li class="pxleg"><span class="pxdetail">Green Bay Packers</span> <span class="meta">Baltimore Ravens @ Green Bay Packers &middot; -142 &middot; model 56%</span></li></ul></div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
