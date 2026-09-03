@@ -43,7 +43,12 @@ def load_league_inputs(
             ),
         }
         if with_players:
-            players = nfl_player_production(pbp, _player_season(pbp))
+            season = _player_season(pbp)
+            players = nfl_player_production(pbp, season)
+            availability["usage"] = nfl_expand_names(
+                nfl_player_usage(pbp, season),
+                ingest.load_nfl_rosters([season], refresh_latest=refresh),
+            )
     else:
         plays = ingest.load_ncaa_plays(seasons, refresh_latest=refresh)
         if not plays.empty:
@@ -55,7 +60,9 @@ def load_league_inputs(
                 plays = plays[plays["team"].isin(fbs) & plays["opponent"].isin(fbs)]
             unit_stats = ncaa_unit_game_stats(plays)
             if with_players:
-                players = ncaa_player_production(plays, _player_season(plays))
+                season = _player_season(plays)
+                players = ncaa_player_production(plays, season)
+                availability = {"usage": ncaa_player_usage(plays, season)}
     if with_players:
         return games, unit_stats, players, availability
     return games, unit_stats, availability
@@ -540,3 +547,139 @@ def nfl_injury_burden(injuries: pd.DataFrame, snaps: pd.DataFrame) -> pd.DataFra
     inj["burden"] = share * pos_w * status_w
     return (inj.groupby(["season", "week", "team"])["burden"].sum()
             .rename("inj_burden").reset_index())
+
+
+# ---------------------------------------------------------------------------
+# Usage: who actually gets the ball
+# ---------------------------------------------------------------------------
+# Ratings say which unit is better. They do not say who to watch. Usage
+# answers that: the share of targets and carries each player commands, how
+# far downfield they work, and what they do with it — the difference between
+# "their passing game is good" and "their number one runs 27% of the routes
+# targeted and averages 9 yards a catch".
+
+USAGE_MIN_GAMES = 3
+
+
+def _abbreviate(full_name: str) -> str:
+    """The play-by-play's name form: first initial, dot, surname."""
+    parts = str(full_name).split()
+    if len(parts) < 2:
+        return str(full_name)
+    return f"{parts[0][0]}.{' '.join(parts[1:])}"
+
+
+def nfl_expand_names(usage: pd.DataFrame, rosters: pd.DataFrame) -> pd.DataFrame:
+    """Swap "C.Sutton" for "Courtland Sutton", and attach the position.
+
+    The play-by-play abbreviates names; a reader wants them written out, and
+    knowing whether the number two is a receiver or a tight end changes how
+    the passing game reads.
+    """
+    if usage.empty or rosters.empty:
+        return usage
+    ref = rosters.dropna(subset=["full_name", "team"]).copy()
+    ref["abbrev"] = ref["full_name"].map(_abbreviate)
+    ref = ref.drop_duplicates(subset=["team", "abbrev"], keep="last")
+    lookup = ref.set_index(["team", "abbrev"])
+    out = usage.copy()
+    keys = list(zip(out["team"], out["player"]))
+    out["player"] = [
+        lookup["full_name"].get(k, k[1]) for k in keys
+    ]
+    out["position"] = [
+        lookup["position"].get(k) if k in lookup.index else None for k in keys
+    ]
+    return out
+
+
+def nfl_player_usage(pbp: pd.DataFrame, season: int) -> pd.DataFrame:
+    """Per team and player: role, volume per game, share, and efficiency."""
+    df = pbp[(pbp["season"] == season) & pbp["posteam"].notna()]
+    if df.empty:
+        return pd.DataFrame()
+
+    games = df.groupby("posteam")["game_id"].nunique().rename("team_games")
+
+    # --- receiving: a named receiver on a pass play is a target ----------
+    tgt = df[df["receiver_player_name"].notna() & df["pass_attempt"].eq(1)]
+    rec = (tgt.groupby(["posteam", "receiver_player_name"])
+           .agg(targets=("pass_attempt", "sum"),
+                catches=("complete_pass", "sum"),
+                rec_yards=("yards_gained", "sum"),
+                air=("air_yards", "mean"),
+                yac=("yards_after_catch", "mean"),
+                epa=("epa", "mean"))
+           .reset_index().rename(columns={"posteam": "team",
+                                          "receiver_player_name": "player"}))
+    rec["role"] = "REC"
+    team_targets = rec.groupby("team")["targets"].transform("sum")
+    rec["share"] = rec["targets"] / team_targets
+
+    # --- rushing ---------------------------------------------------------
+    car = df[df["rusher_player_name"].notna() & df["rush_attempt"].eq(1)]
+    run = (car.groupby(["posteam", "rusher_player_name"])
+           .agg(carries=("rush_attempt", "sum"),
+                rush_yards=("yards_gained", "sum"),
+                epa=("epa", "mean"))
+           .reset_index().rename(columns={"posteam": "team",
+                                          "rusher_player_name": "player"}))
+    run["role"] = "RUSH"
+    team_carries = run.groupby("team")["carries"].transform("sum")
+    run["share"] = run["carries"] / team_carries
+
+    out = pd.concat([rec, run], ignore_index=True).merge(games, left_on="team",
+                                                         right_index=True, how="left")
+    out = out[out["team_games"] >= USAGE_MIN_GAMES]
+    for col, per in (("targets", "targets_pg"), ("catches", "catches_pg"),
+                     ("rec_yards", "rec_yards_pg"), ("carries", "carries_pg"),
+                     ("rush_yards", "rush_yards_pg")):
+        if col in out.columns:
+            out[per] = out[col] / out["team_games"]
+    # depth-chart position within each role, by share
+    out["rank"] = out.groupby(["team", "role"])["share"].rank(ascending=False,
+                                                              method="first")
+    return out
+
+
+def ncaa_player_usage(plays: pd.DataFrame, season: int) -> pd.DataFrame:
+    """The college equivalent, from the play-level feed."""
+    df = ncaa_normalize_plays(plays)
+    if df.empty:
+        return pd.DataFrame()
+    df = df[df["season"] == season]
+    if df.empty:
+        return pd.DataFrame()
+    games = df.groupby("team")["game_id"].nunique().rename("team_games")
+
+    tgt = df[df["reception_player"].notna()]
+    rec = (tgt.groupby(["team", "reception_player"])
+           .agg(catches=("success", "size"), rec_yards=("reception_yds", "sum"),
+                epa=("success", "mean"))
+           .reset_index().rename(columns={"reception_player": "player"}))
+    rec["targets"] = rec["catches"]      # the feed records completions only
+    rec["role"] = "REC"
+    rec["share"] = rec["catches"] / rec.groupby("team")["catches"].transform("sum")
+
+    car = df[df["rush_player"].notna()]
+    run = (car.groupby(["team", "rush_player"])
+           .agg(carries=("success", "size"), rush_yards=("rush_yds", "sum"),
+                epa=("success", "mean"))
+           .reset_index().rename(columns={"rush_player": "player"}))
+    run["role"] = "RUSH"
+    run["share"] = run["carries"] / run.groupby("team")["carries"].transform("sum")
+
+    out = pd.concat([rec, run], ignore_index=True).merge(games, left_on="team",
+                                                         right_index=True, how="left")
+    out = out[out["team_games"] >= USAGE_MIN_GAMES]
+    for col, per in (("catches", "catches_pg"), ("rec_yards", "rec_yards_pg"),
+                     ("carries", "carries_pg"), ("rush_yards", "rush_yards_pg")):
+        if col in out.columns:
+            out[per] = out[col] / out["team_games"]
+    # the college feed records completions, not attempts, so these are
+    # receptions rather than true targets and the prose must not claim otherwise
+    out["targets_pg"] = None
+    out["completions_only"] = True
+    out["rank"] = out.groupby(["team", "role"])["share"].rank(ascending=False,
+                                                              method="first")
+    return out

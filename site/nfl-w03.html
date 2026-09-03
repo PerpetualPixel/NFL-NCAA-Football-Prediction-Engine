@@ -82,6 +82,11 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
   letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
   border: 1px solid currentColor;
 }
+.usageteam { margin-bottom: 12px; }
+.usageteam h5 {
+  margin: 8px 0 4px; font-size: 0.82rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--accent);
+}
 .factor { margin-bottom: 11px; list-style: none; }
 ul.factors { padding-left: 0; }
 .fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -148,6 +153,12 @@ table.track a:hover { color: var(--accent); }
 .heroweek { font-size: 1.5rem; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
 .herogo { margin-top: 8px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
 .card.pending { border-style: dashed; }
+.stage {
+  display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
+}
+.stage.locked { background: var(--good); color: #fff; }
+.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -156,6 +167,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +234,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:35 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:53 UTC</strong>, hourly
+&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-w02.html">&larr; Week 2</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html" selected>2026 season</option><option value="nfl-2025-w01.html">2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html">2023 season</option></select></label>
@@ -224,7 +245,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <a class="wknav-btn" href="nfl-w04.html">Week 4 &rarr;</a>
 </div>
 <h2>Week 3 &mdash; 2026</h2>
-<div class="weekhead">16 games &mdash; picks release from Tue Sep 22, 8:00 PM, one day before each kickoff</div>
+<div class="weekhead">16 games &mdash; picks release from Sun Sep 20, 8:00 PM, one day before each kickoff</div>
 <div class="pixel card">
 <div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
 <span class="pxprice">+102</span>
@@ -234,6 +255,26 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis"><p class='ftext'><strong>2-leg parlay at +102:</strong> Kansas City Chiefs to win outright + Los Angeles Rams to win outright. Each leg on its own is priced too short to be worth backing, so they are combined to get the price to +102. The model puts the joint chance of all legs landing at 48%, against 50% implied by the price &mdash; that gap is the reason this qualifies.</p><p class='ftext'><strong>Kansas City Chiefs @ Miami Dolphins &mdash; Kansas City Chiefs to win outright.</strong> Kansas City Chiefs rates 3.2 points stronger on power ratings; the biggest matchup edge is kansas city chiefs passing vs miami dolphins pass defense (a clear edge); the model wants 6.4 more points on Miami Dolphins than the market prices. Both sides are starting their usual quarterbacks with no notable injury gap.</p><p class='ftext'><strong>Los Angeles Rams @ Denver Broncos &mdash; Los Angeles Rams to win outright.</strong> Los Angeles Rams rates 2.4 points stronger on power ratings; the biggest matchup edge is los angeles rams passing vs denver broncos pass defense (essentially even); the model wants 2.6 more points on Denver Broncos than the market prices. <strong>Los Angeles Rams</strong> has the clear edge at quarterback.</p></div></details>
 </div>
+<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+<h3 class="slothead">Sunday</h3><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#1</span>
+<span class="pxprice">+118</span>
+<span class="meta">3 legs &middot; model
+41% to hit</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">San Francisco 49ers</span> <span class="meta">Arizona Cardinals @ San Francisco 49ers &middot; -650 &middot; model 87%</span></li><li class="pxleg"><span class="pxdetail">Detroit Lions</span> <span class="meta">New York Jets @ Detroit Lions &middot; -410 &middot; model 77%</span></li><li class="pxleg"><span class="pxdetail">Seattle Seahawks</span> <span class="meta">Seattle Seahawks @ Washington Commanders &middot; -192 &middot; model 62%</span></li></ul></div><div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#2</span>
+<span class="pxprice">+147</span>
+<span class="meta">2 legs &middot; model
+35% to hit</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">New Orleans Saints</span> <span class="meta">Las Vegas Raiders @ New Orleans Saints &middot; -185 &middot; model 60%</span></li><li class="pxleg"><span class="pxdetail">New York Giants</span> <span class="meta">Tennessee Titans @ New York Giants &middot; -166 &middot; model 57%</span></li></ul></div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
@@ -260,7 +301,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Atlanta Falcons @ Green Bay Packers</div>
 <div class="kick">Wed Sep 23, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Tue Sep 22, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Sun Sep 20, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -268,7 +309,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Los Angeles Chargers @ Buffalo Bills</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -276,7 +317,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Carolina Panthers @ Cleveland Browns</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -284,7 +325,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">New York Jets @ Detroit Lions</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -292,7 +333,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Houston Texans @ Indianapolis Colts</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -300,7 +341,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">New England Patriots @ Jacksonville Jaguars</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -308,7 +349,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Kansas City Chiefs @ Miami Dolphins</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -316,7 +357,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Tennessee Titans @ New York Giants</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -324,7 +365,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Cincinnati Bengals @ Pittsburgh Steelers</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -332,7 +373,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Seattle Seahawks @ Washington Commanders</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -340,7 +381,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Arizona Cardinals @ San Francisco 49ers</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -348,7 +389,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Minnesota Vikings @ Tampa Bay Buccaneers</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -356,7 +397,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Baltimore Ravens @ Dallas Cowboys</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -364,7 +405,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Las Vegas Raiders @ New Orleans Saints</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -372,7 +413,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Los Angeles Rams @ Denver Broncos</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Sep 25, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -380,7 +421,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Philadelphia Eagles @ Chicago Bears</div>
 <div class="kick">Sun Sep 27, 8:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Sat Sep 26, 8:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Thu Sep 24, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>

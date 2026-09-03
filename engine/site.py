@@ -97,6 +97,11 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
   letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
   border: 1px solid currentColor;
 }
+.usageteam { margin-bottom: 12px; }
+.usageteam h5 {
+  margin: 8px 0 4px; font-size: 0.82rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--accent);
+}
 .factor { margin-bottom: 11px; list-style: none; }
 ul.factors { padding-left: 0; }
 .fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -163,6 +168,12 @@ table.track a:hover { color: var(--accent); }
 .heroweek { font-size: 1.5rem; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
 .herogo { margin-top: 8px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
 .card.pending { border-style: dashed; }
+.stage {
+  display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
+}
+.stage.locked { background: var(--good); color: #fff; }
+.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -171,6 +182,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -237,11 +257,31 @@ def _page(title: str, body: str) -> str:
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated {stamp} &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Odds and picks refreshed <strong>{stamp}</strong>, hourly
+&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 {body}
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
 ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
 </div></body></html>"""
+
+
+def _usage_html(row: pd.Series, usage) -> str:
+    """Target hierarchy and backfield split for both sides."""
+    reports = analysis.usage_report(row, usage)
+    if not reports:
+        return ""
+    blocks = "".join(
+        f'<div class="usageteam"><h5>{r["team"]}</h5>'
+        + "".join(f'<p class="ftext">{p}</p>' for p in r["paragraphs"])
+        + "</div>"
+        for r in reports
+    )
+    return f'<h4>Who gets the ball</h4>{blocks}'
+
+
+def _movement_html(row: pd.Series) -> str:
+    text = analysis.line_movement(row)
+    return f'<h4>Line movement</h4><p class="ftext">{text}</p>' if text else ""
 
 
 def _grade_cell(row: pd.Series, key: str, n: int) -> str:
@@ -261,7 +301,7 @@ def _grade_cell(row: pd.Series, key: str, n: int) -> str:
 def _unit_table(row: pd.Series) -> str:
     if "home_off_pass_epa" not in row.index or pd.isna(row.get("home_off_pass_epa")):
         return ""
-    n = int(row.get("unit_n") or row.get("n_teams", 32) or 32)
+    n = analysis._team_count(row)
     rows = [
         ("Passing offense", "off_pass_epa"),
         ("Pass defense", "def_pass_epa"),
@@ -295,7 +335,8 @@ def _kickoff(row: pd.Series) -> tuple[str, float]:
 
 
 def _game_card(row: pd.Series, graded: bool, league: str,
-               players: pd.DataFrame | None = None, is_pixel: bool = False) -> str:
+               players: pd.DataFrame | None = None, is_pixel: bool = False,
+               usage: pd.DataFrame | None = None) -> str:
     home_favored = row.pred_margin > 0
     pick = row.home_team if home_favored else row.away_team
     prob = row.home_win_prob if home_favored else 1 - row.home_win_prob
@@ -311,6 +352,11 @@ def _game_card(row: pd.Series, graded: bool, league: str,
         market = (f'<div class="meta">Market line: {odds.format_line(row.home_team, row.spread_line)} '
                   f'&middot; <span class="{cls}">model {edge:+.1f} toward {side}</span></div>')
 
+    stage = row.get("release_stage") or "locked"
+    stage_badge = (
+        '<span class="stage locked">Final &middot; locked</span>' if stage == "locked"
+        else '<span class="stage leanstage">Lean &middot; not final</span>'
+    ) if not graded else ""
     tags = odds.classify(prob, edge)
     tier = "lean"
     if row.get("ml_tier") == "pick" or row.get("ats_tier") == "pick":
@@ -341,10 +387,10 @@ def _game_card(row: pd.Series, graded: bool, league: str,
 data-margin="{abs(row.pred_margin):.3f}" data-edge="{abs(edge) if edge is not None else 0:.3f}" \
 data-tags="{' '.join(tags)}">
 <div class="cardhead"><div class="teams">{row.away_team} @ {row.home_team}{neutral}</div>
-<div class="kick">{kick_label}</div></div>
+<div class="kick">{stage_badge}{kick_label}</div></div>
 {_pick_row(row, line, prob, ml)}
 <div class="chips">{chips}</div>
-{market}{result}{_analysis_panel(row, league, players)}
+{market}{result}{_analysis_panel(row, league, players, usage)}
 </div>"""
 
 
@@ -377,7 +423,8 @@ def _pick_row(row: pd.Series, line: str, prob: float, ml: str) -> str:
 {ats}</div>"""
 
 
-def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -> str:
+def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None,
+                    usage: pd.DataFrame | None = None) -> str:
     """Collapsed 'More info' section: game script, key players, matchups, units."""
     paras = "".join(f"<p>{p}</p>" for p in analysis.game_script(row, league))
 
@@ -408,6 +455,8 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None) -
 <h4>How the model sees it playing out</h4>{paras}
 {player_html}{factor_html}
 {avail_html}
+{_usage_html(row, usage)}
+{_movement_html(row)}
 <h4>Unit ratings</h4>{_unit_table(row)}
 </div></details>"""
 
@@ -510,10 +559,32 @@ ODDS_COLS = ["home_moneyline", "away_moneyline", "home_spread_odds",
              "away_spread_odds", "open_spread_line"]
 
 # A pick made in August for a game in December is worthless: it cannot know
-# who is hurt, who is starting, or what the weather will be. Picks are held
-# until the day before kickoff, then refreshed on game day by the scheduled
-# rebuild so late injury and lineup news is reflected.
-RELEASE_LEAD_HOURS = 24
+# who is hurt, who is starting, or what the weather will be. Picks arrive in
+# two stages instead of one.
+#
+#   * A LEAN goes out a few days ahead. The parlays are built and the
+#     reasoning is published, but availability can still change and the
+#     number may move, so it is explicitly provisional.
+#   * The pick LOCKS inside two hours of kickoff, once inactives, starting
+#     lineups and the closing number are known. That is the version worth
+#     acting on, and it carries a badge saying so.
+LEAN_LEAD_HOURS = 72
+LOCK_LEAD_HOURS = 2
+
+
+def _release_stage(kick: pd.Timestamp, now: pd.Timestamp) -> str:
+    """One of: pending (too far out), lean (provisional), locked (final)."""
+    if pd.isna(kick):
+        return "locked"
+    hours = (kick - now).total_seconds() / 3600.0
+    if hours <= LOCK_LEAD_HOURS:
+        return "locked"
+    if hours <= LEAN_LEAD_HOURS:
+        return "lean"
+    return "pending"
+
+
+RELEASE_LEAD_HOURS = LEAN_LEAD_HOURS
 
 
 EASTERN = "US/Eastern"
@@ -536,7 +607,7 @@ def _kickoff_time(row) -> pd.Timestamp:
 def _is_released(kick: pd.Timestamp, now: pd.Timestamp) -> bool:
     if pd.isna(kick):
         return True  # no kickoff time known: nothing to hold back for
-    return now >= kick - pd.Timedelta(hours=RELEASE_LEAD_HOURS)
+    return _release_stage(kick, now) != "pending"
 
 
 def _release_label(kick: pd.Timestamp) -> str:
@@ -652,7 +723,7 @@ def prepare_league(league: str, refresh: bool, first_season: int):
         score_cols.append("gametime")
     score_cols += [c for c in ODDS_COLS if c in games.columns]
     feats = feats.merge(games[score_cols], on="game_id", how="left")
-    return games, feats, players, cfg
+    return games, feats, players, cfg, (availability or {}).get("usage")
 
 
 def build_league_weeks(
@@ -665,7 +736,7 @@ def build_league_weeks(
     if prepared is None:
         season_guess = season or 2100
         prepared = prepare_league(league, refresh, season_guess)
-    games, feats, players, cfg = prepared
+    games, feats, players, cfg, usage = prepared
     season = int(games["season"].max()) if season is None else season
     # predict_week trains on everything before the target week, so keep the
     # full feature history and iterate only the current season's weeks
@@ -726,10 +797,17 @@ def build_league_weeks(
         pick = pixel.select(preds, cfg.margin_sigma)
         graded_pick = pixel.grade(pick, graded) if pick is not None else None
         pixel_ids = {leg["game_id"] for leg in pick["legs"]} if pick else set()
+        # the board picks up where the headline pick leaves off
+        board = pixel.build_board(preds, cfg.margin_sigma, league,
+                                  exclude_game_ids=pixel_ids)
+        for slot in board:
+            for parlay in slot["parlays"]:
+                parlay["graded"] = pixel.grade(parlay, graded)
 
         weeks.append({
             "week": week, "label": label, "season": season, "preds": preds,
             "pixel": pick, "pixel_graded": graded_pick, "pixel_ids": pixel_ids,
+            "board": board,
             "graded": graded, "status_short": status_short, "headline": headline,
             "ml": ml, "ats": ats,
             "complete": len(graded) > 0 and len(upcoming) == 0,
@@ -751,6 +829,7 @@ def build_league_weeks(
 
     for w in weeks:
         w["players"] = players
+        w["usage"] = usage
     if not write_pages:
         return weeks, season_summary, season
 
@@ -764,12 +843,14 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
     """Render one page per week, with week and season navigation."""
     for w in weeks:
         players = w.get("players")
+        usage = w.get("usage")
         body = [
             _week_nav(league, weeks, w["week"], cur_season,
                       seasons=season_index, season=season),
             f'<h2>{w["label"]} &mdash; {season}</h2>',
             f'<div class="weekhead">{w["headline"]}</div>',
             _pixel_section(w, league, players),
+            _board_section(w),
             CONTROLS,
             '<div id="games">',
         ]
@@ -777,11 +858,14 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
         for _, row in w["preds"].sort_values("gameday").iterrows():
             graded_row = bool(row["completed"]) and pd.notna(row["margin"])
             kick = _kickoff_time(row)
-            if not graded_row and not _is_released(kick, now):
+            stage = _release_stage(kick, now)
+            if not graded_row and stage == "pending":
                 body.append(_pending_card(row, kick))
                 continue
+            row = row.copy()
+            row["release_stage"] = stage
             body.append(_game_card(row, graded=graded_row, league=league,
-                                   players=players,
+                                   players=players, usage=usage,
                                    is_pixel=row["game_id"] in w["pixel_ids"]))
         body += ["</div>", SCRIPT]
         (SITE_DIR / week_slug(league, w["week"], season, cur_season)).write_text(
@@ -881,6 +965,48 @@ def _pixel_section(week: dict, league: str, players) -> str:
 <details class="more"><summary>Why this is the pick</summary>
 <div class="analysis">{rationale}</div></details>
 </div>"""
+
+
+def _board_section(week: dict) -> str:
+    """The week's confidence parlays, grouped by the day they play."""
+    board = week.get("board") or []
+    if not board:
+        return ""
+    groups = []
+    for slot in board:
+        cards = []
+        for i, parlay in enumerate(slot["parlays"], 1):
+            graded = parlay.get("graded")
+            outcome = ""
+            if graded and graded.get("result"):
+                tone = {"win": "strong", "loss": "bad", "push": "mid"}[graded["result"]]
+                outcome = (f'<span class="outcome t-{tone}">{graded["result"].upper()}'
+                           f' &middot; {graded["profit"]:+.2f}u</span>')
+            legs = "".join(
+                f'<li class="pxleg"><span class="pxdetail">{leg["pick"]}</span> '
+                f'<span class="meta">{leg["matchup"]} &middot; '
+                f'{pixel.format_american(leg["price"])} &middot; model '
+                f'{leg["prob"]:.0%}</span></li>'
+                for leg in parlay["legs"]
+            )
+            cards.append(f"""<div class="card boardcard">
+<div class="pxhead"><span class="boardnum">#{i}</span>
+<span class="pxprice">{pixel.format_american(parlay["american"])}</span>
+<span class="meta">{len(parlay["legs"])} legs &middot; model
+{parlay["prob"]:.0%} to hit</span>{outcome}</div>
+<ul class="pxlegs">{legs}</ul></div>""")
+        groups.append(f'<h3 class="slothead">{slot["slot"]}</h3>{"".join(cards)}')
+
+    return f"""<h2>Parlay board</h2>
+<details class="more explainbox"><summary>How the board is built</summary>
+<span class="meta">These are the most confident moneylines left after Pixel&rsquo;s Pick
+takes its legs, stacked in confidence order until the combined price reaches
+<strong>+100 or better</strong>. No game appears twice, so each ticket is genuinely
+different rather than a reshuffle of the same games. Short favourites are worth little
+on their own; combining them is what turns them into a payout worth the risk. It does
+not turn them into an edge &mdash; every leg still carries its own vig, and the
+tracker records how these actually land.</span></details>
+{"".join(groups)}"""
 
 
 def _stat_tile(title: str, big: str, tone: str, sub: str,

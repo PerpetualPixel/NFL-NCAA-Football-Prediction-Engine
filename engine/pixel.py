@@ -250,3 +250,121 @@ def record(graded_picks: list[dict]) -> dict:
         "hit_rate": wins / decided if decided else 0.0,
         "roi": profit / decided if decided else 0.0,
     }
+
+
+# ---------------------------------------------------------------------------
+# The parlay board: the week's most confident moneylines, combined to + money
+# ---------------------------------------------------------------------------
+#
+# Pixel's Pick answers "what is the single best play". The board answers the
+# next question: having taken that one, what do the rest of the confident
+# moneylines give you? Short favourites are worth little alone, so they are
+# stacked in confidence order until the combined price reaches even money or
+# better. Legs are never reused between parlays, so each one is a genuinely
+# different ticket rather than a reshuffle of the same games.
+
+BOARD_MIN_DECIMAL = 2.0        # +100 or better
+BOARD_MAX_LEGS = 4             # beyond this the hit rate collapses
+BOARD_MIN_LEGS = 2
+# The board wants more legs to work with than the headline pick does, so it
+# takes a slightly lower confidence floor. Large disagreements with the price
+# stay disqualified here too.
+BOARD_MIN_PROB = 0.55
+
+# A parlay needs several games, so single-game slots (Thursday, Monday) are
+# combined into one primetime ticket rather than left unbuildable.
+NFL_SLOTS = [
+    ("Sunday", {6}, 3),
+    # Thursday and Monday are one game each, and openers sometimes land
+    # midweek, so the standalone nights share a single ticket
+    ("Thursday, Monday &amp; standalone nights", {0, 1, 2, 3, 4, 5}, 1),
+]
+NCAA_SLOTS = [
+    ("Saturday", {5}, 3),
+    ("Weeknight", {0, 1, 2, 3, 4}, 1),
+]
+
+
+def _weekday(ts) -> int | None:
+    """Kickoff weekday as the game is played locally, where Monday is 0.
+
+    The two feeds differ: the NFL schedule gives a local game *date* stamped
+    at midnight, while the college feed gives a real kickoff timestamp in
+    UTC. Converting the former to Eastern would roll every game back a day —
+    Sunday games would read as Saturday — so a midnight stamp is treated as
+    an already-local date and left alone.
+    """
+    if pd.isna(ts):
+        return None
+    if ts.hour == 0 and ts.minute == 0:
+        return ts.weekday()
+    try:
+        return ts.tz_convert("US/Eastern").weekday()
+    except Exception:
+        return ts.weekday()
+
+
+def build_board(preds: pd.DataFrame, margin_sigma: float, league: str,
+                exclude_game_ids: set | None = None) -> list[dict]:
+    """Parlays grouped by the day they are played, priced at +100 or better."""
+    if "gameday" not in preds.columns:
+        return []
+    legs = [
+        leg for leg in candidate_legs(preds, margin_sigma, relaxed=True)
+        if leg["kind"] == "ML"
+        and leg["prob"] >= BOARD_MIN_PROB
+        and leg["prob"] - implied_probability(leg["price"]) <= MAX_DISAGREEMENT
+    ]
+    if not legs:
+        return []
+
+    exclude = set(exclude_game_ids or ())
+    kicks = dict(zip(preds["game_id"], pd.to_datetime(preds["gameday"], utc=True,
+                                                      errors="coerce")))
+    slots = NFL_SLOTS if league == "nfl" else NCAA_SLOTS
+    board = []
+    used = set(exclude)
+
+    for label, weekdays, max_parlays in slots:
+        pool = [leg for leg in legs
+                if leg["game_id"] not in used
+                and _weekday(kicks.get(leg["game_id"])) in weekdays]
+        # most confident first: this is a confidence board, not a value board
+        pool.sort(key=lambda l: -l["prob"])
+
+        parlays = []
+        current: list[dict] = []
+        for leg in pool:
+            if len(parlays) >= max_parlays:
+                break
+            if leg["game_id"] in used:
+                continue
+            current.append(leg)
+            dec = math.prod(l["decimal"] for l in current)
+            long_enough = len(current) >= BOARD_MIN_LEGS and dec >= BOARD_MIN_DECIMAL
+            if long_enough or len(current) >= BOARD_MAX_LEGS:
+                if dec >= BOARD_MIN_DECIMAL and len(current) >= BOARD_MIN_LEGS:
+                    parlays.append(_finalise(current))
+                    used.update(l["game_id"] for l in current)
+                current = []
+        if parlays:
+            board.append({"slot": label, "parlays": parlays})
+    return board
+
+
+def _finalise(legs: list[dict]) -> dict:
+    dec = math.prod(leg["decimal"] for leg in legs)
+    joint = math.prod(leg["prob"] for leg in legs)
+    return {
+        "legs": list(legs),
+        "decimal": dec,
+        "american": decimal_to_american(dec),
+        "prob": joint,
+        "ev": joint * (dec - 1.0) - (1.0 - joint),
+        "is_parlay": len(legs) > 1,
+    }
+
+
+def board_record(graded_parlays: list[dict]) -> dict:
+    """Combined record across every settled board parlay."""
+    return record([p for p in graded_parlays if p])

@@ -82,6 +82,11 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
   letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
   border: 1px solid currentColor;
 }
+.usageteam { margin-bottom: 12px; }
+.usageteam h5 {
+  margin: 8px 0 4px; font-size: 0.82rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--accent);
+}
 .factor { margin-bottom: 11px; list-style: none; }
 ul.factors { padding-left: 0; }
 .fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -148,6 +153,12 @@ table.track a:hover { color: var(--accent); }
 .heroweek { font-size: 1.5rem; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
 .herogo { margin-top: 8px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
 .card.pending { border-style: dashed; }
+.stage {
+  display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
+}
+.stage.locked { background: var(--good); color: #fff; }
+.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -156,6 +167,15 @@ table.track a:hover { color: var(--accent); }
 }
 .pxprice { font-size: 1.25rem; font-weight: 800; }
 .pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
 .pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
 .pxdetail { font-weight: 700; }
 .tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -214,7 +234,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Updated 2026-08-31 11:35 UTC &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:53 UTC</strong>, hourly
+&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-w16.html">&larr; Week 16</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html" selected>2026 season</option><option value="nfl-2025-w01.html">2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html">2023 season</option></select></label>
@@ -224,7 +245,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <a class="wknav-btn" href="nfl-w18.html">Week 18 &rarr;</a>
 </div>
 <h2>Week 17 &mdash; 2026</h2>
-<div class="weekhead">16 games &mdash; picks release from Tue Dec 29, 7:00 PM, one day before each kickoff</div>
+<div class="weekhead">16 games &mdash; picks release from Sun Dec 27, 7:00 PM, one day before each kickoff</div>
+
 
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
@@ -252,7 +274,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Baltimore Ravens @ Cincinnati Bengals</div>
 <div class="kick">Wed Dec 30, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Tue Dec 29, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Sun Dec 27, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -260,7 +282,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">New Orleans Saints @ Atlanta Falcons</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -268,7 +290,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Seattle Seahawks @ Carolina Panthers</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -276,7 +298,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Indianapolis Colts @ Cleveland Browns</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -284,7 +306,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">New York Giants @ Dallas Cowboys</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -292,7 +314,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Washington Commanders @ Jacksonville Jaguars</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -300,7 +322,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Kansas City Chiefs @ Los Angeles Chargers</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -308,7 +330,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Buffalo Bills @ Miami Dolphins</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -316,7 +338,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Denver Broncos @ New England Patriots</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -324,7 +346,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Minnesota Vikings @ New York Jets</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -332,7 +354,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Los Angeles Rams @ Tampa Bay Buccaneers</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -340,7 +362,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Pittsburgh Steelers @ Tennessee Titans</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -348,7 +370,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Las Vegas Raiders @ Arizona Cardinals</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -356,7 +378,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Detroit Lions @ Chicago Bears</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -364,7 +386,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Philadelphia Eagles @ San Francisco 49ers</div>
 <div class="kick">Sat Jan 2, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Fri Jan 1, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Wed Dec 30, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
@@ -372,7 +394,7 @@ forecast are known, then refreshed on game day.</span></div>
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">Houston Texans @ Green Bay Packers</div>
 <div class="kick">Sun Jan 3, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Sat Jan 2, 7:00 PM</strong>
+<div class="pendingnote">Pick releases <strong>Thu Dec 31, 7:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
