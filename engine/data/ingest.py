@@ -62,12 +62,22 @@ NFL_PBP_COLUMNS = [
     # player attribution, for the key-players breakdown and QB ratings
     "passer_player_name", "rusher_player_name", "receiver_player_name",
     "passer_player_id",
+    # usage and role: who gets the targets and carries, how far downfield,
+    # and how much of it they convert
+    "complete_pass", "air_yards", "yards_after_catch",
+    "pass_attempt", "rush_attempt",
 ]
 
 NFL_INJURIES_URL = (
     "https://github.com/nflverse/nflverse-data/releases/download/injuries/"
     "injuries_{year}.parquet"
 )
+NFL_ROSTER_URL = (
+    "https://github.com/nflverse/nflverse-data/releases/download/rosters/"
+    "roster_{year}.parquet"
+)
+ROSTER_COLUMNS = ["season", "team", "full_name", "position", "depth_chart_position"]
+
 NFL_SNAPS_URL = (
     "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/"
     "snap_counts_{year}.parquet"
@@ -146,6 +156,12 @@ def load_nfl_injuries(seasons: list[int], refresh_latest: bool = False) -> pd.Da
 def load_nfl_snaps(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:
     """Per-game snap shares, used to weight how much a missing player matters."""
     return _load_nfl_yearly(NFL_SNAPS_URL, "snap_counts", SNAP_COLUMNS,
+                            seasons, refresh_latest)
+
+
+def load_nfl_rosters(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:
+    """Rosters, used to expand the play-by-play's abbreviated player names."""
+    return _load_nfl_yearly(NFL_ROSTER_URL, "roster", ROSTER_COLUMNS,
                             seasons, refresh_latest)
 
 

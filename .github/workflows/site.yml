@@ -2,10 +2,11 @@ name: Build and deploy predictions site
 
 on:
   schedule:
-    # Every four hours. Picks are held until 24 hours before kickoff, so the
-    # site needs to rebuild often enough to release them on time and to
-    # refresh them on game day with late injury, lineup and weather news.
-    - cron: "0 */4 * * *"
+    # Hourly. Picks lock two hours before kickoff, so a four-hour cadence
+    # could miss that window entirely; rebuilding every hour guarantees the
+    # locked version is published in time and carries the latest odds,
+    # inactives and lineup news.
+    - cron: "0 * * * *"
   workflow_dispatch:
   push:
     branches: [main]

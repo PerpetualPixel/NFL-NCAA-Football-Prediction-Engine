@@ -235,7 +235,7 @@ def key_factors(row: pd.Series) -> list[dict]:
     if not _has_units(row):
         return []
     home, away = row.home_team, row.away_team
-    n = int(row.get("unit_n") or row.get("n_teams", 32) or 32)
+    n = _team_count(row)
     out = []
     specs = [
         (home, away, "home_off_pass_epa", "away_def_pass_epa", "passing", "pass defense"),
@@ -343,3 +343,134 @@ def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str) -> list[str]:
             "&mdash; the tracker records what actually happened."
         )
     return paras
+
+
+def _num(row, field):
+    """Read a field from a namedtuple row, treating missing or NaN as absent."""
+    value = getattr(row, field, None)
+    return value if value is not None and pd.notna(value) else None
+
+
+def _fmt_player(row, kind: str) -> str:
+    """One player's line, in the shape a broadcast would read it."""
+    if kind == "REC":
+        catches_only = bool(getattr(row, "completions_only", False))
+        bits = []
+        for field, label in (("targets_pg", "targets"), ("catches_pg", "catches")):
+            value = _num(row, field)
+            if value is not None:
+                bits.append(f"{value:.1f} {label}")
+        yards = _num(row, "rec_yards_pg")
+        if yards is not None:
+            bits.append(f"{yards:.0f} yards")
+        detail = ", ".join(bits)
+        air = _num(row, "air")
+        depth = f", working {air:.1f} yards downfield on average" if air else ""
+        noun = "receptions" if catches_only else "targets"
+        position = getattr(row, "position", None)
+        label = f" ({position})" if isinstance(position, str) and position else ""
+        return (f"<strong>{row.player}</strong>{label} commands {row.share:.0%} of the "
+                f"{noun} ({detail} a game){depth}")
+    bits = []
+    carries, yards = _num(row, "carries_pg"), _num(row, "rush_yards_pg")
+    if carries is not None:
+        bits.append(f"{carries:.1f} carries")
+    if yards is not None:
+        bits.append(f"{yards:.0f} yards")
+    detail = ", ".join(bits)
+    return (f"<strong>{row.player}</strong> takes {row.share:.0%} of the carries "
+            f"({detail} a game)")
+
+
+def _team_count(row: pd.Series) -> int:
+    """How many teams the unit ranks are drawn from, guarding missing values."""
+    for key, default in (("unit_n", None), ("n_teams", 32)):
+        value = row.get(key, default)
+        if value is not None and pd.notna(value):
+            return int(value)
+    return 32
+
+
+def usage_report(row: pd.Series, usage: pd.DataFrame | None) -> list[dict]:
+    """Who gets the ball for each side, and what the other side does about it.
+
+    This is the part a reader cannot get from a rating: the target hierarchy,
+    the backfield split, how far downfield the offense works, and whether the
+    defence across from them is equipped to handle it.
+    """
+    if usage is None or usage.empty:
+        return []
+    n = _team_count(row)
+    out = []
+    sides = [
+        (row.get("home_key", row.home_team), row.home_team, row.away_team,
+         "away_def_pass_epa", "away_def_rush_epa"),
+        (row.get("away_key", row.away_team), row.away_team, row.home_team,
+         "home_def_pass_epa", "home_def_rush_epa"),
+    ]
+    for key, team, opponent, pass_def_key, rush_def_key in sides:
+        side = usage[usage["team"] == key]
+        if side.empty:
+            continue
+        paras = []
+
+        recs = side[side["role"] == "REC"].nsmallest(3, "rank")
+        if not recs.empty:
+            lead = recs.iloc[0]
+            lines = [_fmt_player(r, "REC") for r in recs.itertuples()]
+            defence = ""
+            if pd.notna(row.get(f"{pass_def_key}_rank")):
+                rank = int(row[f"{pass_def_key}_rank"])
+                pct = grades.percentile(rank, n)
+                verdict = ("should be tested repeatedly" if pct < 0.4
+                           else "will make them work for it" if pct > 0.7
+                           else "is roughly a neutral matchup")
+                defence = (f" The {opponent} pass defence grades "
+                           f"<strong>{grades.grade(pct)}</strong> "
+                           f"({grades.rank_label(rank, n)}), so this group {verdict}.")
+            paras.append(
+                f"<strong>Through the air:</strong> {lines[0]}"
+                + (f". Behind him, {'; '.join(lines[1:])}" if len(lines) > 1 else "")
+                + f". Expect {lead.player} to see the ball early and often."
+                + defence
+            )
+
+        runs = side[side["role"] == "RUSH"].nsmallest(2, "rank")
+        if not runs.empty:
+            lines = [_fmt_player(r, "RUSH") for r in runs.itertuples()]
+            split = (f" {lines[1]}, so this is a committee rather than a bell cow."
+                     if len(lines) > 1 and runs.iloc[1].share >= 0.25
+                     else (f" {lines[1]} in a change-of-pace role."
+                           if len(lines) > 1 else ""))
+            defence = ""
+            if pd.notna(row.get(f"{rush_def_key}_rank")):
+                rank = int(row[f"{rush_def_key}_rank"])
+                pct = grades.percentile(rank, n)
+                verdict = ("a defence that has been run on all year" if pct < 0.4
+                           else "a front that holds up well" if pct > 0.7
+                           else "an average front")
+                defence = (f" They run into {verdict} &mdash; {opponent} grades "
+                           f"<strong>{grades.grade(pct)}</strong> against the run "
+                           f"({grades.rank_label(rank, n)}).")
+            paras.append(f"<strong>On the ground:</strong> {lines[0]}.{split}{defence}")
+
+        if paras:
+            out.append({"team": team, "paragraphs": paras})
+    return out
+
+
+def line_movement(row: pd.Series) -> str:
+    """How the number has moved since it opened, where the feed publishes it."""
+    opened = row.get("open_spread_line")
+    current = row.get("spread_line")
+    if pd.isna(opened) or pd.isna(current):
+        return ""
+    move = current - opened
+    if abs(move) < 0.5:
+        return (f"The line has not moved off its open of "
+                f"{odds.format_line(row.home_team, opened)} &mdash; the market is settled "
+                "on this number.")
+    toward = row.home_team if move > 0 else row.away_team
+    return (f"The line opened at {odds.format_line(row.home_team, opened)} and now sits at "
+            f"{odds.format_line(row.home_team, current)}, {abs(move):.1f} points toward "
+            f"<strong>{toward}</strong>. Money has been coming in on that side.")
