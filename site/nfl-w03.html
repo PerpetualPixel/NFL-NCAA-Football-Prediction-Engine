@@ -100,6 +100,45 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+.sched { margin: 0 0 18px; }
+.schedhead {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0; font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 800; color: var(--muted);
+}
+.schedgrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line); border-top: none; border-radius: 0 0 8px 8px;
+  overflow: hidden; background: var(--card);
+}
+.schedgrid > .srow:nth-child(odd) { border-right: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .schedgrid { grid-template-columns: minmax(0, 1fr); }
+  .schedgrid > .srow:nth-child(odd) { border-right: none; }
+}
+.srow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+}
+.srow:hover { background: rgba(255,255,255,0.04); }
+.steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.steam {
+  display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.steam .crest { width: 20px; height: 20px; margin: 0; vertical-align: middle; }
+.steam .sscore { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.steam.lost { color: var(--muted); font-weight: 500; }
+.swhen {
+  text-align: right; font-size: 0.78rem; color: var(--muted); line-height: 1.35;
+  white-space: nowrap; flex-shrink: 0;
+}
+.swhen strong { display: block; color: var(--ink); font-weight: 700; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -233,8 +272,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:53 UTC</strong>, hourly
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:11 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-w02.html">&larr; Week 2</a>
@@ -246,6 +286,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <h2>Week 3 &mdash; 2026</h2>
 <div class="weekhead">16 games &mdash; picks release from Sun Sep 20, 8:00 PM, one day before each kickoff</div>
+<section class="sched"><div class="schedhead"><span>Week 3 of 18</span><span>16 games</span></div><div class="schedgrid"><a class="srow" href="#g-2026_03_ATL_GB"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Falcons</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Packers</div></div><div class="swhen"><strong>Thu, Sep 24</strong>8:15 PM ET</div></a><a class="srow" href="#g-2026_03_LAC_BUF"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chargers</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Bills</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_CAR_CLE"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Panthers</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Browns</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_NYJ_DET"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">Jets</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DET.png" alt="" loading="lazy" onerror="this.style.display='none'">Lions</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_HOU_IND"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Texans</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Colts</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_NE_JAX"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">Patriots</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/JAX.png" alt="" loading="lazy" onerror="this.style.display='none'">Jaguars</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_KC_MIA"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chiefs</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Dolphins</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_TEN_NYG"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Titans</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">Giants</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_CIN_PIT"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Bengals</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Steelers</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_SEA_WAS"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seahawks</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Commanders</div></div><div class="swhen"><strong>Sun, Sep 27</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_03_ARI_SF"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ARI.png" alt="" loading="lazy" onerror="this.style.display='none'">Cardinals</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">49ers</div></div><div class="swhen"><strong>Sun, Sep 27</strong>4:05 PM ET</div></a><a class="srow" href="#g-2026_03_MIN_TB"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Vikings</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Buccaneers</div></div><div class="swhen"><strong>Sun, Sep 27</strong>4:05 PM ET</div></a><a class="srow" href="#g-2026_03_BAL_DAL"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Ravens</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Cowboys</div></div><div class="swhen"><strong>Sun, Sep 27</strong>4:25 PM ET</div></a><a class="srow" href="#g-2026_03_LV_NO"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Raiders</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">Saints</div></div><div class="swhen"><strong>Sun, Sep 27</strong>4:25 PM ET</div></a><a class="srow" href="#g-2026_03_LA_DEN"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Rams</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Broncos</div></div><div class="swhen"><strong>Sun, Sep 27</strong>8:20 PM ET</div></a><a class="srow" href="#g-2026_03_PHI_CHI"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Eagles</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Bears</div></div><div class="swhen"><strong>Mon, Sep 28</strong>8:15 PM ET</div></a></div></section>
 <div class="pixel card">
 <div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
 <span class="pxprice">+102</span>
@@ -266,15 +307,15 @@ not turn them into an edge &mdash; every leg still carries its own vig, and the
 tracker records how these actually land.</span></details>
 <h3 class="slothead">Sunday</h3><div class="card boardcard">
 <div class="pxhead"><span class="boardnum">#1</span>
-<span class="pxprice">+118</span>
+<span class="pxprice">+116</span>
 <span class="meta">3 legs &middot; model
-41% to hit</span></div>
-<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">San Francisco 49ers</span> <span class="meta">Arizona Cardinals @ San Francisco 49ers &middot; -650 &middot; model 87%</span></li><li class="pxleg"><span class="pxdetail">Detroit Lions</span> <span class="meta">New York Jets @ Detroit Lions &middot; -410 &middot; model 77%</span></li><li class="pxleg"><span class="pxdetail">Seattle Seahawks</span> <span class="meta">Seattle Seahawks @ Washington Commanders &middot; -192 &middot; model 62%</span></li></ul></div><div class="card boardcard">
+42% to hit</span></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">San Francisco 49ers</span> <span class="meta">Arizona Cardinals @ San Francisco 49ers &middot; -675 &middot; model 87%</span></li><li class="pxleg"><span class="pxdetail">Detroit Lions</span> <span class="meta">New York Jets @ Detroit Lions &middot; -425 &middot; model 78%</span></li><li class="pxleg"><span class="pxdetail">New Orleans Saints</span> <span class="meta">Las Vegas Raiders @ New Orleans Saints &middot; -192 &middot; model 61%</span></li></ul></div><div class="card boardcard">
 <div class="pxhead"><span class="boardnum">#2</span>
 <span class="pxprice">+147</span>
 <span class="meta">2 legs &middot; model
 35% to hit</span></div>
-<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">New Orleans Saints</span> <span class="meta">Las Vegas Raiders @ New Orleans Saints &middot; -185 &middot; model 60%</span></li><li class="pxleg"><span class="pxdetail">New York Giants</span> <span class="meta">Tennessee Titans @ New York Giants &middot; -166 &middot; model 57%</span></li></ul></div>
+<ul class="pxlegs"><li class="pxleg"><span class="pxdetail">Seattle Seahawks</span> <span class="meta">Seattle Seahawks @ Washington Commanders &middot; -185 &middot; model 61%</span></li><li class="pxleg"><span class="pxdetail">New York Giants</span> <span class="meta">Tennessee Titans @ New York Giants &middot; -166 &middot; model 57%</span></li></ul></div>
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
@@ -297,129 +338,145 @@ tracker records how these actually land.</span></details>
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game pending" data-kick="1790208000"
+<div class="card game pending" id="g-2026_03_ATL_GB" data-kick="1790208000"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Atlanta Falcons @ Green Bay Packers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Atlanta Falcons
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Green Bay Packers</div>
 <div class="kick">Wed Sep 23, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Sun Sep 20, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_LAC_BUF" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Los Angeles Chargers @ Buffalo Bills</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Chargers
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo Bills</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_CAR_CLE" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Carolina Panthers @ Cleveland Browns</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Carolina Panthers
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Cleveland Browns</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_NYJ_DET" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">New York Jets @ Detroit Lions</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Jets
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DET.png" alt="" loading="lazy" onerror="this.style.display='none'">Detroit Lions</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_HOU_IND" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Houston Texans @ Indianapolis Colts</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston Texans
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Indianapolis Colts</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_NE_JAX" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">New England Patriots @ Jacksonville Jaguars</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">New England Patriots
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/JAX.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville Jaguars</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_KC_MIA" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Kansas City Chiefs @ Miami Dolphins</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas City Chiefs
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami Dolphins</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_TEN_NYG" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Tennessee Titans @ New York Giants</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee Titans
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Giants</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_CIN_PIT" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Cincinnati Bengals @ Pittsburgh Steelers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bengals
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Steelers</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_SEA_WAS" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Seattle Seahawks @ Washington Commanders</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seattle Seahawks
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Commanders</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_ARI_SF" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Arizona Cardinals @ San Francisco 49ers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ARI.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona Cardinals
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">San Francisco 49ers</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_MIN_TB" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Minnesota Vikings @ Tampa Bay Buccaneers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota Vikings
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Tampa Bay Buccaneers</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_BAL_DAL" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Baltimore Ravens @ Dallas Cowboys</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Baltimore Ravens
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Dallas Cowboys</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_LV_NO" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Las Vegas Raiders @ New Orleans Saints</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Las Vegas Raiders
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">New Orleans Saints</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790467200"
+<div class="card game pending" id="g-2026_03_LA_DEN" data-kick="1790467200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Los Angeles Rams @ Denver Broncos</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Rams
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Denver Broncos</div>
 <div class="kick">Sat Sep 26, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Wed Sep 23, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>
-<div class="card game pending" data-kick="1790553600"
+<div class="card game pending" id="g-2026_03_PHI_CHI" data-kick="1790553600"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">Philadelphia Eagles @ Chicago Bears</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Philadelphia Eagles
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Chicago Bears</div>
 <div class="kick">Sun Sep 27, 8:00 PM</div></div>
 <div class="pendingnote">Pick releases <strong>Thu Sep 24, 8:00 PM</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the

@@ -115,6 +115,45 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+.sched { margin: 0 0 18px; }
+.schedhead {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0; font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 800; color: var(--muted);
+}
+.schedgrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line); border-top: none; border-radius: 0 0 8px 8px;
+  overflow: hidden; background: var(--card);
+}
+.schedgrid > .srow:nth-child(odd) { border-right: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .schedgrid { grid-template-columns: minmax(0, 1fr); }
+  .schedgrid > .srow:nth-child(odd) { border-right: none; }
+}
+.srow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+}
+.srow:hover { background: rgba(255,255,255,0.04); }
+.steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.steam {
+  display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.steam .crest { width: 20px; height: 20px; margin: 0; vertical-align: middle; }
+.steam .sscore { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.steam.lost { color: var(--muted); font-weight: 500; }
+.swhen {
+  text-align: right; font-size: 0.78rem; color: var(--muted); line-height: 1.35;
+  white-space: nowrap; flex-shrink: 0;
+}
+.swhen strong { display: block; color: var(--ink); font-weight: 700; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -256,7 +295,8 @@ def _page(title: str, body: str) -> str:
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
 <div class="stamp">Odds and picks refreshed <strong>{stamp}</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 {body}
@@ -383,10 +423,11 @@ def _game_card(row: pd.Series, graded: bool, league: str,
 
     kick_label, kick_sort = _kickoff(row)
     neutral = " (neutral site)" if row.neutral else ""
-    return f"""<div class="card game" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
+    return f"""<div class="card game" id="g-{row.game_id}" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
 data-margin="{abs(row.pred_margin):.3f}" data-edge="{abs(edge) if edge is not None else 0:.3f}" \
 data-tags="{' '.join(tags)}">
-<div class="cardhead"><div class="teams">{row.away_team} @ {row.home_team}{neutral}</div>
+<div class="cardhead"><div class="teams">{teams.logo_img(row.get("away_key", ""), league)}{row.away_team}
+&nbsp;@&nbsp;{teams.logo_img(row.get("home_key", ""), league)}{row.home_team}{neutral}</div>
 <div class="kick">{stage_badge}{kick_label}</div></div>
 {_pick_row(row, line, prob, ml)}
 <div class="chips">{chips}</div>
@@ -617,17 +658,68 @@ def _release_label(kick: pd.Timestamp) -> str:
     return release.strftime("%a %b %-d, %-I:%M %p")
 
 
-def _pending_card(row, kick: pd.Timestamp) -> str:
+def _pending_card(row, kick: pd.Timestamp, league: str = "nfl") -> str:
     """A scheduled game whose pick is not out yet."""
     when = "" if pd.isna(kick) else _local(kick).strftime("%a %b %-d, %-I:%M %p")
-    return f"""<div class="card game pending" data-kick="{0 if pd.isna(kick) else int(kick.timestamp())}"
+    return f"""<div class="card game pending" id="g-{row.game_id}" data-kick="{0 if pd.isna(kick) else int(kick.timestamp())}"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
-<div class="cardhead"><div class="teams">{row.away_team} @ {row.home_team}</div>
+<div class="cardhead"><div class="teams">{teams.logo_img(row.get("away_key", ""), league)}{row.away_team}
+&nbsp;@&nbsp;{teams.logo_img(row.get("home_key", ""), league)}{row.home_team}</div>
 <div class="kick">{when}</div></div>
 <div class="pendingnote">Pick releases <strong>{_release_label(kick)}</strong>
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>"""
+
+
+def _sched_row(row: pd.Series, league: str) -> str:
+    """One ESPN-style line in the week's schedule index: the two teams stacked,
+    kickoff (or the final score) on the right, linking down to the breakdown."""
+    final = bool(row.get("completed")) and pd.notna(row.get("margin"))
+
+    def team(side: str) -> str:
+        key = row.get(f"{side}_key", "")
+        name = teams.short_name(key, league) if key else row.get(f"{side}_team", "")
+        score = ""
+        cls = "steam"
+        if final:
+            pts = row.get(f"{side}_score")
+            score = f'<span class="sscore">{int(pts)}</span>' if pd.notna(pts) else ""
+            margin = row.margin if side == "home" else -row.margin
+            if margin < 0:
+                cls += " lost"
+        return f'<div class="{cls}">{teams.logo_img(key, league)}{name}{score}</div>'
+
+    if final:
+        when = "<strong>Final</strong>"
+    else:
+        # _kickoff already handles the feed's quirk of storing the date and the
+        # time in separate columns, so reuse it and split the two lines apart
+        label, _ = _kickoff(row)
+        if not label:
+            when = "<strong>TBD</strong>"
+        else:
+            day, _, time = label.partition(" &middot; ")
+            when = f"<strong>{day}</strong>{time}"
+    return (f'<a class="srow" href="#g-{row.game_id}">'
+            f'<div class="steams">{team("away")}{team("home")}</div>'
+            f'<div class="swhen">{when}</div></a>')
+
+
+def _schedule_grid(league: str, week: dict, weeks: list[dict]) -> str:
+    """The whole slate at a glance, above the breakdowns."""
+    preds = week["preds"]
+    if preds.empty:
+        return ""
+    regular = [w["week"] for w in weeks if w["label"].startswith("Week")]
+    total = max(regular) if regular else week["week"]
+    heading = (f'{week["label"]} of {total}' if week["label"].startswith("Week")
+               else week["label"])
+    rows = "".join(_sched_row(row, league)
+                   for _, row in preds.sort_values("gameday").iterrows())
+    return (f'<section class="sched"><div class="schedhead"><span>{heading}</span>'
+            f'<span>{len(preds)} games</span></div>'
+            f'<div class="schedgrid">{rows}</div></section>')
 
 
 def _add_display_names(preds: pd.DataFrame, league: str) -> pd.DataFrame:
@@ -804,8 +896,17 @@ def build_league_weeks(
             for parlay in slot["parlays"]:
                 parlay["graded"] = pixel.grade(parlay, graded)
 
+        ledger = tracking.game_ledger(graded, league, season, week, label)
+        ledger += tracking.wager_ledger(graded_pick, league, season, week, label,
+                                        "Pixel")
+        for slot in board:
+            for parlay in slot["parlays"]:
+                ledger += tracking.wager_ledger(parlay.get("graded"), league, season,
+                                                week, label, "Parlay")
+
         weeks.append({
             "week": week, "label": label, "season": season, "preds": preds,
+            "ledger": ledger,
             "pixel": pick, "pixel_graded": graded_pick, "pixel_ids": pixel_ids,
             "board": board,
             "graded": graded, "status_short": status_short, "headline": headline,
@@ -849,6 +950,7 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
                       seasons=season_index, season=season),
             f'<h2>{w["label"]} &mdash; {season}</h2>',
             f'<div class="weekhead">{w["headline"]}</div>',
+            _schedule_grid(league, w, weeks),
             _pixel_section(w, league, players),
             _board_section(w),
             CONTROLS,
@@ -860,7 +962,7 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
             kick = _kickoff_time(row)
             stage = _release_stage(kick, now)
             if not graded_row and stage == "pending":
-                body.append(_pending_card(row, kick))
+                body.append(_pending_card(row, kick, league))
                 continue
             row = row.copy()
             row["release_stage"] = stage
@@ -1029,100 +1131,208 @@ def _totals(weeks: list[dict], kind: str) -> dict:
             "roi": profit / decided if decided else 0.0}
 
 
-def _tracking_page(league_weeks: dict[tuple[str, int], list[dict]], cur_season: dict) -> str:
-    """Results page: how the model's moneyline and spread picks are doing."""
-    tiles, rows = [], []
-    for (league, season), weeks in league_weeks.items():
-        for kind, name, breakeven in (("ml", "moneyline", 0.50), ("ats", "spread", 0.524)):
-            t = _totals(weeks, kind)
-            title = name.capitalize()
-            if not t["decided"]:
-                tiles.append(_stat_tile(title, "—", "mid", "no graded picks yet",
-                                        league=league, season=season))
-                continue
-            verb = "won" if kind == "ml" else "covered"
-            tiles.append(_stat_tile(
-                title, f'{t["wins"]}-{t["losses"]}',
-                grades.hit_tone(t["hit_rate"], breakeven),
-                f'{t["hit_rate"]:.0%} of picks {verb} &middot; '
-                f'{t["profit"]:+.1f} units ({t["roi"]:+.1%} ROI)',
-                league=league, season=season))
+LEAGUE_TITLE = {"nfl": "NFL", "ncaa": "NCAAF"}
 
-        for w in weeks:
-            if not w["ml"]["decided"]:
-                continue
-            ml, ats = w["ml"], w["ats"]
-            rows.append({
-                "league": league, "season": season, "week": w["week"], "label": w["label"],
-                "slug": week_slug(league, w["week"], season, cur_season.get(league)),
-                "ml": ml, "ats": ats,
-            })
 
-    cat_table = (_clv_section(league_weeks) + _tier_table(league_weeks)
-                 + _category_table(league_weeks))
+def _tracking_page(league: str, weeks_by_season: dict[int, list[dict]]) -> str:
+    """One league's results: headline numbers, then every wager, filterable."""
+    seasons = sorted(weeks_by_season, reverse=True)
+    title = LEAGUE_TITLE[league]
 
-    if not rows:
-        table = ('<div class="card"><div class="meta">Once games are played, every week\'s '
-                 "moneyline and spread results land here.</div></div>")
-    else:
-        def cell(rec: dict, breakeven: float) -> str:
+    tiles = []
+    for season in seasons:
+        weeks = weeks_by_season[season]
+        graded = [w["graded"] for w in weeks if len(w["graded"])]
+        if not graded:
+            continue
+        allg = pd.concat(graded, ignore_index=True)
+        for kind, name, breakeven in (("ml", "Moneyline", 0.50),
+                                      ("ats", "Spread", 0.524)):
+            rec = tracking.record(allg, kind)
             if not rec["decided"]:
-                return '<td class="num meta">&mdash;</td><td class="num meta">&mdash;</td>'
-            return (f'<td class="num"><span class="t-{grades.hit_tone(rec["hit_rate"], breakeven)}">'
-                    f'{rec["wins"]}-{rec["losses"]}</span></td>'
-                    f'<td class="num t-{grades.roi_tone(rec["roi"])}">{rec["profit"]:+.1f}u</td>')
+                continue
+            tiles.append(_stat_tile(
+                name, f'{rec["wins"]}-{rec["losses"]}',
+                grades.hit_tone(rec["hit_rate"], breakeven),
+                f'{rec["hit_rate"]:.0%} &middot; {rec["profit"]:+.1f} units '
+                f'({rec["roi"]:+.1%} ROI)', league=league, season=season))
+        clv = tracking.clv_summary(allg)
+        if clv.get("n"):
+            rate = clv["beat_rate"]
+            tiles.append(_stat_tile(
+                "Closing line value", f"{rate:.0%}",
+                "strong" if rate >= 0.55 else "good" if rate > 0.5 else "bad",
+                f'market moved toward the pick on {clv["n"]} spread picks',
+                league=league, season=season))
+        for label, kind in (("Pixel&rsquo;s Picks", "pixel"), ("Parlay board", "board")):
+            settled = []
+            for w in weeks:
+                if kind == "pixel" and w.get("pixel_graded"):
+                    settled.append(w["pixel_graded"])
+                elif kind == "board":
+                    for slot in w.get("board") or []:
+                        settled += [p.get("graded") for p in slot["parlays"]
+                                    if p.get("graded")]
+            rec = pixel.record([p for p in settled if p])
+            if rec["decided"]:
+                tiles.append(_stat_tile(
+                    label, f'{rec["wins"]}-{rec["losses"]}',
+                    grades.roi_tone(rec["roi"]),
+                    f'{rec["hit_rate"]:.0%} &middot; {rec["profit"]:+.1f} units '
+                    f'({rec["roi"]:+.1%} ROI)', league=league, season=season))
 
-        body = "".join(
-            f'<tr class="trow scoped" data-league="{r["league"]}" '
-            f'data-season="{r["season"]}" '
-            f'data-week="{r["season"] * 100 + r["week"]}" '
-            f'data-mlrate="{r["ml"]["hit_rate"]:.4f}" data-atrate="{r["ats"]["hit_rate"]:.4f}" '
-            f'data-mlprofit="{r["ml"]["profit"]:.3f}" data-atprofit="{r["ats"]["profit"]:.3f}">'
-            f'<td><a href="{r["slug"]}">{r["label"]}</a></td>'
-            f'{cell(r["ml"], 0.50)}{cell(r["ats"], 0.524)}</tr>'
-            for r in rows
-        )
-        table = f"""<table class="track" id="tracktable">
-<thead><tr><th>Week</th><th class="num">Moneyline</th><th class="num">ML units</th>
-<th class="num">Spread</th><th class="num">Spread units</th></tr></thead>
-<tbody>{body}</tbody></table>"""
-
-    seasons = sorted({season for _, season in league_weeks}, reverse=True)
     season_opts = "".join(f'<option value="{y}">{y} season</option>' for y in seasons)
-    scope_bar = f"""<div class="controls scopebar">
-  <div class="ctl-group">
-    <button class="chip active" data-lgfilter="all">Both leagues</button>
-    <button class="chip" data-lgfilter="nfl">NFL</button>
-    <button class="chip" data-lgfilter="ncaa">NCAA</button>
-  </div>
-  <label class="ctl-sort">Season:<select id="scopeseason">{season_opts}</select></label>
-</div>"""
+    week_opts = "".join(
+        f'<option value="{w["week"]}">{w["label"]}</option>'
+        for w in weeks_by_season.get(seasons[0], [])
+    ) if seasons else ""
 
-    return f"""<h2>Tracking &mdash; how the picks are doing</h2>
-{scope_bar}
-<div class="tiles">{''.join(tiles)}</div>
-<details class="more explainbox"><summary>How to read this</summary>
-<span class="meta">Every game gets two separate picks: a <em>moneyline</em> pick (who wins the
-game outright) and a <em>spread</em> pick (which side beats the betting line). They often
-disagree, so they are tracked separately. "Units" is profit from betting one unit on every
-pick at the prices the sportsbook actually posted &mdash; positive means the picks made
-money, negative means they lost. Spread picks need about 52.4% to break even;
-<span class="t-strong">green</span> is beating that, <span class="t-bad">red</span> is
-losing money.</span></details>
-<div class="controls">
-  <label class="ctl-sort">Sort:
-    <select id="tracksort">
-      <option value="week">Most recent week first</option>
-      <option value="mlrate">Best moneyline record</option>
-      <option value="atrate">Best spread record</option>
-      <option value="mlprofit">Most moneyline profit</option>
-      <option value="atprofit">Most spread profit</option>
-    </select>
-  </label>
+    return f"""<h2>{title} tracking</h2>
+<div class="controls scopebar">
+  <label class="ctl-sort">Season:<select id="scopeseason">{season_opts}</select></label>
 </div>
-{table}
-{cat_table}
-{TRACK_SCRIPT}"""
+<div class="tiles">{''.join(tiles)}</div>
+
+<h2>Every wager</h2>
+<details class="more explainbox"><summary>What is in this table</summary>
+<span class="meta">One row per settled bet: the moneyline and spread on every game,
+plus each Pixel&rsquo;s Pick and parlay. Filter by season, week, bet type or result,
+and sort by any column. Units are profit on a one-unit stake at the price the book
+posted, so a winning underdog returns more than a winning favourite.</span></details>
+<div class="controls">
+  <div class="ctl-group" id="typefilter">
+    <button class="chip active" data-f="all">All bets</button>
+    <button class="chip" data-f="Pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-f="Parlay">Parlays</button>
+    <button class="chip" data-f="Moneyline">Moneyline</button>
+    <button class="chip" data-f="Spread">Spread</button>
+  </div>
+  <div class="ctl-group" id="resultfilter">
+    <button class="chip active" data-r="all">Any result</button>
+    <button class="chip" data-r="win">Wins</button>
+    <button class="chip" data-r="loss">Losses</button>
+  </div>
+</div>
+<div class="controls">
+  <label class="ctl-sort">Week:<select id="weekfilter">
+    <option value="all">All weeks</option>{week_opts}</select></label>
+  <label class="ctl-sort">Sort:<select id="ledgersort">
+    <option value="week">Most recent first</option>
+    <option value="profit">Biggest win</option>
+    <option value="profit_asc">Biggest loss</option>
+    <option value="price">Longest price</option>
+    <option value="prob">Most confident</option>
+  </select></label>
+  <span class="meta" id="ledgercount"></span>
+</div>
+<div class="tablewrap"><table class="track" id="ledger">
+<thead><tr><th>Week</th><th>Bet</th><th>Selection</th>
+<th class="num">Price</th><th class="num">Model</th><th class="num">Result</th>
+<th class="num">Units</th></tr></thead>
+<tbody></tbody></table></div>
+<div class="emptynote" hidden>No bets match these filters.</div>
+<button class="chip" id="loadmore" hidden>Show more</button>
+{LEDGER_SCRIPT.replace('__LEAGUE__', league)}"""
+
+
+LEDGER_SCRIPT = """<script>
+(function () {
+  var rows = [], view = [], shown = 0, PAGE = 100;
+  var state = {season: null, week: 'all', type: 'all', result: 'all', sort: 'week'};
+  var tbody = document.querySelector('#ledger tbody');
+  var note = document.querySelector('.emptynote');
+  var more = document.getElementById('loadmore');
+  var count = document.getElementById('ledgercount');
+
+  var LABEL = {'Pixel': "Pixel's Pick", 'Parlay': 'Parlay board'};
+  function fmtPrice(p) { return p > 0 ? '+' + p : '' + p; }
+
+  function render(reset) {
+    if (reset) { tbody.innerHTML = ''; shown = 0; }
+    var slice = view.slice(shown, shown + PAGE);
+    var html = slice.map(function (r) {
+      var tone = r.result === 'win' ? 't-strong' : (r.result === 'loss' ? 't-bad' : 't-mid');
+      var prob = r.prob == null ? '' : Math.round(r.prob * 100) + '%';
+      return '<tr><td>' + r.week_label + ' <span class="meta">' + r.season + '</span></td>' +
+        '<td>' + (LABEL[r.type] || r.type) + '</td>' +
+        '<td>' + r.pick + ' <span class="meta">' + r.matchup + '</span></td>' +
+        '<td class="num">' + fmtPrice(r.price) + '</td>' +
+        '<td class="num meta">' + prob + '</td>' +
+        '<td class="num ' + tone + '">' + r.result.toUpperCase() + '</td>' +
+        '<td class="num ' + (r.profit > 0 ? 't-strong' : (r.profit < 0 ? 't-bad' : 't-mid')) +
+        '">' + (r.profit > 0 ? '+' : '') + r.profit.toFixed(2) + 'u</td></tr>';
+    }).join('');
+    tbody.insertAdjacentHTML('beforeend', html);
+    shown += slice.length;
+    more.hidden = shown >= view.length;
+    note.hidden = view.length !== 0;
+    var units = view.reduce(function (a, r) { return a + r.profit; }, 0);
+    var w = view.filter(function (r) { return r.result === 'win'; }).length;
+    var l = view.filter(function (r) { return r.result === 'loss'; }).length;
+    count.innerHTML = view.length + ' bets &middot; ' + w + '-' + l + ' &middot; ' +
+      (units > 0 ? '+' : '') + units.toFixed(1) + ' units';
+  }
+
+  function apply() {
+    view = rows.filter(function (r) {
+      return (state.season == null || r.season === state.season)
+        && (state.week === 'all' || String(r.week) === state.week)
+        && (state.type === 'all' || r.type === state.type)
+        && (state.result === 'all' || r.result === state.result);
+    });
+    var s = state.sort;
+    view.sort(function (a, b) {
+      if (s === 'week') return (b.season - a.season) || (b.week - a.week);
+      if (s === 'profit') return b.profit - a.profit;
+      if (s === 'profit_asc') return a.profit - b.profit;
+      if (s === 'price') return b.price - a.price;
+      return (b.prob || 0) - (a.prob || 0);
+    });
+    render(true);
+  }
+
+  function bindChips(id, key) {
+    document.querySelectorAll('#' + id + ' .chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('#' + id + ' .chip').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        state[key] = btn.dataset.f || btn.dataset.r;
+        apply();
+      });
+    });
+  }
+
+  fetch('tracking-__LEAGUE__.json').then(function (r) { return r.json(); })
+    .then(function (data) {
+      rows = data;
+      var sel = document.getElementById('scopeseason');
+      state.season = sel ? parseInt(sel.value, 10) : null;
+      apply();
+    })
+    .catch(function () { if (count) count.textContent = 'results unavailable'; });
+
+  bindChips('typefilter', 'type');
+  bindChips('resultfilter', 'result');
+  document.getElementById('weekfilter').addEventListener('change', function (e) {
+    state.week = e.target.value; apply();
+  });
+  document.getElementById('ledgersort').addEventListener('change', function (e) {
+    state.sort = e.target.value; apply();
+  });
+  more.addEventListener('click', function () { render(false); });
+
+  var season = document.getElementById('scopeseason');
+  if (season) season.addEventListener('change', function (e) {
+    state.season = parseInt(e.target.value, 10);
+    document.querySelectorAll('.scoped').forEach(function (el) {
+      el.hidden = el.dataset.season && el.dataset.season !== e.target.value;
+    });
+    apply();
+  });
+})();
+</script>"""
 
 
 def _clv_section(league_weeks: dict[tuple[str, int], list[dict]]) -> str:
@@ -1356,9 +1566,19 @@ def build_site(out_dir: Path = SITE_DIR, refresh: bool = True) -> Path:
         current = next((w for w in weeks if not w["complete"]), weeks[-1] if weeks else None)
         summaries.append((league, season_summary, current))
 
-    (out_dir / "tracking.html").write_text(
-        _page("Tracking — Gridiron Engine", _tracking_page(league_weeks, cur_season))
-    )
+    import json
+    for league in ("nfl", "ncaa"):
+        by_season = {season: weeks for (lg, season), weeks in league_weeks.items()
+                     if lg == league}
+        if not by_season:
+            continue
+        ledger = [row for weeks in by_season.values() for w in weeks
+                  for row in w.get("ledger", [])]
+        (out_dir / f"tracking-{league}.json").write_text(json.dumps(ledger))
+        (out_dir / f"tracking-{league}.html").write_text(
+            _page(f"{LEAGUE_TITLE[league]} tracking — Gridiron Engine",
+                  _tracking_page(league, by_season))
+        )
 
     cards = "\n".join(
         f'<a class="card" href="{week_slug(league, cur["week"]) if cur else f"{league}.html"}">'

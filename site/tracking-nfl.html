@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NCAA Week 15 2023 — Gridiron Engine</title><style>
+<title>NFL tracking — Gridiron Engine</title><style>
 :root {
   --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
   --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
@@ -274,110 +274,149 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:12 UTC</strong>, hourly
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:13 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
-<div class="wknav">
-<a class="wknav-btn" href="ncaa-2023-w14.html">&larr; Week 14</a>
-<label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html">2026 season</option><option value="ncaa-2025-w01.html">2025 season</option><option value="ncaa-2024-w01.html">2024 season</option><option value="ncaa-2023-w01.html" selected>2023 season</option></select></label>
-<label class="wksel">Week:
-  <select id="weekpick"><option value="ncaa-2023-w01.html">Week 1 — 39-11</option><option value="ncaa-2023-w02.html">Week 2 — 34-13</option><option value="ncaa-2023-w03.html">Week 3 — 40-14</option><option value="ncaa-2023-w04.html">Week 4 — 48-15</option><option value="ncaa-2023-w05.html">Week 5 — 43-13</option><option value="ncaa-2023-w06.html">Week 6 — 36-13</option><option value="ncaa-2023-w07.html">Week 7 — 39-16</option><option value="ncaa-2023-w08.html">Week 8 — 34-20</option><option value="ncaa-2023-w09.html">Week 9 — 38-16</option><option value="ncaa-2023-w10.html">Week 10 — 37-25</option><option value="ncaa-2023-w11.html">Week 11 — 46-18</option><option value="ncaa-2023-w12.html">Week 12 — 48-16</option><option value="ncaa-2023-w13.html">Week 13 — 51-14</option><option value="ncaa-2023-w14.html">Week 14 — 7-3</option><option value="ncaa-2023-w15.html" selected>Week 15 — 1-0</option></select>
-</label>
-<span class="wknav-btn disabled">Next &rarr;</span>
+<h2>NFL tracking</h2>
+<div class="controls scopebar">
+  <label class="ctl-sort">Season:<select id="scopeseason"><option value="2026">2026 season</option><option value="2025">2025 season</option><option value="2024">2024 season</option><option value="2023">2023 season</option></select></label>
 </div>
-<h2>Week 15 &mdash; 2023</h2>
-<div class="weekhead">1-0 on the moneyline, 1-0 against the spread</div>
-<section class="sched"><div class="schedhead"><span>Week 15 of 15</span><span>1 games</span></div><div class="schedgrid"><a class="srow" href="#g-401520445"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy<span class="sscore">11</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army<span class="sscore">17</span></div></div><div class="swhen"><strong>Final</strong></div></a></div></section>
+<div class="tiles"><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">168-116</div><div class="tilesub meta">59% &middot; -44.4 units (-15.6% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Spread</div><div class="tilebig t-bad">136-148</div><div class="tilesub meta">48% &middot; -25.1 units (-8.8% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-strong">12-9</div><div class="tilesub meta">57% &middot; +2.1 units (+10.0% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">21-34</div><div class="tilesub meta">38% &middot; -4.5 units (-8.1% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">193-92</div><div class="tilesub meta">68% &middot; +5.9 units (+2.1% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Spread</div><div class="tilebig t-mid">140-141</div><div class="tilesub meta">50% &middot; -13.4 units (-4.8% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-strong">12-9</div><div class="tilesub meta">57% &middot; +8.3 units (+39.4% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Parlay board</div><div class="tilebig t-strong">29-32</div><div class="tilesub meta">48% &middot; +10.5 units (+17.1% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">178-107</div><div class="tilesub meta">62% &middot; -15.6 units (-5.5% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Spread</div><div class="tilebig t-bad">125-146</div><div class="tilesub meta">46% &middot; -31.5 units (-11.6% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-bad">9-12</div><div class="tilesub meta">43% &middot; -3.2 units (-15.3% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">16-37</div><div class="tilesub meta">30% &middot; -13.2 units (-24.9% ROI)</div></div></div>
 
-
+<h2>Every wager</h2>
+<details class="more explainbox"><summary>What is in this table</summary>
+<span class="meta">One row per settled bet: the moneyline and spread on every game,
+plus each Pixel&rsquo;s Pick and parlay. Filter by season, week, bet type or result,
+and sort by any column. Units are profit on a one-unit stake at the price the book
+posted, so a winning underdog returns more than a winning favourite.</span></details>
 <div class="controls">
-  <div class="ctl-group" role="group" aria-label="Filter games">
-    <button class="chip active" data-filter="all">All</button>
-    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
-    <button class="chip" data-filter="pick">Picks (value)</button>
-    <button class="chip" data-filter="lean">Leans</button>
-    <button class="chip" data-filter="lock">Locks</button>
-    <button class="chip" data-filter="pickem">Pick'ems</button>
-    <button class="chip" data-filter="value">Value vs market</button>
-    <button class="chip" data-filter="upset">Upset picks</button>
+  <div class="ctl-group" id="typefilter">
+    <button class="chip active" data-f="all">All bets</button>
+    <button class="chip" data-f="Pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-f="Parlay">Parlays</button>
+    <button class="chip" data-f="Moneyline">Moneyline</button>
+    <button class="chip" data-f="Spread">Spread</button>
   </div>
-  <label class="ctl-sort">Sort:
-    <select id="sortby">
-      <option value="kick">Kickoff (chronological)</option>
-      <option value="prob">Win probability</option>
-      <option value="margin">Projected margin</option>
-      <option value="edge">Edge vs market</option>
-    </select>
-  </label>
+  <div class="ctl-group" id="resultfilter">
+    <button class="chip active" data-r="all">Any result</button>
+    <button class="chip" data-r="win">Wins</button>
+    <button class="chip" data-r="loss">Losses</button>
+  </div>
 </div>
-<div class="emptynote" hidden>No games match this filter.</div>
-<div id="games">
-<div class="card game" id="g-401520445" data-kick="1702152000" data-prob="0.5686" data-margin="2.850" data-edge="0.850" data-tags="lean pickem">
-<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy Midshipmen
-&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army Black Knights (neutral site)</div>
-<div class="kick">Sat, Dec 9</div></div>
-<div class="bets">
-<div class="bet"><div class="betlabel">Moneyline pick</div>
-<div class="betvalue">Army Black Knights <span class="price">-145</span></div>
-<div class="betnote meta">57% to win outright</div><span class="outcome t-strong">WIN</span></div>
-<div class="bet"><div class="betlabel">Projected line</div>
-<div class="betvalue">Army Black Knights -3</div>
-<div class="betnote meta">model projection</div></div>
-<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Army Black Knights -2.0</div><div class="betnote meta">0.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
-<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
-<div class="meta">Market line: Army Black Knights -2 &middot; <span class="meta">model +0.8 toward Army Black Knights</span></div><div class="meta">Final: Army Black Knights 17&ndash;11 &middot; <span class="result-hit">HIT</span></div><details class="more">
-<summary>More info &mdash; full analysis</summary>
-<div class="analysis">
-<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.6 points between them on raw strength. Overall, Army Black Knights is the 86th-rated team in the league (weak) and Navy Midshipmen is 102nd (a real weakness). Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>Army Black Knights by 3</strong> and gives them a 57% chance to win outright.</p><p>On how it plays out: neither side owns a clear schematic edge &mdash; the unit ratings are close enough that field position and turnovers likely decide it. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Army Black Knights -2. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
-<h4>Players to watch</h4><ul class="factors"><li><strong>Army Black Knights:</strong> QB <strong>Cale Hellums</strong> has been carrying the offense, adding roughly +27.0 points a game over an average quarterback; lead back <strong>Noah Short</strong> has been efficient.</li><li><strong>Navy Midshipmen:</strong> QB <strong>Blake Horvath</strong> has been carrying the offense, adding roughly +25.9 points a game over an average quarterback; the passing game runs through <strong>Eli Heidenreich</strong>; lead back <strong>Alex Tecza</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Navy Midshipmen passing vs Army Black Knights pass defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Navy Midshipmen's passing attack grades <strong>F</strong> (134th of 134); Army Black Knights's pass defense grades <strong>D+</strong> (111th of 134). That is a clear edge for <strong>Army Black Knights</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Army Black Knights passing vs Navy Midshipmen pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Army Black Knights's passing attack grades <strong>F</strong> (132nd of 134); Navy Midshipmen's pass defense grades <strong>F</strong> (128th of 134). That is a slight edge for <strong>Navy Midshipmen</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Army Black Knights running vs Navy Midshipmen run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Army Black Knights's running attack grades <strong>C</strong> (80th of 134); Navy Midshipmen's run defense grades <strong>A-</strong> (27th of 134). That is essentially even for <strong>Navy Midshipmen</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Navy Midshipmen running vs Army Black Knights run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Navy Midshipmen's running attack grades <strong>F</strong> (126th of 134); Army Black Knights's run defense grades <strong>D+</strong> (103rd of 134). That is essentially even for <strong>Army Black Knights</strong>.</div></li></ul>
-<h4>Availability &amp; conditions</h4><p class="ftext">Both sides are starting their usual quarterbacks with no notable injury gap.</p>
-<h4>Who gets the ball</h4><div class="usageteam"><h5>Army Black Knights</h5><p class="ftext"><strong>Through the air:</strong> <strong>Noah Short</strong> commands 42% of the receptions (2.0 catches, 23 yards a game). Behind him, <strong>Bradyn Anderson</strong> commands 23% of the receptions (1.1 catches, 29 yards a game); <strong>Samari Howard</strong> commands 19% of the receptions (0.9 catches, 11 yards a game). Expect Noah Short to see the ball early and often. The Navy Midshipmen pass defence grades <strong>F</strong> (128th of 134), so this group should be tested repeatedly.</p><p class="ftext"><strong>On the ground:</strong> <strong>Cale Hellums</strong> takes 43% of the carries (23.2 carries, 93 yards a game). <strong>Noah Short</strong> takes 13% of the carries (7.1 carries, 38 yards a game) in a change-of-pace role. They run into a front that holds up well &mdash; Navy Midshipmen grades <strong>A-</strong> against the run (27th of 134).</p></div><div class="usageteam"><h5>Navy Midshipmen</h5><p class="ftext"><strong>Through the air:</strong> <strong>Eli Heidenreich</strong> commands 47% of the receptions (3.6 catches, 71 yards a game). Behind him, <strong>Brandon Chatman</strong> commands 19% of the receptions (1.4 catches, 13 yards a game); <strong>Alex Tecza</strong> commands 12% of the receptions (0.9 catches, 9 yards a game). Expect Eli Heidenreich to see the ball early and often. The Army Black Knights pass defence grades <strong>D+</strong> (111th of 134), so this group should be tested repeatedly.</p><p class="ftext"><strong>On the ground:</strong> <strong>Blake Horvath</strong> takes 38% of the carries (17.0 carries, 99 yards a game). <strong>Alex Tecza</strong> takes 26% of the carries (11.6 carries, 60 yards a game), so this is a committee rather than a bell cow. They run into a defence that has been run on all year &mdash; Army Black Knights grades <strong>D+</strong> against the run (103rd of 134).</p></div>
-<h4>Line movement</h4><p class="ftext">The line has not moved off its open of Army Black Knights -2 &mdash; the market is settled on this number.</p>
-<h4>Unit ratings</h4><table class="units">
-<tr><th>Unit grades</th><th>Army Black Knights</th><th>Navy Midshipmen</th></tr>
-<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">132nd</span></div><div class="gbar"><i class="t-bad" style="width:2%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">134th</span></div><div class="gbar"><i class="t-bad" style="width:0%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">111th</span></div><div class="gbar"><i class="t-bad" style="width:17%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">128th</span></div><div class="gbar"><i class="t-bad" style="width:5%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">80th</span></div><div class="gbar"><i class="t-mid" style="width:41%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">126th</span></div><div class="gbar"><i class="t-bad" style="width:6%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">103rd</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">27th</span></div><div class="gbar"><i class="t-strong" style="width:80%"></i></div></td></tr></table>
-<div class="meta gnote">Grades compare each unit to the rest of the league
-(A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
-</div></details>
+<div class="controls">
+  <label class="ctl-sort">Week:<select id="weekfilter">
+    <option value="all">All weeks</option><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Week 15</option><option value="16">Week 16</option><option value="17">Week 17</option><option value="18">Week 18</option></select></label>
+  <label class="ctl-sort">Sort:<select id="ledgersort">
+    <option value="week">Most recent first</option>
+    <option value="profit">Biggest win</option>
+    <option value="profit_asc">Biggest loss</option>
+    <option value="price">Longest price</option>
+    <option value="prob">Most confident</option>
+  </select></label>
+  <span class="meta" id="ledgercount"></span>
 </div>
-</div>
+<div class="tablewrap"><table class="track" id="ledger">
+<thead><tr><th>Week</th><th>Bet</th><th>Selection</th>
+<th class="num">Price</th><th class="num">Model</th><th class="num">Result</th>
+<th class="num">Units</th></tr></thead>
+<tbody></tbody></table></div>
+<div class="emptynote" hidden>No bets match these filters.</div>
+<button class="chip" id="loadmore" hidden>Show more</button>
 <script>
 (function () {
-  var list = document.getElementById('games');
-  if (!list) return;
+  var rows = [], view = [], shown = 0, PAGE = 100;
+  var state = {season: null, week: 'all', type: 'all', result: 'all', sort: 'week'};
+  var tbody = document.querySelector('#ledger tbody');
   var note = document.querySelector('.emptynote');
-  var filter = 'all';
+  var more = document.getElementById('loadmore');
+  var count = document.getElementById('ledgercount');
 
-  function apply() {
-    var key = document.getElementById('sortby').value;
-    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
-    cards.sort(function (a, b) {
-      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
-      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
-    });
-    cards.forEach(function (c) {
-      list.appendChild(c);
-      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
-      c.hidden = !show;
-    });
-    var visible = cards.filter(function (c) { return !c.hidden; }).length;
-    if (note) note.hidden = visible !== 0;
+  var LABEL = {'Pixel': "Pixel's Pick", 'Parlay': 'Parlay board'};
+  function fmtPrice(p) { return p > 0 ? '+' + p : '' + p; }
+
+  function render(reset) {
+    if (reset) { tbody.innerHTML = ''; shown = 0; }
+    var slice = view.slice(shown, shown + PAGE);
+    var html = slice.map(function (r) {
+      var tone = r.result === 'win' ? 't-strong' : (r.result === 'loss' ? 't-bad' : 't-mid');
+      var prob = r.prob == null ? '' : Math.round(r.prob * 100) + '%';
+      return '<tr><td>' + r.week_label + ' <span class="meta">' + r.season + '</span></td>' +
+        '<td>' + (LABEL[r.type] || r.type) + '</td>' +
+        '<td>' + r.pick + ' <span class="meta">' + r.matchup + '</span></td>' +
+        '<td class="num">' + fmtPrice(r.price) + '</td>' +
+        '<td class="num meta">' + prob + '</td>' +
+        '<td class="num ' + tone + '">' + r.result.toUpperCase() + '</td>' +
+        '<td class="num ' + (r.profit > 0 ? 't-strong' : (r.profit < 0 ? 't-bad' : 't-mid')) +
+        '">' + (r.profit > 0 ? '+' : '') + r.profit.toFixed(2) + 'u</td></tr>';
+    }).join('');
+    tbody.insertAdjacentHTML('beforeend', html);
+    shown += slice.length;
+    more.hidden = shown >= view.length;
+    note.hidden = view.length !== 0;
+    var units = view.reduce(function (a, r) { return a + r.profit; }, 0);
+    var w = view.filter(function (r) { return r.result === 'win'; }).length;
+    var l = view.filter(function (r) { return r.result === 'loss'; }).length;
+    count.innerHTML = view.length + ' bets &middot; ' + w + '-' + l + ' &middot; ' +
+      (units > 0 ? '+' : '') + units.toFixed(1) + ' units';
   }
 
-  document.querySelectorAll('.chip').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      filter = btn.dataset.filter;
-      apply();
+  function apply() {
+    view = rows.filter(function (r) {
+      return (state.season == null || r.season === state.season)
+        && (state.week === 'all' || String(r.week) === state.week)
+        && (state.type === 'all' || r.type === state.type)
+        && (state.result === 'all' || r.result === state.result);
     });
-  });
-  document.getElementById('sortby').addEventListener('change', apply);
-  apply();
+    var s = state.sort;
+    view.sort(function (a, b) {
+      if (s === 'week') return (b.season - a.season) || (b.week - a.week);
+      if (s === 'profit') return b.profit - a.profit;
+      if (s === 'profit_asc') return a.profit - b.profit;
+      if (s === 'price') return b.price - a.price;
+      return (b.prob || 0) - (a.prob || 0);
+    });
+    render(true);
+  }
 
-  var wk = document.getElementById('weekpick');
-  if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
-  var sn = document.getElementById('seasonpick');
-  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
+  function bindChips(id, key) {
+    document.querySelectorAll('#' + id + ' .chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('#' + id + ' .chip').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        state[key] = btn.dataset.f || btn.dataset.r;
+        apply();
+      });
+    });
+  }
+
+  fetch('tracking-nfl.json').then(function (r) { return r.json(); })
+    .then(function (data) {
+      rows = data;
+      var sel = document.getElementById('scopeseason');
+      state.season = sel ? parseInt(sel.value, 10) : null;
+      apply();
+    })
+    .catch(function () { if (count) count.textContent = 'results unavailable'; });
+
+  bindChips('typefilter', 'type');
+  bindChips('resultfilter', 'result');
+  document.getElementById('weekfilter').addEventListener('change', function (e) {
+    state.week = e.target.value; apply();
+  });
+  document.getElementById('ledgersort').addEventListener('change', function (e) {
+    state.sort = e.target.value; apply();
+  });
+  more.addEventListener('click', function () { render(false); });
+
+  var season = document.getElementById('scopeseason');
+  if (season) season.addEventListener('change', function (e) {
+    state.season = parseInt(e.target.value, 10);
+    document.querySelectorAll('.scoped').forEach(function (el) {
+      el.hidden = el.dataset.season && el.dataset.season !== e.target.value;
+    });
+    apply();
+  });
 })();
 </script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
