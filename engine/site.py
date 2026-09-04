@@ -117,6 +117,42 @@ ul.factors { padding-left: 0; }
 .tilesub { font-size: 0.78rem; }
 .tablewrap { overflow-x: auto; }
 .crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+.sched { margin: 0 0 18px; }
+.schedhead {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0; font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 800; color: var(--muted);
+}
+.schedgrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line); border-top: none; border-radius: 0 0 8px 8px;
+  overflow: hidden; background: var(--card);
+}
+.schedgrid > .srow:nth-child(odd) { border-right: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .schedgrid { grid-template-columns: minmax(0, 1fr); }
+  .schedgrid > .srow:nth-child(odd) { border-right: none; }
+}
+.srow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+}
+.srow:hover { background: rgba(255,255,255,0.04); }
+.steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.steam {
+  display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.steam .crest { width: 20px; height: 20px; margin: 0; vertical-align: middle; }
+.steam .sscore { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.steam.lost { color: var(--muted); font-weight: 500; }
+.swhen {
+  text-align: right; font-size: 0.78rem; color: var(--muted); line-height: 1.35;
+  white-space: nowrap; flex-shrink: 0;
+}
+.swhen strong { display: block; color: var(--ink); font-weight: 700; }
 #loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
@@ -387,7 +423,7 @@ def _game_card(row: pd.Series, graded: bool, league: str,
 
     kick_label, kick_sort = _kickoff(row)
     neutral = " (neutral site)" if row.neutral else ""
-    return f"""<div class="card game" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
+    return f"""<div class="card game" id="g-{row.game_id}" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
 data-margin="{abs(row.pred_margin):.3f}" data-edge="{abs(edge) if edge is not None else 0:.3f}" \
 data-tags="{' '.join(tags)}">
 <div class="cardhead"><div class="teams">{teams.logo_img(row.get("away_key", ""), league)}{row.away_team}
@@ -625,7 +661,7 @@ def _release_label(kick: pd.Timestamp) -> str:
 def _pending_card(row, kick: pd.Timestamp, league: str = "nfl") -> str:
     """A scheduled game whose pick is not out yet."""
     when = "" if pd.isna(kick) else _local(kick).strftime("%a %b %-d, %-I:%M %p")
-    return f"""<div class="card game pending" data-kick="{0 if pd.isna(kick) else int(kick.timestamp())}"
+    return f"""<div class="card game pending" id="g-{row.game_id}" data-kick="{0 if pd.isna(kick) else int(kick.timestamp())}"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams">{teams.logo_img(row.get("away_key", ""), league)}{row.away_team}
 &nbsp;@&nbsp;{teams.logo_img(row.get("home_key", ""), league)}{row.home_team}</div>
@@ -634,6 +670,56 @@ def _pending_card(row, kick: pd.Timestamp, league: str = "nfl") -> str:
 <span class="meta">&mdash; held until injury reports, starting lineups and the
 forecast are known, then refreshed on game day.</span></div>
 </div>"""
+
+
+def _sched_row(row: pd.Series, league: str) -> str:
+    """One ESPN-style line in the week's schedule index: the two teams stacked,
+    kickoff (or the final score) on the right, linking down to the breakdown."""
+    final = bool(row.get("completed")) and pd.notna(row.get("margin"))
+
+    def team(side: str) -> str:
+        key = row.get(f"{side}_key", "")
+        name = teams.short_name(key, league) if key else row.get(f"{side}_team", "")
+        score = ""
+        cls = "steam"
+        if final:
+            pts = row.get(f"{side}_score")
+            score = f'<span class="sscore">{int(pts)}</span>' if pd.notna(pts) else ""
+            margin = row.margin if side == "home" else -row.margin
+            if margin < 0:
+                cls += " lost"
+        return f'<div class="{cls}">{teams.logo_img(key, league)}{name}{score}</div>'
+
+    if final:
+        when = "<strong>Final</strong>"
+    else:
+        # _kickoff already handles the feed's quirk of storing the date and the
+        # time in separate columns, so reuse it and split the two lines apart
+        label, _ = _kickoff(row)
+        if not label:
+            when = "<strong>TBD</strong>"
+        else:
+            day, _, time = label.partition(" &middot; ")
+            when = f"<strong>{day}</strong>{time}"
+    return (f'<a class="srow" href="#g-{row.game_id}">'
+            f'<div class="steams">{team("away")}{team("home")}</div>'
+            f'<div class="swhen">{when}</div></a>')
+
+
+def _schedule_grid(league: str, week: dict, weeks: list[dict]) -> str:
+    """The whole slate at a glance, above the breakdowns."""
+    preds = week["preds"]
+    if preds.empty:
+        return ""
+    regular = [w["week"] for w in weeks if w["label"].startswith("Week")]
+    total = max(regular) if regular else week["week"]
+    heading = (f'{week["label"]} of {total}' if week["label"].startswith("Week")
+               else week["label"])
+    rows = "".join(_sched_row(row, league)
+                   for _, row in preds.sort_values("gameday").iterrows())
+    return (f'<section class="sched"><div class="schedhead"><span>{heading}</span>'
+            f'<span>{len(preds)} games</span></div>'
+            f'<div class="schedgrid">{rows}</div></section>')
 
 
 def _add_display_names(preds: pd.DataFrame, league: str) -> pd.DataFrame:
@@ -864,6 +950,7 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
                       seasons=season_index, season=season),
             f'<h2>{w["label"]} &mdash; {season}</h2>',
             f'<div class="weekhead">{w["headline"]}</div>',
+            _schedule_grid(league, w, weeks),
             _pixel_section(w, league, players),
             _board_section(w),
             CONTROLS,
