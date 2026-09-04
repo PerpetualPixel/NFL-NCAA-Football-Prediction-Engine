@@ -102,6 +102,42 @@ ul.factors { padding-left: 0; }
 .tilesub { font-size: 0.78rem; }
 .tablewrap { overflow-x: auto; }
 .crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+.sched { margin: 0 0 18px; }
+.schedhead {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0; font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 800; color: var(--muted);
+}
+.schedgrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line); border-top: none; border-radius: 0 0 8px 8px;
+  overflow: hidden; background: var(--card);
+}
+.schedgrid > .srow:nth-child(odd) { border-right: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .schedgrid { grid-template-columns: minmax(0, 1fr); }
+  .schedgrid > .srow:nth-child(odd) { border-right: none; }
+}
+.srow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+}
+.srow:hover { background: rgba(255,255,255,0.04); }
+.steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.steam {
+  display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.steam .crest { width: 20px; height: 20px; margin: 0; vertical-align: middle; }
+.steam .sscore { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.steam.lost { color: var(--muted); font-weight: 500; }
+.swhen {
+  text-align: right; font-size: 0.78rem; color: var(--muted); line-height: 1.35;
+  white-space: nowrap; flex-shrink: 0;
+}
+.swhen strong { display: block; color: var(--ink); font-weight: 700; }
 #loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
@@ -238,7 +274,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:05 UTC</strong>, hourly
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:11 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-2023-w08.html">&larr; Week 8</a>
@@ -250,6 +286,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <h2>Week 9 &mdash; 2023</h2>
 <div class="weekhead">10-4 on the moneyline, 6-8 against the spread</div>
+<section class="sched"><div class="schedhead"><span>Week 9 of 18</span><span>14 games</span></div><div class="schedgrid"><a class="srow" href="#g-2023_09_TEN_PIT"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Titans<span class="sscore">16</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Steelers<span class="sscore">20</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_MIA_KC"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Dolphins<span class="sscore">14</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chiefs<span class="sscore">21</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_MIN_ATL"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Vikings<span class="sscore">31</span></div><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Falcons<span class="sscore">28</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_SEA_BAL"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seahawks<span class="sscore">3</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Ravens<span class="sscore">37</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_ARI_CLE"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ARI.png" alt="" loading="lazy" onerror="this.style.display='none'">Cardinals<span class="sscore">0</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Browns<span class="sscore">27</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_LA_GB"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Rams<span class="sscore">3</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Packers<span class="sscore">20</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_TB_HOU"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Buccaneers<span class="sscore">37</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Texans<span class="sscore">39</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_WAS_NE"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Commanders<span class="sscore">20</span></div><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">Patriots<span class="sscore">17</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_CHI_NO"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Bears<span class="sscore">17</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">Saints<span class="sscore">24</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_IND_CAR"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Colts<span class="sscore">27</span></div><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Panthers<span class="sscore">13</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_NYG_LV"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">Giants<span class="sscore">6</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Raiders<span class="sscore">30</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_DAL_PHI"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Cowboys<span class="sscore">23</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Eagles<span class="sscore">28</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_BUF_CIN"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Bills<span class="sscore">18</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Bengals<span class="sscore">24</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-2023_09_LAC_NYJ"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chargers<span class="sscore">27</span></div><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">Jets<span class="sscore">6</span></div></div><div class="swhen"><strong>Final</strong></div></a></div></section>
 <div class="pixel card">
 <div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
 <span class="pxprice">-108</span>
@@ -301,7 +338,7 @@ tracker records how these actually land.</span></details>
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" data-kick="1698883200" data-prob="0.5520" data-margin="1.724" data-edge="1.776" data-tags="pick pickem">
+<div class="card game" id="g-2023_09_TEN_PIT" data-kick="1698883200" data-prob="0.5520" data-margin="1.724" data-edge="1.776" data-tags="pick pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee Titans
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Steelers</div>
 <div class="kick">Thu, Nov 2 &middot; 8:15 PM ET</div></div>
@@ -329,7 +366,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5533" data-margin="1.768" data-edge="0.768" data-tags="pick pickem">
+<div class="card game" id="g-2023_09_MIA_KC" data-kick="1699142400" data-prob="0.5533" data-margin="1.768" data-edge="0.768" data-tags="pick pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami Dolphins
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas City Chiefs (neutral site)</div>
 <div class="kick">Sun, Nov 5 &middot; 9:30 AM ET</div></div>
@@ -357,7 +394,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5046" data-margin="0.153" data-edge="3.347" data-tags="pick pickem value upset">
+<div class="card game" id="g-2023_09_MIN_ATL" data-kick="1699142400" data-prob="0.5046" data-margin="0.153" data-edge="3.347" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota Vikings
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Atlanta Falcons</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -385,7 +422,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.6146" data-margin="3.847" data-edge="2.153" data-tags="pick">
+<div class="card game" id="g-2023_09_SEA_BAL" data-kick="1699142400" data-prob="0.6146" data-margin="3.847" data-edge="2.153" data-tags="pick">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seattle Seahawks
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Baltimore Ravens</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -413,7 +450,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.6203" data-margin="4.044" data-edge="8.956" data-tags="pick value upset">
+<div class="card game" id="g-2023_09_ARI_CLE" data-kick="1699142400" data-prob="0.6203" data-margin="4.044" data-edge="8.956" data-tags="pick value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ARI.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona Cardinals
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Cleveland Browns</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -441,7 +478,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.6122" data-margin="3.762" data-edge="0.262" data-tags="lean">
+<div class="card game" id="g-2023_09_LA_GB" data-kick="1699142400" data-prob="0.6122" data-margin="3.762" data-edge="0.262" data-tags="lean">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Rams
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Green Bay Packers</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -469,7 +506,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5225" data-margin="0.746" data-edge="1.754" data-tags="pick pickem">
+<div class="card game" id="g-2023_09_TB_HOU" data-kick="1699142400" data-prob="0.5225" data-margin="0.746" data-edge="1.754" data-tags="pick pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Tampa Bay Buccaneers
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston Texans</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -497,7 +534,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5681" data-margin="2.265" data-edge="0.235" data-tags="pick pickem">
+<div class="card game" id="g-2023_09_WAS_NE" data-kick="1699142400" data-prob="0.5681" data-margin="2.265" data-edge="0.235" data-tags="pick pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Commanders
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">New England Patriots</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -525,7 +562,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.7540" data-margin="9.070" data-edge="0.070" data-tags="lean lock">
+<div class="card game" id="g-2023_09_CHI_NO" data-kick="1699142400" data-prob="0.7540" data-margin="9.070" data-edge="0.070" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Chicago Bears
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">New Orleans Saints</div>
 <div class="kick">Sun, Nov 5 &middot; 1:00 PM ET</div></div>
@@ -553,7 +590,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5096" data-margin="0.317" data-edge="1.817" data-tags="pick pickem">
+<div class="card game" id="g-2023_09_IND_CAR" data-kick="1699142400" data-prob="0.5096" data-margin="0.317" data-edge="1.817" data-tags="pick pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Indianapolis Colts
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Carolina Panthers</div>
 <div class="kick">Sun, Nov 5 &middot; 4:05 PM ET</div></div>
@@ -581,7 +618,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.6132" data-margin="3.796" data-edge="2.796" data-tags="pick value">
+<div class="card game" id="g-2023_09_NYG_LV" data-kick="1699142400" data-prob="0.6132" data-margin="3.796" data-edge="2.796" data-tags="pick value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Giants
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Las Vegas Raiders</div>
 <div class="kick">Sun, Nov 5 &middot; 4:25 PM ET</div></div>
@@ -609,7 +646,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5231" data-margin="0.766" data-edge="2.734" data-tags="pick pickem value upset">
+<div class="card game" id="g-2023_09_DAL_PHI" data-kick="1699142400" data-prob="0.5231" data-margin="0.766" data-edge="2.734" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Dallas Cowboys
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Philadelphia Eagles</div>
 <div class="kick">Sun, Nov 5 &middot; 4:25 PM ET</div></div>
@@ -637,7 +674,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699142400" data-prob="0.5624" data-margin="2.074" data-edge="3.574" data-tags="pixel pick pickem value upset">
+<div class="card game" id="g-2023_09_BUF_CIN" data-kick="1699142400" data-prob="0.5624" data-margin="2.074" data-edge="3.574" data-tags="pixel pick pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo Bills
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bengals</div>
 <div class="kick">Sun, Nov 5 &middot; 8:20 PM ET</div></div>
@@ -665,7 +702,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1699228800" data-prob="0.5395" data-margin="1.310" data-edge="1.690" data-tags="pick pickem">
+<div class="card game" id="g-2023_09_LAC_NYJ" data-kick="1699228800" data-prob="0.5395" data-margin="1.310" data-edge="1.690" data-tags="pick pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Chargers
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Jets</div>
 <div class="kick">Mon, Nov 6 &middot; 8:15 PM ET</div></div>

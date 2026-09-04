@@ -102,6 +102,42 @@ ul.factors { padding-left: 0; }
 .tilesub { font-size: 0.78rem; }
 .tablewrap { overflow-x: auto; }
 .crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+.sched { margin: 0 0 18px; }
+.schedhead {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0; font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 800; color: var(--muted);
+}
+.schedgrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line); border-top: none; border-radius: 0 0 8px 8px;
+  overflow: hidden; background: var(--card);
+}
+.schedgrid > .srow:nth-child(odd) { border-right: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .schedgrid { grid-template-columns: minmax(0, 1fr); }
+  .schedgrid > .srow:nth-child(odd) { border-right: none; }
+}
+.srow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+}
+.srow:hover { background: rgba(255,255,255,0.04); }
+.steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.steam {
+  display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.steam .crest { width: 20px; height: 20px; margin: 0; vertical-align: middle; }
+.steam .sscore { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.steam.lost { color: var(--muted); font-weight: 500; }
+.swhen {
+  text-align: right; font-size: 0.78rem; color: var(--muted); line-height: 1.35;
+  white-space: nowrap; flex-shrink: 0;
+}
+.swhen strong { display: block; color: var(--ink); font-weight: 700; }
 #loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
@@ -238,7 +274,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:06 UTC</strong>, hourly
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:12 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2024-w01.html">&larr; Week 1</a>
@@ -250,6 +286,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <h2>Week 2 &mdash; 2024</h2>
 <div class="weekhead">33-16 on the moneyline, 26-21-1 against the spread</div>
+<section class="sched"><div class="schedhead"><span>Week 2 of 16</span><span>49 games</span></div><div class="schedgrid"><a class="srow" href="#g-401634765"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/252.png" alt="" loading="lazy" onerror="this.style.display='none'">BYU<span class="sscore">18</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2567.png" alt="" loading="lazy" onerror="this.style.display='none'">SMU<span class="sscore">15</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635533"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/150.png" alt="" loading="lazy" onerror="this.style.display='none'">Duke<span class="sscore">26</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/77.png" alt="" loading="lazy" onerror="this.style.display='none'">Northwestern<span class="sscore">20</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401645323"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army<span class="sscore">24</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2226.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Atlantic<span class="sscore">7</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628336"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/8.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas<span class="sscore">31</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/197.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma State<span class="sscore">39</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628347"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/251.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas<span class="sscore">31</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/130.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan<span class="sscore">12</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628470"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/189.png" alt="" loading="lazy" onerror="this.style.display='none'">Bowling Green<span class="sscore">27</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/213.png" alt="" loading="lazy" onerror="this.style.display='none'">Penn State<span class="sscore">34</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628471"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2006.png" alt="" loading="lazy" onerror="this.style.display='none'">Akron<span class="sscore">17</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/164.png" alt="" loading="lazy" onerror="this.style.display='none'">Rutgers<span class="sscore">49</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635534"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/59.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Tech<span class="sscore">28</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/183.png" alt="" loading="lazy" onerror="this.style.display='none'">Syracuse<span class="sscore">31</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635538"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/221.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh<span class="sscore">28</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2132.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati<span class="sscore">27</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401636616"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2306.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas State<span class="sscore">34</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2655.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulane<span class="sscore">27</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643784"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2653.png" alt="" loading="lazy" onerror="this.style.display='none'">Troy<span class="sscore">17</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/235.png" alt="" loading="lazy" onerror="this.style.display='none'">Memphis<span class="sscore">38</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628340"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2579.png" alt="" loading="lazy" onerror="this.style.display='none'">South Carolina<span class="sscore">31</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/96.png" alt="" loading="lazy" onerror="this.style.display='none'">Kentucky<span class="sscore">6</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628464"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/66.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa State<span class="sscore">20</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2294.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa<span class="sscore">19</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628465"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/127.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan State<span class="sscore">27</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/120.png" alt="" loading="lazy" onerror="this.style.display='none'">Maryland<span class="sscore">24</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628473"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2199.png" alt="" loading="lazy" onerror="this.style.display='none'">Eastern Michigan<span class="sscore">9</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/264.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington<span class="sscore">30</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628977"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2459.png" alt="" loading="lazy" onerror="this.style.display='none'">Northern Illinois<span class="sscore">16</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/87.png" alt="" loading="lazy" onerror="this.style.display='none'">Notre Dame<span class="sscore">14</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628337"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/25.png" alt="" loading="lazy" onerror="this.style.display='none'">California<span class="sscore">21</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2.png" alt="" loading="lazy" onerror="this.style.display='none'">Auburn<span class="sscore">14</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635535"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/55.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville State<span class="sscore">14</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/97.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisville<span class="sscore">49</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635537"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2429.png" alt="" loading="lazy" onerror="this.style.display='none'">Charlotte<span class="sscore">20</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/153.png" alt="" loading="lazy" onerror="this.style.display='none'">North Carolina<span class="sscore">38</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401636618"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/239.png" alt="" loading="lazy" onerror="this.style.display='none'">Baylor<span class="sscore">12</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/254.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah<span class="sscore">23</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401645324"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/218.png" alt="" loading="lazy" onerror="this.style.display='none'">Temple<span class="sscore">11</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy<span class="sscore">38</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401629040"><div class="steams"><div class="steam lost">UMass<span class="sscore">23</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2649.png" alt="" loading="lazy" onerror="this.style.display='none'">Toledo<span class="sscore">38</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643783"><div class="steams"><div class="steam lost">UT San Antonio<span class="sscore">10</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/326.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas State<span class="sscore">49</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628342"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2393.png" alt="" loading="lazy" onerror="this.style.display='none'">Middle Tennessee<span class="sscore">3</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/145.png" alt="" loading="lazy" onerror="this.style.display='none'">Ole Miss<span class="sscore">52</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635540"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/276.png" alt="" loading="lazy" onerror="this.style.display='none'">Marshall<span class="sscore">14</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/259.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Tech<span class="sscore">31</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643778"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/151.png" alt="" loading="lazy" onerror="this.style.display='none'">East Carolina<span class="sscore">20</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/295.png" alt="" loading="lazy" onerror="this.style.display='none'">Old Dominion<span class="sscore">14</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401640979"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2117.png" alt="" loading="lazy" onerror="this.style.display='none'">Central Michigan<span class="sscore">16</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2229.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida International<span class="sscore">52</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643781"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/6.png" alt="" loading="lazy" onerror="this.style.display='none'">South Alabama<span class="sscore">20</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/195.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio<span class="sscore">27</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401636617"><div class="steams"><div class="steam lost">Sam Houston State<span class="sscore">14</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2116.png" alt="" loading="lazy" onerror="this.style.display='none'">UCF<span class="sscore">45</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635639"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia<span class="sscore">31</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/154.png" alt="" loading="lazy" onerror="this.style.display='none'">Wake Forest<span class="sscore">30</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643779"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/202.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulsa<span class="sscore">24</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2032.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas State<span class="sscore">28</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628335"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/58.png" alt="" loading="lazy" onerror="this.style.display='none'">South Florida<span class="sscore">16</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/333.png" alt="" loading="lazy" onerror="this.style.display='none'">Alabama<span class="sscore">42</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643708"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/290.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Southern<span class="sscore">20</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2440.png" alt="" loading="lazy" onerror="this.style.display='none'">Nevada<span class="sscore">17</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401641016"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/309.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisiana<span class="sscore">34</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/338.png" alt="" loading="lazy" onerror="this.style.display='none'">Kennesaw State<span class="sscore">10</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643780"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/5.png" alt="" loading="lazy" onerror="this.style.display='none'">UAB<span class="sscore">6</span></div><div class="steam">Louisiana Monroe<span class="sscore">32</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643705"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/23.png" alt="" loading="lazy" onerror="this.style.display='none'">San José State<span class="sscore">17</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2005.png" alt="" loading="lazy" onerror="this.style.display='none'">Air Force<span class="sscore">7</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628344"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2084.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo<span class="sscore">0</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/142.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri<span class="sscore">38</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628462"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2305.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas<span class="sscore">17</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/356.png" alt="" loading="lazy" onerror="this.style.display='none'">Illinois<span class="sscore">23</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628346"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2633.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee<span class="sscore">51</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/152.png" alt="" loading="lazy" onerror="this.style.display='none'">NC State<span class="sscore">10</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628468"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2711.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Michigan<span class="sscore">0</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/194.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio State<span class="sscore">56</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628467"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/38.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado<span class="sscore">10</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/158.png" alt="" loading="lazy" onerror="this.style.display='none'">Nebraska<span class="sscore">28</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628345"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/248.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston<span class="sscore">12</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/201.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma<span class="sscore">16</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401635532"><div class="steams"><div class="steam lost">Appalachian State<span class="sscore">20</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/228.png" alt="" loading="lazy" onerror="this.style.display='none'">Clemson<span class="sscore">66</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401636859"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2641.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Tech<span class="sscore">16</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/265.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington State<span class="sscore">37</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628469"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/68.png" alt="" loading="lazy" onerror="this.style.display='none'">Boise State<span class="sscore">34</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2483.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon<span class="sscore">37</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401640989"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2335.png" alt="" loading="lazy" onerror="this.style.display='none'">Liberty<span class="sscore">30</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/166.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico State<span class="sscore">24</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401643709"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/204.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon State<span class="sscore">21</span></div><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/21.png" alt="" loading="lazy" onerror="this.style.display='none'">San Diego State<span class="sscore">0</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628343"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/344.png" alt="" loading="lazy" onerror="this.style.display='none'">Mississippi State<span class="sscore">23</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/9.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona State<span class="sscore">30</span></div></div><div class="swhen"><strong>Final</strong></div></a><a class="srow" href="#g-401628472"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/328.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah State<span class="sscore">0</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/30.png" alt="" loading="lazy" onerror="this.style.display='none'">USC<span class="sscore">48</span></div></div><div class="swhen"><strong>Final</strong></div></a></div></section>
 <div class="pixel card">
 <div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>
 <span class="pxprice">-110</span>
@@ -306,7 +343,7 @@ tracker records how these actually land.</span></details>
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" data-kick="1725663600" data-prob="0.8367" data-margin="16.186" data-edge="3.686" data-tags="lean lock value">
+<div class="card game" id="g-401634765" data-kick="1725663600" data-prob="0.8367" data-margin="16.186" data-edge="3.686" data-tags="lean lock value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/252.png" alt="" loading="lazy" onerror="this.style.display='none'">BYU Cougars
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2567.png" alt="" loading="lazy" onerror="this.style.display='none'">SMU Mustangs</div>
 <div class="kick">Fri, Sep 6</div></div>
@@ -334,7 +371,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725670800" data-prob="0.6157" data-margin="4.854" data-edge="7.354" data-tags="pixel lean value upset">
+<div class="card game" id="g-401635533" data-kick="1725670800" data-prob="0.6157" data-margin="4.854" data-edge="7.354" data-tags="pixel lean value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/150.png" alt="" loading="lazy" onerror="this.style.display='none'">Duke Blue Devils
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/77.png" alt="" loading="lazy" onerror="this.style.display='none'">Northwestern Wildcats (neutral site)</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -362,7 +399,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.5593" data-margin="2.462" data-edge="0.962" data-tags="lean pickem">
+<div class="card game" id="g-401645323" data-kick="1725724800" data-prob="0.5593" data-margin="2.462" data-edge="0.962" data-tags="lean pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army Black Knights
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2226.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Atlantic Owls</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -390,7 +427,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.5481" data-margin="1.994" data-edge="8.006" data-tags="lean pickem value upset">
+<div class="card game" id="g-401628336" data-kick="1725724800" data-prob="0.5481" data-margin="1.994" data-edge="8.006" data-tags="lean pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/8.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas Razorbacks
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/197.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma State Cowboys</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -418,7 +455,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.6935" data-margin="8.347" data-edge="14.847" data-tags="lean value">
+<div class="card game" id="g-401628347" data-kick="1725724800" data-prob="0.6935" data-margin="8.347" data-edge="14.847" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/251.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Longhorns
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/130.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan Wolverines</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -446,7 +483,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.9290" data-margin="24.227" data-edge="10.773" data-tags="lean lock value upset">
+<div class="card game" id="g-401628470" data-kick="1725724800" data-prob="0.9290" data-margin="24.227" data-edge="10.773" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/189.png" alt="" loading="lazy" onerror="this.style.display='none'">Bowling Green Falcons
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/213.png" alt="" loading="lazy" onerror="this.style.display='none'">Penn State Nittany Lions</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -474,7 +511,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.7837" data-margin="12.947" data-edge="11.553" data-tags="lean lock value upset">
+<div class="card game" id="g-401628471" data-kick="1725724800" data-prob="0.7837" data-margin="12.947" data-edge="11.553" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2006.png" alt="" loading="lazy" onerror="this.style.display='none'">Akron Zips
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/164.png" alt="" loading="lazy" onerror="this.style.display='none'">Rutgers Scarlet Knights</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -502,7 +539,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.5916" data-margin="3.824" data-edge="6.824" data-tags="lean value">
+<div class="card game" id="g-401635534" data-kick="1725724800" data-prob="0.5916" data-margin="3.824" data-edge="6.824" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/59.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Tech Yellow Jackets
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/183.png" alt="" loading="lazy" onerror="this.style.display='none'">Syracuse Orange</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -530,7 +567,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.5299" data-margin="1.237" data-edge="0.763" data-tags="lean pickem">
+<div class="card game" id="g-401635538" data-kick="1725724800" data-prob="0.5299" data-margin="1.237" data-edge="0.763" data-tags="lean pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/221.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Panthers
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2132.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bearcats</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -558,7 +595,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.5848" data-margin="3.534" data-edge="5.466" data-tags="lean value">
+<div class="card game" id="g-401636616" data-kick="1725724800" data-prob="0.5848" data-margin="3.534" data-edge="5.466" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2306.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas State Wildcats
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2655.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulane Green Wave</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -586,7 +623,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725724800" data-prob="0.5755" data-margin="3.141" data-edge="15.359" data-tags="pick pickem value upset">
+<div class="card game" id="g-401643784" data-kick="1725724800" data-prob="0.5755" data-margin="3.141" data-edge="15.359" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2653.png" alt="" loading="lazy" onerror="this.style.display='none'">Troy Trojans
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/235.png" alt="" loading="lazy" onerror="this.style.display='none'">Memphis Tigers</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -614,7 +651,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.6865" data-margin="8.019" data-edge="1.481" data-tags="lean">
+<div class="card game" id="g-401628340" data-kick="1725737400" data-prob="0.6865" data-margin="8.019" data-edge="1.481" data-tags="lean">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2579.png" alt="" loading="lazy" onerror="this.style.display='none'">South Carolina Gamecocks
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/96.png" alt="" loading="lazy" onerror="this.style.display='none'">Kentucky Wildcats</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -642,7 +679,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.5897" data-margin="3.743" data-edge="0.743" data-tags="lean">
+<div class="card game" id="g-401628464" data-kick="1725737400" data-prob="0.5897" data-margin="3.743" data-edge="0.743" data-tags="lean">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/66.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa State Cyclones
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2294.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa Hawkeyes</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -670,7 +707,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.7679" data-margin="12.076" data-edge="4.076" data-tags="lean lock value">
+<div class="card game" id="g-401628465" data-kick="1725737400" data-prob="0.7679" data-margin="12.076" data-edge="4.076" data-tags="lean lock value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/127.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan State Spartans
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/120.png" alt="" loading="lazy" onerror="this.style.display='none'">Maryland Terrapins</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -698,7 +735,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.8698" data-margin="18.570" data-edge="6.430" data-tags="lean lock value upset">
+<div class="card game" id="g-401628473" data-kick="1725737400" data-prob="0.8698" data-margin="18.570" data-edge="6.430" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2199.png" alt="" loading="lazy" onerror="this.style.display='none'">Eastern Michigan Eagles
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/264.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Huskies</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -726,7 +763,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.8838" data-margin="19.700" data-edge="8.300" data-tags="lean lock value upset">
+<div class="card game" id="g-401628977" data-kick="1725737400" data-prob="0.8838" data-margin="19.700" data-edge="8.300" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2459.png" alt="" loading="lazy" onerror="this.style.display='none'">Northern Illinois Huskies
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/87.png" alt="" loading="lazy" onerror="this.style.display='none'">Notre Dame Fighting Irish</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -754,7 +791,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.7389" data-margin="10.557" data-edge="1.943" data-tags="lean lock">
+<div class="card game" id="g-401628337" data-kick="1725737400" data-prob="0.7389" data-margin="10.557" data-edge="1.943" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/25.png" alt="" loading="lazy" onerror="this.style.display='none'">California Golden Bears
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2.png" alt="" loading="lazy" onerror="this.style.display='none'">Auburn Tigers</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -782,7 +819,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.7735" data-margin="12.381" data-edge="16.619" data-tags="lean lock value upset">
+<div class="card game" id="g-401635535" data-kick="1725737400" data-prob="0.7735" data-margin="12.381" data-edge="16.619" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/55.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville State Gamecocks
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/97.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisville Cardinals</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -810,7 +847,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.8907" data-margin="20.302" data-edge="1.198" data-tags="lean lock">
+<div class="card game" id="g-401635537" data-kick="1725737400" data-prob="0.8907" data-margin="20.302" data-edge="1.198" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2429.png" alt="" loading="lazy" onerror="this.style.display='none'">Charlotte 49ers
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/153.png" alt="" loading="lazy" onerror="this.style.display='none'">North Carolina Tar Heels</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -838,7 +875,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.7872" data-margin="13.147" data-edge="1.353" data-tags="lean lock">
+<div class="card game" id="g-401636618" data-kick="1725737400" data-prob="0.7872" data-margin="13.147" data-edge="1.353" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/239.png" alt="" loading="lazy" onerror="this.style.display='none'">Baylor Bears
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/254.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah Utes</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -866,7 +903,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.7862" data-margin="13.089" data-edge="1.589" data-tags="lean lock">
+<div class="card game" id="g-401645324" data-kick="1725737400" data-prob="0.7862" data-margin="13.089" data-edge="1.589" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/218.png" alt="" loading="lazy" onerror="this.style.display='none'">Temple Owls
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy Midshipmen</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -894,7 +931,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725737400" data-prob="0.8989" data-margin="21.039" data-edge="3.539" data-tags="lean lock value">
+<div class="card game" id="g-401629040" data-kick="1725737400" data-prob="0.8989" data-margin="21.039" data-edge="3.539" data-tags="lean lock value">
 <div class="cardhead"><div class="teams">UMass
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2649.png" alt="" loading="lazy" onerror="this.style.display='none'">Toledo Rockets</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -918,7 +955,7 @@ tracker records how these actually land.</span></details>
 <h4>Unit ratings</h4>
 </div></details>
 </div>
-<div class="card game" data-kick="1725739200" data-prob="0.6498" data-margin="6.350" data-edge="8.850" data-tags="lean value upset">
+<div class="card game" id="g-401643783" data-kick="1725739200" data-prob="0.6498" data-margin="6.350" data-edge="8.850" data-tags="lean value upset">
 <div class="cardhead"><div class="teams">UT San Antonio
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/326.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas State Bobcats</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -942,7 +979,7 @@ tracker records how these actually land.</span></details>
 <h4>Unit ratings</h4>
 </div></details>
 </div>
-<div class="card game" data-kick="1725740100" data-prob="0.8807" data-margin="19.443" data-edge="23.057" data-tags="lean lock value upset">
+<div class="card game" id="g-401628342" data-kick="1725740100" data-prob="0.8807" data-margin="19.443" data-edge="23.057" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2393.png" alt="" loading="lazy" onerror="this.style.display='none'">Middle Tennessee Blue Raiders
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/145.png" alt="" loading="lazy" onerror="this.style.display='none'">Ole Miss Rebels</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -970,7 +1007,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725741000" data-prob="0.5505" data-margin="2.096" data-edge="18.404" data-tags="pick pickem value upset">
+<div class="card game" id="g-401635540" data-kick="1725741000" data-prob="0.5505" data-margin="2.096" data-edge="18.404" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/276.png" alt="" loading="lazy" onerror="this.style.display='none'">Marshall Thundering Herd
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/259.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Tech Hokies</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -998,7 +1035,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725746400" data-prob="0.5038" data-margin="0.156" data-edge="1.656" data-tags="lean pickem">
+<div class="card game" id="g-401643778" data-kick="1725746400" data-prob="0.5038" data-margin="0.156" data-edge="1.656" data-tags="lean pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/151.png" alt="" loading="lazy" onerror="this.style.display='none'">East Carolina Pirates
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/295.png" alt="" loading="lazy" onerror="this.style.display='none'">Old Dominion Monarchs</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1026,7 +1063,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725746400" data-prob="0.7487" data-margin="11.062" data-edge="7.562" data-tags="lean lock value upset">
+<div class="card game" id="g-401640979" data-kick="1725746400" data-prob="0.7487" data-margin="11.062" data-edge="7.562" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2117.png" alt="" loading="lazy" onerror="this.style.display='none'">Central Michigan Chippewas
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2229.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida International Panthers (neutral site)</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1054,7 +1091,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725746400" data-prob="0.5232" data-margin="0.961" data-edge="2.461" data-tags="lean pickem">
+<div class="card game" id="g-401643781" data-kick="1725746400" data-prob="0.5232" data-margin="0.961" data-edge="2.461" data-tags="lean pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/6.png" alt="" loading="lazy" onerror="this.style.display='none'">South Alabama Jaguars
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/195.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio Bobcats</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1082,7 +1119,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725748200" data-prob="0.7579" data-margin="11.540" data-edge="9.960" data-tags="lean lock value upset">
+<div class="card game" id="g-401636617" data-kick="1725748200" data-prob="0.7579" data-margin="11.540" data-edge="9.960" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams">Sam Houston State
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2116.png" alt="" loading="lazy" onerror="this.style.display='none'">UCF Knights</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1106,7 +1143,7 @@ tracker records how these actually land.</span></details>
 <h4>Unit ratings</h4>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.6823" data-margin="7.825" data-edge="8.825" data-tags="lean value">
+<div class="card game" id="g-401635639" data-kick="1725750000" data-prob="0.6823" data-margin="7.825" data-edge="8.825" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Cavaliers
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/154.png" alt="" loading="lazy" onerror="this.style.display='none'">Wake Forest Demon Deacons</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1134,7 +1171,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.5104" data-margin="0.431" data-edge="8.569" data-tags="pick pickem value upset">
+<div class="card game" id="g-401643779" data-kick="1725750000" data-prob="0.5104" data-margin="0.431" data-edge="8.569" data-tags="pick pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/202.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulsa Golden Hurricane
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2032.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas State Red Wolves</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1162,7 +1199,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.9582" data-margin="28.545" data-edge="2.455" data-tags="lean lock">
+<div class="card game" id="g-401628335" data-kick="1725750000" data-prob="0.9582" data-margin="28.545" data-edge="2.455" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/58.png" alt="" loading="lazy" onerror="this.style.display='none'">South Florida Bulls
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/333.png" alt="" loading="lazy" onerror="this.style.display='none'">Alabama Crimson Tide</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1190,7 +1227,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.5918" data-margin="3.832" data-edge="4.832" data-tags="lean value upset">
+<div class="card game" id="g-401643708" data-kick="1725750000" data-prob="0.5918" data-margin="3.832" data-edge="4.832" data-tags="lean value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/290.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Southern Eagles
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2440.png" alt="" loading="lazy" onerror="this.style.display='none'">Nevada Wolf Pack</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1218,7 +1255,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.5200" data-margin="0.828" data-edge="15.328" data-tags="lean pickem value">
+<div class="card game" id="g-401641016" data-kick="1725750000" data-prob="0.5200" data-margin="0.828" data-edge="15.328" data-tags="lean pickem value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/309.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisiana Ragin' Cajuns
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/338.png" alt="" loading="lazy" onerror="this.style.display='none'">Kennesaw State Owls</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1246,7 +1283,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.6487" data-margin="6.299" data-edge="0.000" data-tags="lean">
+<div class="card game" id="g-401643780" data-kick="1725750000" data-prob="0.6487" data-margin="6.299" data-edge="0.000" data-tags="lean">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/5.png" alt="" loading="lazy" onerror="this.style.display='none'">UAB Blazers
 &nbsp;@&nbsp;Louisiana Monroe</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1270,7 +1307,7 @@ tracker records how these actually land.</span></details>
 <h4>Unit ratings</h4>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.6372" data-margin="5.790" data-edge="2.790" data-tags="lean value">
+<div class="card game" id="g-401643705" data-kick="1725750000" data-prob="0.6372" data-margin="5.790" data-edge="2.790" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/23.png" alt="" loading="lazy" onerror="this.style.display='none'">San José State Spartans
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2005.png" alt="" loading="lazy" onerror="this.style.display='none'">Air Force Falcons</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1298,7 +1335,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.8245" data-margin="15.387" data-edge="19.113" data-tags="lean lock value upset">
+<div class="card game" id="g-401628344" data-kick="1725750000" data-prob="0.8245" data-margin="15.387" data-edge="19.113" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2084.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo Bulls
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/142.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri Tigers</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1326,7 +1363,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725750000" data-prob="0.5656" data-margin="2.724" data-edge="7.224" data-tags="lean pickem value">
+<div class="card game" id="g-401628462" data-kick="1725750000" data-prob="0.5656" data-margin="2.724" data-edge="7.224" data-tags="lean pickem value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2305.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas Jayhawks
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/356.png" alt="" loading="lazy" onerror="this.style.display='none'">Illinois Fighting Illini</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1354,7 +1391,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725751800" data-prob="0.7150" data-margin="9.371" data-edge="0.629" data-tags="lean lock">
+<div class="card game" id="g-401628346" data-kick="1725751800" data-prob="0.7150" data-margin="9.371" data-edge="0.629" data-tags="lean lock">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2633.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee Volunteers
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/152.png" alt="" loading="lazy" onerror="this.style.display='none'">NC State Wolfpack (neutral site)</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1382,7 +1419,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725751800" data-prob="0.9722" data-margin="31.586" data-edge="5.914" data-tags="lean lock value upset">
+<div class="card game" id="g-401628468" data-kick="1725751800" data-prob="0.9722" data-margin="31.586" data-edge="5.914" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2711.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Michigan Broncos
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/194.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio State Buckeyes</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1410,7 +1447,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725751800" data-prob="0.8071" data-margin="14.307" data-edge="7.807" data-tags="lean lock value">
+<div class="card game" id="g-401628467" data-kick="1725751800" data-prob="0.8071" data-margin="14.307" data-edge="7.807" data-tags="lean lock value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/38.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado Buffaloes
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/158.png" alt="" loading="lazy" onerror="this.style.display='none'">Nebraska Cornhuskers</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1438,7 +1475,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725752700" data-prob="0.8812" data-margin="19.489" data-edge="8.011" data-tags="lean lock value upset">
+<div class="card game" id="g-401628345" data-kick="1725752700" data-prob="0.8812" data-margin="19.489" data-edge="8.011" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/248.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston Cougars
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/201.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma Sooners</div>
 <div class="kick">Sat, Sep 7</div></div>
@@ -1466,7 +1503,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725753600" data-prob="0.6235" data-margin="5.194" data-edge="11.306" data-tags="lean value upset">
+<div class="card game" id="g-401635532" data-kick="1725753600" data-prob="0.6235" data-margin="5.194" data-edge="11.306" data-tags="lean value upset">
 <div class="cardhead"><div class="teams">Appalachian State
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/228.png" alt="" loading="lazy" onerror="this.style.display='none'">Clemson Tigers</div>
 <div class="kick">Sun, Sep 8</div></div>
@@ -1490,7 +1527,7 @@ tracker records how these actually land.</span></details>
 <h4>Unit ratings</h4>
 </div></details>
 </div>
-<div class="card game" data-kick="1725760800" data-prob="0.6257" data-margin="5.290" data-edge="7.790" data-tags="lean value">
+<div class="card game" id="g-401636859" data-kick="1725760800" data-prob="0.6257" data-margin="5.290" data-edge="7.790" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2641.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Tech Red Raiders
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/265.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington State Cougars</div>
 <div class="kick">Sun, Sep 8</div></div>
@@ -1518,7 +1555,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725760800" data-prob="0.7126" data-margin="9.256" data-edge="8.744" data-tags="lean lock value upset">
+<div class="card game" id="g-401628469" data-kick="1725760800" data-prob="0.7126" data-margin="9.256" data-edge="8.744" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/68.png" alt="" loading="lazy" onerror="this.style.display='none'">Boise State Broncos
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2483.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon Ducks</div>
 <div class="kick">Sun, Sep 8</div></div>
@@ -1546,7 +1583,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725761700" data-prob="0.6487" data-margin="6.301" data-edge="15.699" data-tags="lean value">
+<div class="card game" id="g-401640989" data-kick="1725761700" data-prob="0.6487" data-margin="6.301" data-edge="15.699" data-tags="lean value">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2335.png" alt="" loading="lazy" onerror="this.style.display='none'">Liberty Flames
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/166.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico State Aggies</div>
 <div class="kick">Sun, Sep 8</div></div>
@@ -1574,7 +1611,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725762600" data-prob="0.7247" data-margin="9.846" data-edge="4.346" data-tags="lean lock value upset">
+<div class="card game" id="g-401643709" data-kick="1725762600" data-prob="0.7247" data-margin="9.846" data-edge="4.346" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/204.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon State Beavers
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/21.png" alt="" loading="lazy" onerror="this.style.display='none'">San Diego State Aztecs</div>
 <div class="kick">Sun, Sep 8</div></div>
@@ -1602,7 +1639,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725762600" data-prob="0.5715" data-margin="2.972" data-edge="9.472" data-tags="lean pickem value upset">
+<div class="card game" id="g-401628343" data-kick="1725762600" data-prob="0.5715" data-margin="2.972" data-edge="9.472" data-tags="lean pickem value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/344.png" alt="" loading="lazy" onerror="this.style.display='none'">Mississippi State Bulldogs
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/9.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona State Sun Devils</div>
 <div class="kick">Sun, Sep 8</div></div>
@@ -1630,7 +1667,7 @@ tracker records how these actually land.</span></details>
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>
 </div>
-<div class="card game" data-kick="1725764400" data-prob="0.8118" data-margin="14.597" data-edge="14.903" data-tags="lean lock value upset">
+<div class="card game" id="g-401628472" data-kick="1725764400" data-prob="0.8118" data-margin="14.597" data-edge="14.903" data-tags="lean lock value upset">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/328.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah State Aggies
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/30.png" alt="" loading="lazy" onerror="this.style.display='none'">USC Trojans</div>
 <div class="kick">Sun, Sep 8</div></div>
