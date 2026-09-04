@@ -193,3 +193,66 @@ def format_record(rec: dict) -> str:
     if rec["pushes"]:
         base += f'-{rec["pushes"]}'
     return base
+
+
+# ---------------------------------------------------------------------------
+# The ledger: one row per wager
+# ---------------------------------------------------------------------------
+# Week records answer "how did week 5 go". They cannot answer "show me every
+# losing Pixel's Pick in 2025", because by then the individual bets have been
+# summed away. The ledger keeps them, so the tracking page can filter and sort
+# on anything a reader might reasonably ask for.
+
+def game_ledger(graded: pd.DataFrame, league: str, season: int,
+                week: int, week_label: str) -> list[dict]:
+    """Every settled moneyline and spread bet from one week."""
+    rows = []
+    for row in graded.itertuples():
+        for kind, label in (("ml", "Moneyline"), ("ats", "Spread")):
+            result = getattr(row, f"{kind}_result", None)
+            if result not in ("win", "loss", "push"):
+                continue
+            pick = getattr(row, f"{kind}_pick", None)
+            if kind == "ats" and pd.notna(getattr(row, "ats_line", None)):
+                pick = f"{pick} {row.ats_line:+.1f}"
+            rows.append({
+                "league": league, "season": season, "week": week,
+                "week_label": week_label, "type": label,
+                "tier": getattr(row, f"{kind}_tier", "lean"),
+                "matchup": f"{row.away_team} @ {row.home_team}",
+                "pick": pick,
+                "price": _clean_price(getattr(row, f"{kind}_price", None)),
+                "prob": _clean_float(getattr(row, f"{kind}_prob", None)),
+                "result": result,
+                "profit": round(float(getattr(row, f"{kind}_profit", 0.0) or 0.0), 3),
+            })
+    return rows
+
+
+def wager_ledger(pick: dict | None, league: str, season: int, week: int,
+                 week_label: str, kind: str) -> list[dict]:
+    """A settled Pixel's Pick or board parlay, as one ledger row."""
+    if not pick or not pick.get("result"):
+        return []
+    legs = " + ".join(leg["detail"] for leg in pick["legs"])
+    return [{
+        "league": league, "season": season, "week": week,
+        "week_label": week_label, "type": kind,
+        "tier": "pick",
+        "matchup": f'{len(pick["legs"])} leg' + ("s" if len(pick["legs"]) > 1 else ""),
+        "pick": legs,
+        "price": round(float(pick["american"]), 0),
+        "prob": round(float(pick["prob"]), 4),
+        "result": pick["result"],
+        "profit": round(float(pick["profit"]), 3),
+    }]
+
+
+def _clean_price(value):
+    if value is None or pd.isna(value) or abs(value) < 100:
+        return DEFAULT_ODDS
+    return round(float(value), 0)
+
+
+def _clean_float(value):
+    return None if value is None or pd.isna(value) else round(float(value), 4)

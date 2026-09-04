@@ -100,6 +100,9 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -233,8 +236,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:53 UTC</strong>, hourly
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:05 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-2025-w17.html">&larr; Week 17</a>
@@ -303,7 +307,8 @@ tracker records how these actually land.</span></details>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
 <div class="card game" data-kick="1767398400" data-prob="0.5965" data-margin="3.226" data-edge="5.726" data-tags="pick value">
-<div class="cardhead"><div class="teams">Seattle Seahawks @ San Francisco 49ers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seattle Seahawks
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">San Francisco 49ers</div>
 <div class="kick">Sat, Jan 3 &middot; 8:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -330,7 +335,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767398400" data-prob="0.7108" data-margin="7.334" data-edge="4.334" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">Carolina Panthers @ Tampa Bay Buccaneers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Carolina Panthers
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Tampa Bay Buccaneers</div>
 <div class="kick">Sat, Jan 3 &middot; 4:30 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -357,7 +363,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.6288" data-margin="4.339" data-edge="0.161" data-tags="lean">
-<div class="cardhead"><div class="teams">New Orleans Saints @ Atlanta Falcons</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">New Orleans Saints
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Atlanta Falcons</div>
 <div class="kick">Sun, Jan 4 &middot; 1:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -384,7 +391,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.9038" data-margin="17.204" data-edge="4.704" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">New York Jets @ Buffalo Bills</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Jets
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo Bills</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -411,7 +419,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.5354" data-margin="1.174" data-edge="2.326" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Detroit Lions @ Chicago Bears</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DET.png" alt="" loading="lazy" onerror="this.style.display='none'">Detroit Lions
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Chicago Bears</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -438,7 +447,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.7925" data-margin="10.762" data-edge="1.262" data-tags="lean lock">
-<div class="cardhead"><div class="teams">Cleveland Browns @ Cincinnati Bengals</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Cleveland Browns
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bengals</div>
 <div class="kick">Sun, Jan 4 &middot; 1:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -465,7 +475,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.7110" data-margin="7.344" data-edge="7.156" data-tags="pick lock value upset">
-<div class="cardhead"><div class="teams">Los Angeles Chargers @ Denver Broncos</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Chargers
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Denver Broncos</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -492,7 +503,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.6474" data-margin="4.994" data-edge="4.506" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">Indianapolis Colts @ Houston Texans</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Indianapolis Colts
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston Texans</div>
 <div class="kick">Sun, Jan 4 &middot; 1:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -519,7 +531,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.8436" data-margin="13.325" data-edge="0.825" data-tags="lean lock">
-<div class="cardhead"><div class="teams">Tennessee Titans @ Jacksonville Jaguars</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee Titans
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/JAX.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville Jaguars</div>
 <div class="kick">Sun, Jan 4 &middot; 1:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -546,7 +559,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.7372" data-margin="8.377" data-edge="6.123" data-tags="pick lock value upset">
-<div class="cardhead"><div class="teams">Arizona Cardinals @ Los Angeles Rams</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ARI.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona Cardinals
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Rams</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -573,7 +587,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.7440" data-margin="8.654" data-edge="5.154" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Kansas City Chiefs @ Las Vegas Raiders</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas City Chiefs
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Las Vegas Raiders</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -600,7 +615,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.5265" data-margin="0.877" data-edge="11.623" data-tags="pixel pick pickem value upset">
-<div class="cardhead"><div class="teams">Green Bay Packers @ Minnesota Vikings</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Green Bay Packers
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota Vikings</div>
 <div class="kick">Sun, Jan 4 &middot; 1:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -627,7 +643,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.7174" data-margin="7.592" data-edge="6.408" data-tags="pick lock value upset">
-<div class="cardhead"><div class="teams">Miami Dolphins @ New England Patriots</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami Dolphins
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">New England Patriots</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -654,7 +671,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.6264" data-margin="4.255" data-edge="1.255" data-tags="lean">
-<div class="cardhead"><div class="teams">Dallas Cowboys @ New York Giants</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Dallas Cowboys
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Giants</div>
 <div class="kick">Sun, Jan 4 &middot; 1:00 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -681,7 +699,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.8148" data-margin="11.823" data-edge="8.823" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">Washington Commanders @ Philadelphia Eagles</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Commanders
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Philadelphia Eagles</div>
 <div class="kick">Sun, Jan 4 &middot; 4:25 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -708,7 +727,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1767484800" data-prob="0.5542" data-margin="1.799" data-edge="2.701" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Baltimore Ravens @ Pittsburgh Steelers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Baltimore Ravens
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Steelers</div>
 <div class="kick">Sun, Jan 4 &middot; 8:20 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>

@@ -100,6 +100,9 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -233,8 +236,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:53 UTC</strong>, hourly
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:05 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-2025-w21.html">&larr; Conference Championships</a>
@@ -271,7 +275,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
 <div class="card game" data-kick="1770508800" data-prob="0.5714" data-margin="2.375" data-edge="2.125" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Seattle Seahawks @ New England Patriots (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seattle Seahawks
+&nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">New England Patriots (neutral site)</div>
 <div class="kick">Sun, Feb 8 &middot; 6:30 PM ET</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>

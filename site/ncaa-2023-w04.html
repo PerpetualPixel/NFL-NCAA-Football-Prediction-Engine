@@ -100,6 +100,9 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -233,8 +236,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:54 UTC</strong>, hourly
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:06 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2023-w03.html">&larr; Week 3</a>
@@ -308,7 +312,8 @@ tracker records how these actually land.</span></details>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
 <div class="card game" data-kick="1695339000" data-prob="0.6882" data-margin="8.099" data-edge="1.599" data-tags="lean">
-<div class="cardhead"><div class="teams">Georgia State Panthers @ Coastal Carolina Chanticleers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2247.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia State Panthers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/324.png" alt="" loading="lazy" onerror="this.style.display='none'">Coastal Carolina Chanticleers</div>
 <div class="kick">Thu, Sep 21</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -335,7 +340,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695423600" data-prob="0.5336" data-margin="1.392" data-edge="4.608" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Wisconsin Badgers @ Purdue Boilermakers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/275.png" alt="" loading="lazy" onerror="this.style.display='none'">Wisconsin Badgers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2509.png" alt="" loading="lazy" onerror="this.style.display='none'">Purdue Boilermakers</div>
 <div class="kick">Fri, Sep 22</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -362,7 +368,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695425400" data-prob="0.6663" data-margin="7.090" data-edge="0.910" data-tags="lean">
-<div class="cardhead"><div class="teams">NC State Wolfpack @ Virginia Cavaliers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/152.png" alt="" loading="lazy" onerror="this.style.display='none'">NC State Wolfpack
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Cavaliers</div>
 <div class="kick">Fri, Sep 22</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -389,7 +396,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695436200" data-prob="0.6162" data-margin="4.875" data-edge="1.625" data-tags="lean">
-<div class="cardhead"><div class="teams">Boise State Broncos @ San Diego State Aztecs</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/68.png" alt="" loading="lazy" onerror="this.style.display='none'">Boise State Broncos
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/21.png" alt="" loading="lazy" onerror="this.style.display='none'">San Diego State Aztecs</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -416,7 +424,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695436200" data-prob="0.6248" data-margin="5.250" data-edge="0.750" data-tags="lean">
-<div class="cardhead"><div class="teams">Air Force Falcons @ San José State Spartans</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2005.png" alt="" loading="lazy" onerror="this.style.display='none'">Air Force Falcons
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/23.png" alt="" loading="lazy" onerror="this.style.display='none'">San José State Spartans</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -443,7 +452,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.7649" data-margin="11.913" data-edge="6.413" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Virginia Tech Hokies @ Marshall Thundering Herd</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/259.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Tech Hokies
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/276.png" alt="" loading="lazy" onerror="this.style.display='none'">Marshall Thundering Herd</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -470,7 +480,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.6721" data-margin="7.352" data-edge="0.352" data-tags="lean">
-<div class="cardhead"><div class="teams">SMU Mustangs @ TCU Horned Frogs</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2567.png" alt="" loading="lazy" onerror="this.style.display='none'">SMU Mustangs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2628.png" alt="" loading="lazy" onerror="this.style.display='none'">TCU Horned Frogs</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -497,7 +508,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.9475" data-margin="26.742" data-edge="2.742" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">Rutgers Scarlet Knights @ Michigan Wolverines</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/164.png" alt="" loading="lazy" onerror="this.style.display='none'">Rutgers Scarlet Knights
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/130.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan Wolverines</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -524,7 +536,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.6653" data-margin="7.044" data-edge="1.956" data-tags="lean">
-<div class="cardhead"><div class="teams">Auburn Tigers @ Texas A&M Aggies</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2.png" alt="" loading="lazy" onerror="this.style.display='none'">Auburn Tigers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/245.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas A&M Aggies</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -551,7 +564,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.5429" data-margin="1.779" data-edge="12.221" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Oklahoma Sooners @ Cincinnati Bearcats</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/201.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma Sooners
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2132.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bearcats</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -578,7 +592,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.5463" data-margin="1.919" data-edge="5.919" data-tags="pick pickem value upset">
-<div class="cardhead"><div class="teams">Tulsa Golden Hurricane @ Northern Illinois Huskies</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/202.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulsa Golden Hurricane
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2459.png" alt="" loading="lazy" onerror="this.style.display='none'">Northern Illinois Huskies</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -605,7 +620,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.6150" data-margin="4.824" data-edge="6.824" data-tags="pixel pick value">
-<div class="cardhead"><div class="teams">Florida State Seminoles @ Clemson Tigers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/52.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida State Seminoles
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/228.png" alt="" loading="lazy" onerror="this.style.display='none'">Clemson Tigers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -632,7 +648,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.7515" data-margin="11.207" data-edge="2.293" data-tags="lean lock">
-<div class="cardhead"><div class="teams">Kentucky Wildcats @ Vanderbilt Commodores</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/96.png" alt="" loading="lazy" onerror="this.style.display='none'">Kentucky Wildcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/238.png" alt="" loading="lazy" onerror="this.style.display='none'">Vanderbilt Commodores</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -659,7 +676,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.5062" data-margin="0.259" data-edge="3.241" data-tags="lean pickem value upset">
-<div class="cardhead"><div class="teams">Western Kentucky Hilltoppers @ Troy Trojans</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/98.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Kentucky Hilltoppers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2653.png" alt="" loading="lazy" onerror="this.style.display='none'">Troy Trojans</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -686,7 +704,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695484800" data-prob="0.6654" data-margin="7.049" data-edge="5.951" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">Army Black Knights @ Syracuse Orange</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army Black Knights
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/183.png" alt="" loading="lazy" onerror="this.style.display='none'">Syracuse Orange</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -713,7 +732,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695490200" data-prob="0.8551" data-margin="17.467" data-edge="4.033" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Western Michigan Broncos @ Toledo Rockets</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2711.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Michigan Broncos
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2649.png" alt="" loading="lazy" onerror="this.style.display='none'">Toledo Rockets</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -740,7 +760,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695492000" data-prob="0.5561" data-margin="2.326" data-edge="3.674" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Georgia Southern Eagles @ Ball State Cardinals</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/290.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Southern Eagles
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2050.png" alt="" loading="lazy" onerror="this.style.display='none'">Ball State Cardinals</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -767,7 +788,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.7479" data-margin="11.023" data-edge="4.023" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Ole Miss Rebels @ Alabama Crimson Tide</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/145.png" alt="" loading="lazy" onerror="this.style.display='none'">Ole Miss Rebels
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/333.png" alt="" loading="lazy" onerror="this.style.display='none'">Alabama Crimson Tide</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -794,7 +816,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.6126" data-margin="4.722" data-edge="8.278" data-tags="lean value">
-<div class="cardhead"><div class="teams">Ohio Bobcats @ Bowling Green Falcons</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/195.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio Bobcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/189.png" alt="" loading="lazy" onerror="this.style.display='none'">Bowling Green Falcons</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -821,7 +844,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.8584" data-margin="17.706" data-edge="3.706" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Boston College Eagles @ Louisville Cardinals</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/103.png" alt="" loading="lazy" onerror="this.style.display='none'">Boston College Eagles
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/97.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisville Cardinals</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -848,7 +872,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.7927" data-margin="13.461" data-edge="10.039" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">Miami Hurricanes @ Temple Owls</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2390.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami Hurricanes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/218.png" alt="" loading="lazy" onerror="this.style.display='none'">Temple Owls</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -875,7 +900,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.6803" data-margin="7.732" data-edge="0.000" data-tags="lean">
-<div class="cardhead"><div class="teams">Duke Blue Devils @ Connecticut</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/150.png" alt="" loading="lazy" onerror="this.style.display='none'">Duke Blue Devils
+&nbsp;@&nbsp;Connecticut</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -898,7 +924,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.5282" data-margin="1.167" data-edge="6.333" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Maryland Terrapins @ Michigan State Spartans</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/120.png" alt="" loading="lazy" onerror="this.style.display='none'">Maryland Terrapins
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/127.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan State Spartans</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -925,7 +952,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.6660" data-margin="7.079" data-edge="4.079" data-tags="lean value">
-<div class="cardhead"><div class="teams">UCLA Bruins @ Utah Utes</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/26.png" alt="" loading="lazy" onerror="this.style.display='none'">UCLA Bruins
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/254.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah Utes</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -952,7 +980,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.9379" data-margin="25.365" data-edge="4.365" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Colorado Buffaloes @ Oregon Ducks</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/38.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado Buffaloes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2483.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon Ducks</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -979,7 +1008,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.7748" data-margin="12.454" data-edge="3.546" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Florida Atlantic Owls @ Illinois Fighting Illini</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2226.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Atlantic Owls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/356.png" alt="" loading="lazy" onerror="this.style.display='none'">Illinois Fighting Illini</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1006,7 +1036,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.7748" data-margin="12.453" data-edge="8.047" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Louisiana Tech Bulldogs @ Nebraska Cornhuskers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2348.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisiana Tech Bulldogs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/158.png" alt="" loading="lazy" onerror="this.style.display='none'">Nebraska Cornhuskers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1033,7 +1064,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.5974" data-margin="4.069" data-edge="13.569" data-tags="pick value upset">
-<div class="cardhead"><div class="teams">BYU Cougars @ Kansas Jayhawks</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/252.png" alt="" loading="lazy" onerror="this.style.display='none'">BYU Cougars
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2305.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas Jayhawks</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1060,7 +1092,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.5138" data-margin="0.572" data-edge="0.000" data-tags="pick pickem">
-<div class="cardhead"><div class="teams">New Mexico Lobos @ UMass</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/167.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico Lobos
+&nbsp;@&nbsp;UMass</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1083,7 +1116,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695497400" data-prob="0.5584" data-margin="2.423" data-edge="8.423" data-tags="pick pickem value">
-<div class="cardhead"><div class="teams">Texas Tech Red Raiders @ West Virginia Mountaineers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2641.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Tech Red Raiders
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/277.png" alt="" loading="lazy" onerror="this.style.display='none'">West Virginia Mountaineers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1110,7 +1144,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695499200" data-prob="0.5280" data-margin="1.160" data-edge="3.660" data-tags="pick pickem value">
-<div class="cardhead"><div class="teams">Rice Owls @ South Florida Bulls</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/242.png" alt="" loading="lazy" onerror="this.style.display='none'">Rice Owls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/58.png" alt="" loading="lazy" onerror="this.style.display='none'">South Florida Bulls</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1137,7 +1172,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695499200" data-prob="0.5767" data-margin="3.194" data-edge="0.306" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Oklahoma State Cowboys @ Iowa State Cyclones</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/197.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma State Cowboys
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/66.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa State Cyclones</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1164,7 +1200,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695499200" data-prob="0.7046" data-margin="8.871" data-edge="15.129" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">UT San Antonio @ Tennessee Volunteers</div>
+<div class="cardhead"><div class="teams">UT San Antonio
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2633.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee Volunteers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1187,7 +1224,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695502800" data-prob="0.7763" data-margin="12.535" data-edge="6.035" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Eastern Michigan Eagles @ Jacksonville State Gamecocks</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2199.png" alt="" loading="lazy" onerror="this.style.display='none'">Eastern Michigan Eagles
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/55.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville State Gamecocks</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1214,7 +1252,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695502800" data-prob="0.7449" data-margin="10.867" data-edge="5.133" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Central Michigan Chippewas @ South Alabama Jaguars</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2117.png" alt="" loading="lazy" onerror="this.style.display='none'">Central Michigan Chippewas
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/6.png" alt="" loading="lazy" onerror="this.style.display='none'">South Alabama Jaguars</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1241,7 +1280,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695508200" data-prob="0.8231" data-margin="15.302" data-edge="5.302" data-tags="pick lock value upset">
-<div class="cardhead"><div class="teams">Liberty Flames @ Florida International Panthers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2335.png" alt="" loading="lazy" onerror="this.style.display='none'">Liberty Flames
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2229.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida International Panthers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1268,7 +1308,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695508200" data-prob="0.7999" data-margin="13.883" data-edge="10.383" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Georgia Tech Yellow Jackets @ Wake Forest Demon Deacons</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/59.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Tech Yellow Jackets
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/154.png" alt="" loading="lazy" onerror="this.style.display='none'">Wake Forest Demon Deacons</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1295,7 +1336,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.7587" data-margin="11.583" data-edge="5.417" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Nevada Wolf Pack @ Texas State Bobcats</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2440.png" alt="" loading="lazy" onerror="this.style.display='none'">Nevada Wolf Pack
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/326.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas State Bobcats</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1322,7 +1364,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.5272" data-margin="1.125" data-edge="5.875" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Southern Mississippi @ Arkansas State Red Wolves</div>
+<div class="cardhead"><div class="teams">Southern Mississippi
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2032.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas State Red Wolves</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1345,7 +1388,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.9035" data-margin="21.476" data-edge="6.524" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Charlotte 49ers @ Florida Gators</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2429.png" alt="" loading="lazy" onerror="this.style.display='none'">Charlotte 49ers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/57.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Gators</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1372,7 +1416,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.6888" data-margin="8.127" data-edge="9.373" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">Arkansas Razorbacks @ LSU Tigers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/8.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas Razorbacks
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/99.png" alt="" loading="lazy" onerror="this.style.display='none'">LSU Tigers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1399,7 +1444,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.7038" data-margin="8.836" data-edge="5.336" data-tags="pick lock value">
-<div class="cardhead"><div class="teams">Colorado State Rams @ Middle Tennessee Blue Raiders</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/36.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado State Rams
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2393.png" alt="" loading="lazy" onerror="this.style.display='none'">Middle Tennessee Blue Raiders</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1426,7 +1472,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.6471" data-margin="6.231" data-edge="5.269" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">Sam Houston State @ Houston Cougars</div>
+<div class="cardhead"><div class="teams">Sam Houston State
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/248.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston Cougars</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1449,7 +1496,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.5421" data-margin="1.746" data-edge="11.254" data-tags="lean pickem value">
-<div class="cardhead"><div class="teams">Arizona Wildcats @ Stanford Cardinal</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/12.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona Wildcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/24.png" alt="" loading="lazy" onerror="this.style.display='none'">Stanford Cardinal</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1476,7 +1524,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.6131" data-margin="4.742" data-edge="7.742" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">Appalachian State @ Wyoming Cowboys</div>
+<div class="cardhead"><div class="teams">Appalachian State
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2751.png" alt="" loading="lazy" onerror="this.style.display='none'">Wyoming Cowboys</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1499,7 +1548,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695510000" data-prob="0.5489" data-margin="2.026" data-edge="0.974" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Oregon State Beavers @ Washington State Cougars</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/204.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon State Beavers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/265.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington State Cougars</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1526,7 +1576,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.5705" data-margin="2.930" data-edge="9.430" data-tags="pick pickem value upset">
-<div class="cardhead"><div class="teams">Memphis Tigers @ Missouri Tigers (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/235.png" alt="" loading="lazy" onerror="this.style.display='none'">Memphis Tigers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/142.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri Tigers (neutral site)</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1553,7 +1604,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.7564" data-margin="11.465" data-edge="2.535" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Iowa Hawkeyes @ Penn State Nittany Lions</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2294.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa Hawkeyes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/213.png" alt="" loading="lazy" onerror="this.style.display='none'">Penn State Nittany Lions</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1580,7 +1632,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.5749" data-margin="3.117" data-edge="0.117" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Ohio State Buckeyes @ Notre Dame Fighting Irish</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/194.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio State Buckeyes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/87.png" alt="" loading="lazy" onerror="this.style.display='none'">Notre Dame Fighting Irish</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1607,7 +1660,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.7667" data-margin="12.013" data-edge="4.487" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Akron Zips @ Indiana Hoosiers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2006.png" alt="" loading="lazy" onerror="this.style.display='none'">Akron Zips
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/84.png" alt="" loading="lazy" onerror="this.style.display='none'">Indiana Hoosiers</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1634,7 +1688,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.7832" data-margin="12.919" data-edge="2.419" data-tags="pick lock">
-<div class="cardhead"><div class="teams">Buffalo Bulls @ Louisiana Ragin' Cajuns</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2084.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo Bulls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/309.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisiana Ragin' Cajuns</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1661,7 +1716,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.6408" data-margin="5.949" data-edge="11.551" data-tags="lean value">
-<div class="cardhead"><div class="teams">Texas Longhorns @ Baylor Bears</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/251.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Longhorns
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/239.png" alt="" loading="lazy" onerror="this.style.display='none'">Baylor Bears</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1688,7 +1744,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.7474" data-margin="10.993" data-edge="0.507" data-tags="lean lock">
-<div class="cardhead"><div class="teams">Minnesota Golden Gophers @ Northwestern Wildcats</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/135.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota Golden Gophers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/77.png" alt="" loading="lazy" onerror="this.style.display='none'">Northwestern Wildcats</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1715,7 +1772,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.9445" data-margin="26.294" data-edge="14.706" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">UAB Blazers @ Georgia Bulldogs</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/5.png" alt="" loading="lazy" onerror="this.style.display='none'">UAB Blazers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/61.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Bulldogs</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1742,7 +1800,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695511800" data-prob="0.5769" data-margin="3.200" data-edge="9.200" data-tags="pick pickem value upset">
-<div class="cardhead"><div class="teams">Mississippi State Bulldogs @ South Carolina Gamecocks</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/344.png" alt="" loading="lazy" onerror="this.style.display='none'">Mississippi State Bulldogs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2579.png" alt="" loading="lazy" onerror="this.style.display='none'">South Carolina Gamecocks</div>
 <div class="kick">Sat, Sep 23</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1769,7 +1828,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695513600" data-prob="0.5956" data-margin="3.991" data-edge="10.991" data-tags="pick value">
-<div class="cardhead"><div class="teams">North Carolina Tar Heels @ Pittsburgh Panthers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/153.png" alt="" loading="lazy" onerror="this.style.display='none'">North Carolina Tar Heels
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/221.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Panthers</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1796,7 +1856,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695513600" data-prob="0.5825" data-margin="3.436" data-edge="2.564" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">UCF Knights @ Kansas State Wildcats</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2116.png" alt="" loading="lazy" onerror="this.style.display='none'">UCF Knights
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2306.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas State Wildcats</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1823,7 +1884,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695513600" data-prob="0.6954" data-margin="8.436" data-edge="3.436" data-tags="pick value upset">
-<div class="cardhead"><div class="teams">James Madison Dukes @ Utah State Aggies</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/256.png" alt="" loading="lazy" onerror="this.style.display='none'">James Madison Dukes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/328.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah State Aggies</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1850,7 +1912,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695517200" data-prob="0.5688" data-margin="2.860" data-edge="1.860" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">UNLV Rebels @ UTEP Miners</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2439.png" alt="" loading="lazy" onerror="this.style.display='none'">UNLV Rebels
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2638.png" alt="" loading="lazy" onerror="this.style.display='none'">UTEP Miners</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1877,7 +1940,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695522600" data-prob="0.8222" data-margin="15.243" data-edge="12.257" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">Kent State Golden Flashes @ Fresno State Bulldogs</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2309.png" alt="" loading="lazy" onerror="this.style.display='none'">Kent State Golden Flashes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/278.png" alt="" loading="lazy" onerror="this.style.display='none'">Fresno State Bulldogs</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1904,7 +1968,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695522600" data-prob="0.8379" data-margin="16.268" data-edge="4.232" data-tags="lean lock value upset">
-<div class="cardhead"><div class="teams">California Golden Bears @ Washington Huskies</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/25.png" alt="" loading="lazy" onerror="this.style.display='none'">California Golden Bears
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/264.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Huskies</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1931,7 +1996,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695522600" data-prob="0.7858" data-margin="13.068" data-edge="21.432" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">USC Trojans @ Arizona State Sun Devils</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/30.png" alt="" loading="lazy" onerror="this.style.display='none'">USC Trojans
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/9.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona State Sun Devils</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -1958,7 +2024,8 @@ tracker records how these actually land.</span></details>
 </div></details>
 </div>
 <div class="card game" data-kick="1695527940" data-prob="0.5114" data-margin="0.471" data-edge="4.471" data-tags="pick pickem value upset">
-<div class="cardhead"><div class="teams">New Mexico State Aggies @ Hawai'i Rainbow Warriors</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/166.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico State Aggies
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/62.png" alt="" loading="lazy" onerror="this.style.display='none'">Hawai'i Rainbow Warriors</div>
 <div class="kick">Sun, Sep 24</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>

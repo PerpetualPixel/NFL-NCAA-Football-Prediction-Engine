@@ -100,6 +100,9 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -233,8 +236,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:55 UTC</strong>, hourly
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:06 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2025-w14.html">&larr; Week 14</a>
@@ -279,7 +283,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
 <div class="card game" data-kick="1764979200" data-prob="0.7441" data-margin="10.827" data-edge="13.827" data-tags="lean lock value">
-<div class="cardhead"><div class="teams">Kennesaw State Owls @ Jacksonville State Gamecocks</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/338.png" alt="" loading="lazy" onerror="this.style.display='none'">Kennesaw State Owls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/55.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville State Gamecocks</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -306,7 +311,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1764979200" data-prob="0.9147" data-margin="22.610" data-edge="1.890" data-tags="lean lock">
-<div class="cardhead"><div class="teams">Troy Trojans @ James Madison Dukes</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2653.png" alt="" loading="lazy" onerror="this.style.display='none'">Troy Trojans
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/256.png" alt="" loading="lazy" onerror="this.style.display='none'">James Madison Dukes</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -333,7 +339,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1764982800" data-prob="0.6561" data-margin="6.631" data-edge="0.631" data-tags="lean">
-<div class="cardhead"><div class="teams">UNLV Rebels @ Boise State Broncos</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2439.png" alt="" loading="lazy" onerror="this.style.display='none'">UNLV Rebels
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/68.png" alt="" loading="lazy" onerror="this.style.display='none'">Boise State Broncos</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -360,7 +367,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1764982800" data-prob="0.5987" data-margin="4.126" data-edge="5.626" data-tags="lean value">
-<div class="cardhead"><div class="teams">North Texas Mean Green @ Tulane Green Wave</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/249.png" alt="" loading="lazy" onerror="this.style.display='none'">North Texas Mean Green
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2655.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulane Green Wave</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -387,7 +395,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1765040400" data-prob="0.6752" data-margin="7.497" data-edge="5.003" data-tags="lean value upset">
-<div class="cardhead"><div class="teams">BYU Cougars @ Texas Tech Red Raiders (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/252.png" alt="" loading="lazy" onerror="this.style.display='none'">BYU Cougars
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2641.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Tech Red Raiders (neutral site)</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -414,7 +423,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1765040400" data-prob="0.5839" data-margin="3.497" data-edge="5.997" data-tags="pixel lean value upset">
-<div class="cardhead"><div class="teams">Miami (OH) RedHawks @ Western Michigan Broncos (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/193.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami (OH) RedHawks
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2711.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Michigan Broncos (neutral site)</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -441,7 +451,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1765054800" data-prob="0.5145" data-margin="0.600" data-edge="2.100" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Georgia Bulldogs @ Alabama Crimson Tide (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/61.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Bulldogs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/333.png" alt="" loading="lazy" onerror="this.style.display='none'">Alabama Crimson Tide (neutral site)</div>
 <div class="kick">Sat, Dec 6</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -468,7 +479,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1765069200" data-prob="0.5086" data-margin="0.355" data-edge="3.855" data-tags="lean pickem value upset">
-<div class="cardhead"><div class="teams">Duke Blue Devils @ Virginia Cavaliers (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/150.png" alt="" loading="lazy" onerror="this.style.display='none'">Duke Blue Devils
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Cavaliers (neutral site)</div>
 <div class="kick">Sun, Dec 7</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -495,7 +507,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1765069200" data-prob="0.6005" data-margin="4.203" data-edge="0.703" data-tags="lean">
-<div class="cardhead"><div class="teams">Indiana Hoosiers @ Ohio State Buckeyes (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/84.png" alt="" loading="lazy" onerror="this.style.display='none'">Indiana Hoosiers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/194.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio State Buckeyes (neutral site)</div>
 <div class="kick">Sun, Dec 7</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>

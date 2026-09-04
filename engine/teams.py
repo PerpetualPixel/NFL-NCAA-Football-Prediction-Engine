@@ -68,6 +68,60 @@ def ncaa_fbs_teams() -> frozenset[str]:
     return frozenset()
 
 
+# ESPN publishes NFL crests at a stable path keyed by their own abbreviation,
+# which the team file already carries. College logos come straight out of the
+# data feed, so those are used verbatim.
+NFL_LOGO_URL = "https://a.espncdn.com/i/teamlogos/nfl/500/{abbr}.png"
+
+
+@lru_cache(maxsize=1)
+def _nfl_logos() -> dict[str, str]:
+    dest = DATA_DIR / "nfl" / "teams.csv"
+    try:
+        if not dest.exists():
+            _download(NFL_TEAMS_URL, dest)
+        df = pd.read_csv(dest)
+    except (requests.RequestException, OSError):
+        return {}
+    df = df.sort_values("season").drop_duplicates("team", keep="last")
+    df = df[df["espn"].notna()]
+    return {row.team: NFL_LOGO_URL.format(abbr=str(row.espn).upper())
+            for row in df.itertuples()}
+
+
+@lru_cache(maxsize=1)
+def _ncaa_logos() -> dict[str, str]:
+    for year in (2024, 2023, 2022):
+        dest = DATA_DIR / "ncaa" / f"team_info_{year}.parquet"
+        try:
+            df = _cached_parquet(CFB_TEAM_INFO_URL.format(year=year), dest)
+        except (requests.RequestException, OSError):
+            continue
+        if "logo" not in df.columns:
+            continue
+        sub = df[df["logo"].notna()]
+        return dict(zip(sub["school"], sub["logo"]))
+    return {}
+
+
+def logo_url(team: str, league: str) -> str | None:
+    """Crest for a team, or None when the source has no image for it."""
+    if not isinstance(team, str):
+        return None
+    table = _nfl_logos() if league == "nfl" else _ncaa_logos()
+    return table.get(team)
+
+
+def logo_img(team: str, league: str, css: str = "crest") -> str:
+    """An <img> tag, or nothing. Hides itself if the image fails to load, so a
+    dead URL never leaves a broken icon next to a team name."""
+    url = logo_url(team, league)
+    if not url:
+        return ""
+    return (f'<img class="{css}" src="{url}" alt="" loading="lazy" '
+            f'onerror="this.style.display=\'none\'">')
+
+
 def display_name(team: str, league: str) -> str:
     """Full name with mascot, falling back to whatever the data provides."""
     if not isinstance(team, str):

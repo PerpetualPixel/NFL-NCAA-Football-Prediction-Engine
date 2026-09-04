@@ -100,6 +100,9 @@ ul.factors { padding-left: 0; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
 .tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
 .tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+#loadmore { margin-top: 10px; }
 .explain { font-size: 0.88rem; }
 .explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
 .explainbox summary { color: var(--muted); font-weight: 600; }
@@ -233,8 +236,9 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <body><div class="wrap">
 <header class="site"><h1>Gridiron Engine</h1>
 <nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
-<a href="tracking.html">Tracking</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-03 05:55 UTC</strong>, hourly
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:06 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <span class="wknav-btn disabled">&larr; Prev</span>
@@ -271,7 +275,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
 <div class="card game" data-kick="1788019200" data-prob="0.6927" data-margin="8.309" data-edge="0.000" data-tags="lean">
-<div class="cardhead"><div class="teams">North Carolina Tar Heels @ TCU Horned Frogs (neutral site)</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/153.png" alt="" loading="lazy" onerror="this.style.display='none'">North Carolina Tar Heels
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2628.png" alt="" loading="lazy" onerror="this.style.display='none'">TCU Horned Frogs (neutral site)</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -298,7 +303,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1788030000" data-prob="0.8670" data-margin="18.353" data-edge="0.000" data-tags="lean lock">
-<div class="cardhead"><div class="teams">San José State Spartans @ USC Trojans</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/23.png" alt="" loading="lazy" onerror="this.style.display='none'">San José State Spartans
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/30.png" alt="" loading="lazy" onerror="this.style.display='none'">USC Trojans</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -325,7 +331,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1788031800" data-prob="0.6000" data-margin="4.179" data-edge="0.000" data-tags="lean">
-<div class="cardhead"><div class="teams">NC State Wolfpack @ Virginia Cavaliers</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/152.png" alt="" loading="lazy" onerror="this.style.display='none'">NC State Wolfpack
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Cavaliers</div>
 <div class="kick">Sat, Aug 29</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -352,7 +359,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1788044400" data-prob="0.5161" data-margin="0.664" data-edge="0.000" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Hawai'i Rainbow Warriors @ Stanford Cardinal</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/62.png" alt="" loading="lazy" onerror="this.style.display='none'">Hawai'i Rainbow Warriors
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/24.png" alt="" loading="lazy" onerror="this.style.display='none'">Stanford Cardinal</div>
 <div class="kick"><span class="stage locked">Final &middot; locked</span>Sat, Aug 29</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -379,7 +387,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1788044400" data-prob="0.8444" data-margin="16.710" data-edge="0.000" data-tags="lean lock">
-<div class="cardhead"><div class="teams">New Mexico State Aggies @ Florida State Seminoles</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/166.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico State Aggies
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/52.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida State Seminoles</div>
 <div class="kick"><span class="stage locked">Final &middot; locked</span>Sat, Aug 29</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>
@@ -406,7 +415,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div></details>
 </div>
 <div class="card game" data-kick="1788055200" data-prob="0.5400" data-margin="1.657" data-edge="0.000" data-tags="lean pickem">
-<div class="cardhead"><div class="teams">Memphis Tigers @ UNLV Rebels</div>
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/235.png" alt="" loading="lazy" onerror="this.style.display='none'">Memphis Tigers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2439.png" alt="" loading="lazy" onerror="this.style.display='none'">UNLV Rebels</div>
 <div class="kick">Sun, Aug 30</div></div>
 <div class="bets">
 <div class="bet"><div class="betlabel">Moneyline pick</div>

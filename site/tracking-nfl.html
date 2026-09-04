@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gridiron Engine</title><style>
+<title>NFL tracking — Gridiron Engine</title><style>
 :root {
   --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
   --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
@@ -240,19 +240,149 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
 <div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:06 UTC</strong>, hourly
 &middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<h2>NFL tracking</h2>
+<div class="controls scopebar">
+  <label class="ctl-sort">Season:<select id="scopeseason"><option value="2026">2026 season</option><option value="2025">2025 season</option><option value="2024">2024 season</option><option value="2023">2023 season</option></select></label>
+</div>
+<div class="tiles"><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">168-116</div><div class="tilesub meta">59% &middot; -44.4 units (-15.6% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Spread</div><div class="tilebig t-bad">136-148</div><div class="tilesub meta">48% &middot; -25.1 units (-8.8% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-strong">12-9</div><div class="tilesub meta">57% &middot; +2.1 units (+10.0% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2025"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">21-34</div><div class="tilesub meta">38% &middot; -4.5 units (-8.1% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">193-92</div><div class="tilesub meta">68% &middot; +5.9 units (+2.1% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Spread</div><div class="tilebig t-mid">140-141</div><div class="tilesub meta">50% &middot; -13.4 units (-4.8% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-strong">12-9</div><div class="tilesub meta">57% &middot; +8.3 units (+39.4% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2024"><div class="tiletitle">Parlay board</div><div class="tilebig t-strong">29-32</div><div class="tilesub meta">48% &middot; +10.5 units (+17.1% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">178-107</div><div class="tilesub meta">62% &middot; -15.6 units (-5.5% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Spread</div><div class="tilebig t-bad">125-146</div><div class="tilesub meta">46% &middot; -31.5 units (-11.6% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-bad">9-12</div><div class="tilesub meta">43% &middot; -3.2 units (-15.3% ROI)</div></div><div class="tile scoped" data-league="nfl" data-season="2023"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">16-37</div><div class="tilesub meta">30% &middot; -13.2 units (-24.9% ROI)</div></div></div>
 
-<h2>Weekly picks, powered by opponent-adjusted ratings</h2>
-<div class="leagues"><a class="card" href="nfl-w01.html"><div class="teams">NFL</div><div class="meta">Week 1 &middot; 16 games &mdash; picks release from Sat Sep 5, 8:00 PM, one day before each kickoff</div><div class="meta">2026 season &mdash; no completed games yet</div></a>
-<a class="card" href="ncaa-w01.html"><div class="teams">NCAA</div><div class="meta">Week 1 &middot; 2-2 on the moneyline, 0-0 against the spread</div><div class="meta">2026 season to date: 2-2 moneyline (50%, -4.5% ROI) &middot; 0-0 spread (0%, +0.0% ROI)</div></a></div>
-<h2>How it works</h2>
-<div class="card"><div class="meta">
-Team power ratings and (NFL) pass/rush unit ratings are solved by weighted ridge
-regression over recent seasons with recency decay, using only games completed
-before kickoff. A walk-forward ridge blend converts rating differentials, unit
-matchups, rest, and home field into a projected margin and win probability.
-Honest backtest (2021&ndash;2025, from week 5): NFL 10.15 MAE / 63% straight-up
-(closing line: 9.72 MAE); NCAA 12.78 MAE / 70% straight-up.
-</div></div>
+<h2>Every wager</h2>
+<details class="more explainbox"><summary>What is in this table</summary>
+<span class="meta">One row per settled bet: the moneyline and spread on every game,
+plus each Pixel&rsquo;s Pick and parlay. Filter by season, week, bet type or result,
+and sort by any column. Units are profit on a one-unit stake at the price the book
+posted, so a winning underdog returns more than a winning favourite.</span></details>
+<div class="controls">
+  <div class="ctl-group" id="typefilter">
+    <button class="chip active" data-f="all">All bets</button>
+    <button class="chip" data-f="Pixel">Pixel&rsquo;s Picks</button>
+    <button class="chip" data-f="Parlay">Parlays</button>
+    <button class="chip" data-f="Moneyline">Moneyline</button>
+    <button class="chip" data-f="Spread">Spread</button>
+  </div>
+  <div class="ctl-group" id="resultfilter">
+    <button class="chip active" data-r="all">Any result</button>
+    <button class="chip" data-r="win">Wins</button>
+    <button class="chip" data-r="loss">Losses</button>
+  </div>
+</div>
+<div class="controls">
+  <label class="ctl-sort">Week:<select id="weekfilter">
+    <option value="all">All weeks</option><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Week 15</option><option value="16">Week 16</option><option value="17">Week 17</option><option value="18">Week 18</option></select></label>
+  <label class="ctl-sort">Sort:<select id="ledgersort">
+    <option value="week">Most recent first</option>
+    <option value="profit">Biggest win</option>
+    <option value="profit_asc">Biggest loss</option>
+    <option value="price">Longest price</option>
+    <option value="prob">Most confident</option>
+  </select></label>
+  <span class="meta" id="ledgercount"></span>
+</div>
+<div class="tablewrap"><table class="track" id="ledger">
+<thead><tr><th>Week</th><th>Bet</th><th>Selection</th>
+<th class="num">Price</th><th class="num">Model</th><th class="num">Result</th>
+<th class="num">Units</th></tr></thead>
+<tbody></tbody></table></div>
+<div class="emptynote" hidden>No bets match these filters.</div>
+<button class="chip" id="loadmore" hidden>Show more</button>
+<script>
+(function () {
+  var rows = [], view = [], shown = 0, PAGE = 100;
+  var state = {season: null, week: 'all', type: 'all', result: 'all', sort: 'week'};
+  var tbody = document.querySelector('#ledger tbody');
+  var note = document.querySelector('.emptynote');
+  var more = document.getElementById('loadmore');
+  var count = document.getElementById('ledgercount');
+
+  var LABEL = {'Pixel': "Pixel's Pick", 'Parlay': 'Parlay board'};
+  function fmtPrice(p) { return p > 0 ? '+' + p : '' + p; }
+
+  function render(reset) {
+    if (reset) { tbody.innerHTML = ''; shown = 0; }
+    var slice = view.slice(shown, shown + PAGE);
+    var html = slice.map(function (r) {
+      var tone = r.result === 'win' ? 't-strong' : (r.result === 'loss' ? 't-bad' : 't-mid');
+      var prob = r.prob == null ? '' : Math.round(r.prob * 100) + '%';
+      return '<tr><td>' + r.week_label + ' <span class="meta">' + r.season + '</span></td>' +
+        '<td>' + (LABEL[r.type] || r.type) + '</td>' +
+        '<td>' + r.pick + ' <span class="meta">' + r.matchup + '</span></td>' +
+        '<td class="num">' + fmtPrice(r.price) + '</td>' +
+        '<td class="num meta">' + prob + '</td>' +
+        '<td class="num ' + tone + '">' + r.result.toUpperCase() + '</td>' +
+        '<td class="num ' + (r.profit > 0 ? 't-strong' : (r.profit < 0 ? 't-bad' : 't-mid')) +
+        '">' + (r.profit > 0 ? '+' : '') + r.profit.toFixed(2) + 'u</td></tr>';
+    }).join('');
+    tbody.insertAdjacentHTML('beforeend', html);
+    shown += slice.length;
+    more.hidden = shown >= view.length;
+    note.hidden = view.length !== 0;
+    var units = view.reduce(function (a, r) { return a + r.profit; }, 0);
+    var w = view.filter(function (r) { return r.result === 'win'; }).length;
+    var l = view.filter(function (r) { return r.result === 'loss'; }).length;
+    count.innerHTML = view.length + ' bets &middot; ' + w + '-' + l + ' &middot; ' +
+      (units > 0 ? '+' : '') + units.toFixed(1) + ' units';
+  }
+
+  function apply() {
+    view = rows.filter(function (r) {
+      return (state.season == null || r.season === state.season)
+        && (state.week === 'all' || String(r.week) === state.week)
+        && (state.type === 'all' || r.type === state.type)
+        && (state.result === 'all' || r.result === state.result);
+    });
+    var s = state.sort;
+    view.sort(function (a, b) {
+      if (s === 'week') return (b.season - a.season) || (b.week - a.week);
+      if (s === 'profit') return b.profit - a.profit;
+      if (s === 'profit_asc') return a.profit - b.profit;
+      if (s === 'price') return b.price - a.price;
+      return (b.prob || 0) - (a.prob || 0);
+    });
+    render(true);
+  }
+
+  function bindChips(id, key) {
+    document.querySelectorAll('#' + id + ' .chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('#' + id + ' .chip').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        state[key] = btn.dataset.f || btn.dataset.r;
+        apply();
+      });
+    });
+  }
+
+  fetch('tracking-nfl.json').then(function (r) { return r.json(); })
+    .then(function (data) {
+      rows = data;
+      var sel = document.getElementById('scopeseason');
+      state.season = sel ? parseInt(sel.value, 10) : null;
+      apply();
+    })
+    .catch(function () { if (count) count.textContent = 'results unavailable'; });
+
+  bindChips('typefilter', 'type');
+  bindChips('resultfilter', 'result');
+  document.getElementById('weekfilter').addEventListener('change', function (e) {
+    state.week = e.target.value; apply();
+  });
+  document.getElementById('ledgersort').addEventListener('change', function (e) {
+    state.sort = e.target.value; apply();
+  });
+  more.addEventListener('click', function () { render(false); });
+
+  var season = document.getElementById('scopeseason');
+  if (season) season.addEventListener('change', function (e) {
+    state.season = parseInt(e.target.value, 10);
+    document.querySelectorAll('.scoped').forEach(function (el) {
+      el.hidden = el.dataset.season && el.dataset.season !== e.target.value;
+    });
+    apply();
+  });
+})();
+</script>
 <footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
 ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
 </div></body></html>
