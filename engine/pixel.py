@@ -34,6 +34,8 @@ MIN_EDGE_POINTS = 1.5         # a spread leg needs a real disagreement
 # disagreeable buckets. Large disagreement is a symptom of the model missing
 # something the market knows, so it is disqualifying rather than exciting.
 MAX_DISAGREEMENT = 0.15
+# a confidence-only fallback pick may be at most this far below fair value
+FAIR_PRICE_TOLERANCE = -0.02
 
 
 def american_to_decimal(odds: float) -> float:
@@ -188,8 +190,18 @@ def select(preds: pd.DataFrame, margin_sigma: float) -> dict | None:
     partners = candidate_legs(preds, margin_sigma, relaxed=True)
 
     combo = _best_combo(sorted(valued, key=lambda l: -l["ev"])[:8], partners)
+    fair_priced = False
     if combo is None:
+        # no leg carries a price edge this week: fall back to the most
+        # confident legs, but only if the ticket is at least fairly priced
+        # by the model's own numbers, and say so on the card
         combo = _best_combo(sorted(strict, key=lambda l: -l["prob"])[:8], partners)
+        if combo is not None:
+            dec = math.prod(leg["decimal"] for leg in combo)
+            joint = math.prod(leg["prob"] for leg in combo)
+            if joint * (dec - 1.0) - (1.0 - joint) < FAIR_PRICE_TOLERANCE:
+                combo = None
+            fair_priced = True
     if combo is None:
         return None
 
@@ -202,6 +214,7 @@ def select(preds: pd.DataFrame, margin_sigma: float) -> dict | None:
         "prob": joint,
         "ev": joint * (dec - 1.0) - (1.0 - joint),
         "is_parlay": len(combo) > 1,
+        "fair_priced": fair_priced,
     }
 
 
@@ -269,7 +282,11 @@ BOARD_MIN_LEGS = 2
 # The board wants more legs to work with than the headline pick does, so it
 # takes a slightly lower confidence floor. Large disagreements with the price
 # stay disqualified here too.
-BOARD_MIN_PROB = 0.55
+# Backtested 2023-2025: raising the floor from 0.55 to 0.65 took the NFL
+# board from 39% hit / -4% ROI to 45% / +9%, and the college board from
+# 34% / -24% to 37% / -18%. Plus-money parlays cannot hit much above 50%
+# by construction; the floor keeps the weakest legs off them.
+BOARD_MIN_PROB = 0.65
 
 # A parlay needs several games, so single-game slots (Thursday, Monday) are
 # combined into one primetime ticket rather than left unbuildable.
@@ -285,18 +302,19 @@ NCAA_SLOTS = [
 ]
 
 
-def _weekday(ts) -> int | None:
+def _weekday(ts, real: bool = True) -> int | None:
     """Kickoff weekday as the game is played locally, where Monday is 0.
 
-    The two feeds differ: the NFL schedule gives a local game *date* stamped
-    at midnight, while the college feed gives a real kickoff timestamp in
-    UTC. Converting the former to Eastern would roll every game back a day —
-    Sunday games would read as Saturday — so a midnight stamp is treated as
-    an already-local date and left alone.
+    With a real kickoff instant this is simply the Eastern weekday. The
+    fallback handles the NFL schedule's bare date (stamped at midnight),
+    which must not be converted — doing so would roll Sunday games back to
+    Saturday. It is only used when no real kickoff column is available;
+    applying it to real timestamps misfiles college games that kick at
+    exactly 00:00 UTC (8 PM Eastern on a Saturday).
     """
     if pd.isna(ts):
         return None
-    if ts.hour == 0 and ts.minute == 0:
+    if not real and ts.hour == 0 and ts.minute == 0:
         return ts.weekday()
     try:
         return ts.tz_convert("US/Eastern").weekday()
@@ -319,8 +337,13 @@ def build_board(preds: pd.DataFrame, margin_sigma: float, league: str,
         return []
 
     exclude = set(exclude_game_ids or ())
-    kicks = dict(zip(preds["game_id"], pd.to_datetime(preds["gameday"], utc=True,
-                                                      errors="coerce")))
+    real = "kickoff" in preds.columns
+    if real:
+        kicks = dict(zip(preds["game_id"], pd.to_datetime(preds["kickoff"], utc=True,
+                                                          errors="coerce")))
+    else:
+        kicks = dict(zip(preds["game_id"], pd.to_datetime(preds["gameday"], utc=True,
+                                                          errors="coerce")))
     slots = NFL_SLOTS if league == "nfl" else NCAA_SLOTS
     board = []
     used = set(exclude)
@@ -328,7 +351,7 @@ def build_board(preds: pd.DataFrame, margin_sigma: float, league: str,
     for label, weekdays, max_parlays in slots:
         pool = [leg for leg in legs
                 if leg["game_id"] not in used
-                and _weekday(kicks.get(leg["game_id"])) in weekdays]
+                and _weekday(kicks.get(leg["game_id"]), real) in weekdays]
         # most confident first: this is a confidence board, not a value board
         pool.sort(key=lambda l: -l["prob"])
 

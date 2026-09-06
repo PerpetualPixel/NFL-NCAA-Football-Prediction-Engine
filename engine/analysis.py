@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from . import grades, odds
+from . import grades, odds, teams, weather
 
 # Unit rating thresholds in EPA/play, roughly: 0.05 is a noticeable edge,
 # 0.10 is a strong unit, 0.15+ is elite (or, negative, a real liability).
@@ -118,9 +118,7 @@ def game_script(row: pd.Series, league: str) -> list[str]:
     if pd.notna(row.get("spread_line")):
         edge = float(row.pred_margin - row.spread_line)
         side = home if edge > 0 else away
-        market_line = odds.format_line(
-            home if row.spread_line > 0 else away, row.spread_line
-        )
+        market_line = odds.format_market(home, away, row.spread_line)
         if abs(edge) >= odds.VALUE_EDGE_PTS:
             verdict = (f"That is a real disagreement: the model wants {abs(edge):.1f} more "
                        f"points on {side} than the market is pricing, which is where the "
@@ -213,12 +211,6 @@ def availability_note(row: pd.Series) -> str:
             f"<strong>{healthier}</strong> is the healthier side this week by the "
             "injury report, weighted by who is actually missing"
         )
-    wind = row.get("wind", 0.0)
-    if pd.notna(wind) and wind >= 15:
-        bits.append(f"wind is forecast around {wind:.0f} mph, which historically "
-                    "suppresses the passing game")
-    elif row.get("indoors"):
-        bits.append("played indoors, so weather is not a factor")
     if not bits:
         return ("Both sides are starting their usual quarterbacks with no notable "
                 "injury gap.")
@@ -465,12 +457,190 @@ def line_movement(row: pd.Series) -> str:
     current = row.get("spread_line")
     if pd.isna(opened) or pd.isna(current):
         return ""
+    opened, current = odds.to_spread(opened), odds.to_spread(current)
     move = current - opened
+    home, away = row.home_team, row.away_team
     if abs(move) < 0.5:
         return (f"The line has not moved off its open of "
-                f"{odds.format_line(row.home_team, opened)} &mdash; the market is settled "
+                f"{odds.format_market(home, away, opened)} &mdash; the market is settled "
                 "on this number.")
-    toward = row.home_team if move > 0 else row.away_team
-    return (f"The line opened at {odds.format_line(row.home_team, opened)} and now sits at "
-            f"{odds.format_line(row.home_team, current)}, {abs(move):.1f} points toward "
+    toward = home if move > 0 else away
+    return (f"The line opened at {odds.format_market(home, away, opened)} and now sits at "
+            f"{odds.format_market(home, away, current)}, {abs(move):.1f} points toward "
             f"<strong>{toward}</strong>. Money has been coming in on that side.")
+
+
+# ---------------------------------------------------------------------------
+# The rest of the picture: score, conditions, who is out, recent form, and
+# the honest case for the confidence tier
+# ---------------------------------------------------------------------------
+
+def projected_score(row: pd.Series) -> str:
+    """A scoreline, from the projected margin and the market total."""
+    total = row.get("total_line")
+    if pd.isna(total) or total is None:
+        return ""
+    margin = float(row.pred_margin)
+    home = (float(total) + margin) / 2.0
+    away = (float(total) - margin) / 2.0
+    return (f"Projected score: <strong>{row.home_team} {home:.0f}, {row.away_team} {away:.0f}"
+            f"</strong> against a market total of {float(total):g}.")
+
+
+def conditions_note(row: pd.Series) -> str:
+    """Forecast for kickoff where one was fetched; otherwise the venue."""
+    text = weather.describe(row)
+    if text:
+        stamp = row.get("forecast_at")
+        if isinstance(stamp, str) and stamp and not bool(row.get("indoors_venue")):
+            text += f' <span class="meta">(forecast as of {stamp[:16].replace("T", " ")} UTC)</span>'
+        return text
+    if row.get("indoors"):
+        return "Played indoors, so weather is not a factor."
+    wind = row.get("wind")
+    if pd.notna(wind) and wind >= 15:
+        return (f"Wind around {wind:.0f} mph at kickoff, enough to lean on the run "
+                "and shorten the passing game.")
+    return ""
+
+
+_STATUS_ORDER = {"Out": 0, "Doubtful": 1, "Questionable": 2}
+_POSITION_PRIORITY = {"QB": 0, "WR": 1, "RB": 1, "TE": 2, "T": 2, "G": 3, "C": 3,
+                      "CB": 2, "EDGE": 2, "DE": 2, "OLB": 2, "S": 3, "LB": 3, "DT": 3,
+                      "K": 4, "P": 5, "LS": 6}
+
+
+def injury_report(row: pd.Series, reports: pd.DataFrame | None, league: str) -> list[tuple[str, str]]:
+    """(team, sentence) for each side's game-status designations this week,
+    named, most important positions first."""
+    if league != "nfl" or reports is None or reports.empty:
+        return []
+    if "report_status" not in reports.columns:
+        return []
+    wk = reports[(reports["season"] == row.get("season")) & (reports["week"] == row.get("week"))]
+    if wk.empty:
+        return []
+    out = []
+    for key, team in ((row.get("home_key", row.home_team), row.home_team),
+                      (row.get("away_key", row.away_team), row.away_team)):
+        side = wk[(wk["team"] == key) & wk["report_status"].notna()].copy()
+        if side.empty:
+            out.append((team, "no game-status designations on the final report."))
+            continue
+        side["_s"] = side["report_status"].map(_STATUS_ORDER).fillna(3)
+        side["_p"] = side["position"].map(_POSITION_PRIORITY).fillna(4)
+        side = side.sort_values(["_s", "_p"])
+        groups = []
+        for status in ("Out", "Doubtful", "Questionable"):
+            names = []
+            for r in side[side["report_status"] == status].head(6).itertuples():
+                inj = getattr(r, "report_primary_injury", None)
+                inj = f", {str(inj).lower()}" if isinstance(inj, str) and inj else ""
+                names.append(f"<strong>{r.full_name}</strong> ({r.position}{inj})")
+            extra = (side["report_status"] == status).sum() - len(names)
+            if names:
+                groups.append(f"{status}: " + ", ".join(names)
+                              + (f" and {extra} more" if extra > 0 else ""))
+        out.append((team, "; ".join(groups) + "." if groups else "no designations."))
+    return out
+
+
+def recent_form(row: pd.Series, games: pd.DataFrame | None, league: str,
+                last: int = 4) -> list[tuple[str, str]]:
+    """(team, sentence) with each side's last few results, most recent first."""
+    if games is None or games.empty:
+        return []
+    season, week = row.get("season"), row.get("week")
+    done = games[games["completed"].astype(bool) & games["margin"].notna()]
+    before = done[(done["season"] < season) | ((done["season"] == season) & (done["week"] < week))]
+    out = []
+    for key, team in ((row.get("home_key", row.home_team), row.home_team),
+                      (row.get("away_key", row.away_team), row.away_team)):
+        mine = before[(before["home_team"] == key) | (before["away_team"] == key)]
+        mine = mine.sort_values(["season", "week"]).tail(last)
+        if mine.empty:
+            continue
+        bits, wins = [], 0
+        for g in mine.itertuples():
+            at_home = g.home_team == key
+            opp = g.away_team if at_home else g.home_team
+            us = g.home_score if at_home else g.away_score
+            them = g.away_score if at_home else g.home_score
+            if pd.isna(us) or pd.isna(them):
+                continue
+            won = us > them
+            wins += int(won)
+            tag = "W" if won else ("T" if us == them else "L")
+            opp_name = teams.short_name(opp, league) if isinstance(opp, str) else str(opp)
+            where = "vs" if at_home else "@"
+            stale = f" ({int(g.season)})" if g.season != season else ""
+            bits.append(f"<span class=\"form-{tag.lower()}\">{tag}</span> {int(us)}&ndash;{int(them)} "
+                        f"{where} {opp_name}{stale}")
+        if not bits:
+            continue
+        n = len(bits)
+        margin = (mine.apply(lambda g: (g.home_score - g.away_score) if g.home_team == key
+                             else (g.away_score - g.home_score), axis=1)).mean()
+        out.append((team, f"{wins}-{n - wins} in the last {n}, average margin {margin:+.1f}: "
+                          + ", ".join(reversed(bits)) + "."))
+    return out
+
+
+def confidence_case(row: pd.Series, tier_rates: dict | None, league: str) -> list[str]:
+    """Why the moneyline carries the tier it does, in the tracker's own
+    numbers rather than adjectives."""
+    from . import pixel, tracking
+
+    tier = row.get("ml_tier") or "lean"
+    cal = row.get("ml_cal")
+    prob = float(cal) if pd.notna(cal) else float(row.get("ml_prob", 0.5))
+    price = row.get("ml_price")
+    pick = row.get("ml_pick", "")
+    paras = []
+
+    if pd.notna(price) and abs(price) >= 100:
+        implied = pixel.implied_probability(float(price))
+        gap = prob - implied
+        if gap >= 0.02:
+            price_txt = (f"The price ({pixel.format_american(float(price))}) implies {implied:.0%}, "
+                         f"so the model sees {gap:+.0%} of value on top of the confidence.")
+        elif gap <= -0.03:
+            price_txt = (f"The price ({pixel.format_american(float(price))}) implies {implied:.0%}, "
+                         f"more than the model gives &mdash; the confidence is real but the "
+                         "book is charging for it.")
+        else:
+            price_txt = (f"The price ({pixel.format_american(float(price))}) implies {implied:.0%}, "
+                         "essentially the model's number: a fair price, no edge either way.")
+    else:
+        price_txt = "No moneyline is posted yet, so this is not graded as a bet."
+
+    label = tracking.TIER_LABELS.get(tier, tier.title())
+    paras.append(f"<strong>{pick}</strong> is a <strong>{label}</strong>: the calibrated "
+                 f"chance of winning is <strong>{prob:.0%}</strong>. {price_txt}")
+
+    rec = (tier_rates or {}).get(tier)
+    if rec and rec.get("decided", 0) >= 20:
+        verdict = ("a low-risk play that pays little" if tier == "lock"
+                   else "a solid play at a price that already knows it" if tier == "pick"
+                   else "a coin flip with a small tilt" if tier == "lean"
+                   else "no play")
+        paras.append(
+            f"Since 2023, {league.upper() if league == 'nfl' else 'college'} moneylines the model "
+            f"rated {'as a Pass' if tier == 'pass' else 'as ' + label + 's'} have gone "
+            f"<strong>{rec['wins']}-{rec['losses']}</strong> "
+            f"({rec['hit_rate']:.0%}), returning {rec['roi']:+.1%} per unit staked &mdash; "
+            f"{verdict}.")
+    if tier == "pass":
+        paras.append("The model cannot separate these two: it still shows a side so the "
+                     "reasoning is visible, but this is not put forward as a pick.")
+
+    waiting = row.get("waiting_on")
+    stage = row.get("release_stage")
+    if stage == "lean" and isinstance(waiting, str) and waiting:
+        paras.append(f"This is a lean. It locks once the {waiting} is in, and no later than "
+                     "two hours before kickoff; the number can still move until then.")
+    elif stage == "locked":
+        reason = row.get("lock_reason") or ""
+        paras.append(f"Locked ({reason}). This is the pick of record: it will not change "
+                     "and it is what the tracker grades.")
+    return paras

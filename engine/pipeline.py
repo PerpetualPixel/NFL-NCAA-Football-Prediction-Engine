@@ -35,12 +35,15 @@ def load_league_inputs(
     if league == "nfl":
         pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
         unit_stats = nfl_unit_game_stats(pbp)
+        injuries = ingest.load_nfl_injuries(seasons, refresh_latest=refresh)
         availability = {
             "qb_values": nfl_qb_game_value(pbp),
             "injury": nfl_injury_burden(
-                ingest.load_nfl_injuries(seasons, refresh_latest=refresh),
-                ingest.load_nfl_snaps(seasons, refresh_latest=refresh),
+                injuries, ingest.load_nfl_snaps(seasons, refresh_latest=refresh),
             ),
+            # the raw reports, so the site can tell when a week's final
+            # (game-status) report has been filed
+            "injury_reports": injuries,
         }
         if with_players:
             season = _player_season(pbp)
@@ -198,8 +201,9 @@ def load_games(league: str, refresh: bool = False) -> pd.DataFrame:
             "home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds",
             "home_qb_name", "away_qb_name", "home_qb_id", "away_qb_id",
             "home_coach", "away_coach",
-            "div_game", "roof", "temp", "wind",
+            "div_game", "roof", "temp", "wind", "stadium", "espn",
         ]
+        keep = [c for c in keep if c in df.columns]
         return df[keep].sort_values(["season", "week", "gameday"]).reset_index(drop=True)
 
     import datetime as _dt
@@ -461,7 +465,6 @@ def build_walk_forward_features(
                 row["rest_diff"] = 0.0
             row.update(_availability_features(g, qb_now, starters, injury_now))
             row.update(_weather_features(g))
-            row["wind_pass"] = row["wind"] / 10.0 * row.get("net_pass_epa", 0.0)
             for metric in ["pass_epa", "rush_epa"]:
                 off_key, def_key = f"off_{metric}", f"def_{metric}"
                 if off_key in units and all(
@@ -478,6 +481,9 @@ def build_walk_forward_features(
                     # unit ratings cover a different set of teams than the
                     # power ratings, so ranks need their own denominator
                     row["unit_n"] = len(units[off_key])
+            # wind only matters through the passing matchup, so the
+            # interaction is formed once that matchup is known
+            row["wind_pass"] = row["wind"] / 10.0 * row.get("net_pass_epa", 0.0)
             rows.append(row)
     return pd.DataFrame(rows)
 

@@ -3,40 +3,67 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NCAA Week 15 2023 — Gridiron Engine</title><style>
 :root {
-  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
-  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
-  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+  --bg: #f3f5f8; --card: #ffffff; --sunken: #f6f8fb; --ink: #131820;
+  --muted: #5f6b7a; --line: #e2e7ee; --accent: #1f4fd8; --accent-ink: #ffffff;
+  --accent-soft: rgba(31, 79, 216, 0.10);
+  --good: #0f7a57; --good-soft: rgba(15, 122, 87, 0.12);
+  --warn: #b25c07; --warn-soft: rgba(178, 92, 7, 0.12);
+  --bad: #b8262c; --bad-soft: rgba(184, 38, 44, 0.12);
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 14px rgba(16, 24, 40, 0.05);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
-    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
-    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+    --bg: #0b0e12; --card: #151a21; --sunken: #10141a; --ink: #e8ebef;
+    --muted: #97a1ae; --line: #252c36; --accent: #7fa6ff; --accent-ink: #0b0e12;
+    --accent-soft: rgba(127, 166, 255, 0.14);
+    --good: #3ddc9b; --good-soft: rgba(61, 220, 155, 0.14);
+    --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, 0.14);
+    --bad: #ff7b7b; --bad-soft: rgba(255, 123, 123, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
-  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+.wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 72px; }
 header.site {
-  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
-  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
 }
-header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
-header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site h1 {
+  font-size: 1.3rem; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 9px;
+}
+header.site h1 a { color: inherit; text-decoration: none; }
+.mark {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+header.site nav { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
 header.site nav a {
-  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
-  padding: 4px 10px; border-radius: 6px;
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.86rem;
+  padding: 6px 11px; border-radius: 999px;
 }
-header.site nav a:hover { color: var(--accent); background: var(--sunken); }
-.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
-h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+header.site nav a:hover { color: var(--accent); background: var(--accent-soft); }
+header.site nav a.active { color: var(--accent-ink); background: var(--accent); }
+.stamp {
+  color: var(--muted); font-size: 0.78rem; margin: 10px 0 22px; line-height: 1.5;
+}
+.stamp strong { color: var(--ink); }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
 .card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-  padding: 16px 18px; margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
 }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .card .teams { font-size: 1.05rem; font-weight: 700; }
 .card .pick { margin: 6px 0 2px; }
 .card .pick strong { color: var(--accent); }
@@ -68,8 +95,9 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
 .bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
 .bet {
   flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
-  border-radius: 8px; padding: 9px 11px;
+  border-radius: 10px; padding: 10px 12px;
 }
+.bet:first-child { border-color: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .betlabel {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--muted); font-weight: 700;
@@ -124,7 +152,7 @@ ul.factors { padding-left: 0; }
   padding: 9px 12px; border-bottom: 1px solid var(--line);
   color: var(--ink); text-decoration: none;
 }
-.srow:hover { background: rgba(255,255,255,0.04); }
+.srow:hover { background: var(--accent-soft); }
 .steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .steam {
   display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
@@ -174,17 +202,60 @@ table.track a:hover { color: var(--accent); }
   font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
   padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
 }
-.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-lock { color: var(--accent-ink); background: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-pick { color: var(--good); background: var(--good-soft); border-color: transparent; font-weight: 800; }
+.tag-lean { color: var(--muted); background: var(--sunken); border-color: transparent; }
+.tag-pass { color: var(--muted); border-style: dashed; }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
-.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
-.tag-lean { color: var(--muted); }
+.tag-key { color: var(--warn); border-color: var(--warn); }
+.oddssrc { color: var(--muted); font-size: 0.78rem; }
+.form-w { color: var(--good); font-weight: 800; }
+.form-l { color: var(--bad); font-weight: 800; }
+.form-t { color: var(--muted); font-weight: 800; }
+.lgtag.live { color: var(--good); border-color: var(--good); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
 .hero.card {
-  display: block; text-decoration: none; color: inherit;
-  border: 2px solid var(--accent); padding: 18px 20px;
+  display: block; text-decoration: none; color: inherit; position: relative;
+  border: 1px solid var(--accent); padding: 20px 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-soft), var(--card) 60%);
 }
+.hero.card:hover { transform: translateY(-1px); }
+.ladder { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+.rung { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: var(--shadow); }
+.rung .tiletitle { display: flex; justify-content: space-between; gap: 6px; }
+.rung .tilebig { font-size: 1.3rem; }
+.rung .tilesub { line-height: 1.35; }
+.wknav {
+  position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; padding: 8px 0; margin-bottom: 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.86rem;
+  padding: 6px 10px; border-radius: 8px; background: var(--accent-soft);
+}
+.wknav-btn.disabled { color: var(--muted); background: var(--sunken); }
+.wksel { color: var(--muted); font-size: 0.84rem; }
+.wksel select {
+  font: inherit; font-size: 0.86rem; margin-left: 6px; padding: 5px 8px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.weekhead { font-size: 0.95rem; color: var(--muted); margin: -4px 0 14px; }
+footer { color: var(--muted); font-size: 0.78rem; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); }
+.weekgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.9rem; }
+.wt-detail { font-size: 0.78rem; margin-top: 2px; }
+.upcoming { color: var(--accent); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.leagues .card { text-decoration: none; color: inherit; }
+.leagues .card:hover { border-color: var(--accent); }
 .herolabel {
   font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--accent);
@@ -196,8 +267,10 @@ table.track a:hover { color: var(--accent); }
   display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
   text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
 }
-.stage.locked { background: var(--good); color: #fff; }
-.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
+.stage.locked { background: var(--good); color: var(--accent-ink); }
+.stage.leanstage { background: var(--warn-soft); color: var(--warn); }
+.stage.started { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); }
+.stage.noresult { background: var(--bad-soft); color: var(--bad); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -270,35 +343,41 @@ ul.factors li { margin-bottom: 8px; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </style></head>
 <body><div class="wrap">
-<header class="site"><h1>Gridiron Engine</h1>
-<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<header class="site"><h1><span class="mark"></span><a href="index.html">Gridiron Engine</a></h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAAF</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:12 UTC</strong>, hourly
-&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<script>(function(){var p=(location.pathname.split('/').pop()||'index.html');
+document.querySelectorAll('header.site nav a').forEach(function(a){var h=a.getAttribute('href');
+if(h===p||(h==='nfl.html'&&/^nfl-/.test(p))||(h==='ncaa.html'&&/^ncaa-/.test(p)))a.classList.add('active');});})();</script>
+<div class="stamp">Odds, injuries and forecasts as of <strong>Sun Sep 6, 2:34 PM ET</strong>
+&middot; rebuilt twice an hour (GitHub may delay a run) &middot; free public data
+(nflverse / sportsdataverse / ESPN / Open-Meteo) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="ncaa-2023-w14.html">&larr; Week 14</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html">2026 season</option><option value="ncaa-2025-w01.html">2025 season</option><option value="ncaa-2024-w01.html">2024 season</option><option value="ncaa-2023-w01.html" selected>2023 season</option></select></label>
 <label class="wksel">Week:
-  <select id="weekpick"><option value="ncaa-2023-w01.html">Week 1 — 39-11</option><option value="ncaa-2023-w02.html">Week 2 — 34-13</option><option value="ncaa-2023-w03.html">Week 3 — 40-14</option><option value="ncaa-2023-w04.html">Week 4 — 48-15</option><option value="ncaa-2023-w05.html">Week 5 — 43-13</option><option value="ncaa-2023-w06.html">Week 6 — 36-13</option><option value="ncaa-2023-w07.html">Week 7 — 39-16</option><option value="ncaa-2023-w08.html">Week 8 — 34-20</option><option value="ncaa-2023-w09.html">Week 9 — 38-16</option><option value="ncaa-2023-w10.html">Week 10 — 37-25</option><option value="ncaa-2023-w11.html">Week 11 — 46-18</option><option value="ncaa-2023-w12.html">Week 12 — 48-16</option><option value="ncaa-2023-w13.html">Week 13 — 51-14</option><option value="ncaa-2023-w14.html">Week 14 — 7-3</option><option value="ncaa-2023-w15.html" selected>Week 15 — 1-0</option></select>
+  <select id="weekpick"><option value="ncaa-2023-w01.html">Week 1 — 31-11</option><option value="ncaa-2023-w02.html">Week 2 — 28-13</option><option value="ncaa-2023-w03.html">Week 3 — 35-12</option><option value="ncaa-2023-w04.html">Week 4 — 47-12</option><option value="ncaa-2023-w05.html">Week 5 — 40-12</option><option value="ncaa-2023-w06.html">Week 6 — 35-12</option><option value="ncaa-2023-w07.html">Week 7 — 35-15</option><option value="ncaa-2023-w08.html">Week 8 — 33-17</option><option value="ncaa-2023-w09.html">Week 9 — 34-14</option><option value="ncaa-2023-w10.html">Week 10 — 33-23</option><option value="ncaa-2023-w11.html">Week 11 — 43-17</option><option value="ncaa-2023-w12.html">Week 12 — 47-13</option><option value="ncaa-2023-w13.html">Week 13 — 48-13</option><option value="ncaa-2023-w14.html">Week 14 — 7-3</option><option value="ncaa-2023-w15.html" selected>Week 15 — 0-0</option></select>
 </label>
 <span class="wknav-btn disabled">Next &rarr;</span>
 </div>
 <h2>Week 15 &mdash; 2023</h2>
-<div class="weekhead">1-0 on the moneyline, 1-0 against the spread</div>
+<div class="weekhead">0-0 on the moneyline, 1-0 against the spread</div>
+<div class="ladder"><div class="rung"><div class="tiletitle"><span>Locks</span><span>0 this week</span></div><div class="tilebig t-strong">91%</div><div class="tilesub meta">131-13 since 2023 &middot; -1.8% ROI<br>Heavy favourites the model backs at 85%+. Win almost always, pay little.</div></div><div class="rung"><div class="tiletitle"><span>Picks</span><span>0 this week</span></div><div class="tilebig t-strong">79%</div><div class="tilesub meta">177-48 since 2023 &middot; -2.9% ROI<br>Confident sides at 70&ndash;85%. The everyday play.</div></div><div class="rung"><div class="tiletitle"><span>Leans</span><span>1 this week</span></div><div class="tilebig t-strong">64%</div><div class="tilesub meta">124-69 since 2023 &middot; -5.2% ROI<br>A tilt, not a bet. Shown with full reasoning.</div></div><div class="rung"><div class="tiletitle"><span>Pass</span><span>0 this week</span></div><div class="tilebig t-mid">53%</div><div class="tilesub meta">64-57 since 2023 &middot; +5.0% ROI<br>Coin flips. No play.</div></div></div>
 <section class="sched"><div class="schedhead"><span>Week 15 of 15</span><span>1 games</span></div><div class="schedgrid"><a class="srow" href="#g-401520445"><div class="steams"><div class="steam lost"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy<span class="sscore">11</span></div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army<span class="sscore">17</span></div></div><div class="swhen"><strong>Final</strong></div></a></div></section>
 
 
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
-    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
-    <button class="chip" data-filter="pick">Picks (value)</button>
-    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Pick</button>
     <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pick">Picks</button>
+    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pass">Pass</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
-    <button class="chip" data-filter="upset">Upset picks</button>
+    <button class="chip" data-filter="upset">Upsets</button>
   </div>
   <label class="ctl-sort">Sort:
     <select id="sortby">
@@ -311,30 +390,32 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" id="g-401520445" data-kick="1702152000" data-prob="0.5686" data-margin="2.850" data-edge="0.850" data-tags="lean pickem">
+<div class="card game" id="g-401520445" data-kick="1702152000" data-prob="0.5676" data-margin="2.810" data-edge="0.810" data-tags="lean pickem">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy Midshipmen
 &nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army Black Knights (neutral site)</div>
-<div class="kick">Sat, Dec 9</div></div>
+<div class="kick">Sat, Dec 9 &middot; 3:00 PM ET</div></div>
 <div class="bets">
-<div class="bet"><div class="betlabel">Moneyline pick</div>
-<div class="betvalue">Army Black Knights <span class="price">-145</span></div>
-<div class="betnote meta">57% to win outright</div><span class="outcome t-strong">WIN</span></div>
+<div class="bet"><div class="betlabel">Moneyline pick &middot; Lean</div>
+<div class="betvalue">Army Black Knights <span class="price">no line</span></div>
+<div class="betnote meta">57% to win &middot; fair price -145 &middot; not graded</div></div>
 <div class="bet"><div class="betlabel">Projected line</div>
 <div class="betvalue">Army Black Knights -3</div>
 <div class="betnote meta">model projection</div></div>
-<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">Army Black Knights -2.0</div><div class="betnote meta">0.8 pt edge vs market</div><span class="outcome t-strong">WIN</span></div></div>
+<div class="bet"><div class="betlabel">Spread lean</div><div class="betvalue">Army Black Knights -2</div><div class="betnote meta">0.8 pt edge vs market (&minus;110 assumed)</div><span class="outcome t-strong">WIN</span></div></div>
 <div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-pickem">pick'em</span><span class="tag tag-key">near 3</span></div>
-<div class="meta">Market line: Army Black Knights -2 &middot; <span class="meta">model +0.8 toward Army Black Knights</span></div><div class="meta">Final: Army Black Knights 17&ndash;11 &middot; <span class="result-hit">HIT</span></div><details class="more">
-<summary>More info &mdash; full analysis</summary>
+<div class="meta">Market line: Army Black Knights -2 &middot; <span class="meta">model 0.8 toward Army Black Knights</span></div><div class="meta">Final: Navy Midshipmen 11 &ndash; Army Black Knights 17 &middot; <span class="result-hit">HIT</span></div><details class="more">
+<summary>Full breakdown</summary>
 <div class="analysis">
-<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.6 points between them on raw strength. Overall, Army Black Knights is the 86th-rated team in the league (weak) and Navy Midshipmen is 102nd (a real weakness). Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>Army Black Knights by 3</strong> and gives them a 57% chance to win outright.</p><p>On how it plays out: neither side owns a clear schematic edge &mdash; the unit ratings are close enough that field position and turnovers likely decide it. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Army Black Knights -2. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
-<h4>Players to watch</h4><ul class="factors"><li><strong>Army Black Knights:</strong> QB <strong>Cale Hellums</strong> has been carrying the offense, adding roughly +27.0 points a game over an average quarterback; lead back <strong>Noah Short</strong> has been efficient.</li><li><strong>Navy Midshipmen:</strong> QB <strong>Blake Horvath</strong> has been carrying the offense, adding roughly +25.9 points a game over an average quarterback; the passing game runs through <strong>Eli Heidenreich</strong>; lead back <strong>Alex Tecza</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Navy Midshipmen passing vs Army Black Knights pass defense</span><span class="fverdict t-bad">a clear edge</span></div><div class="ftext">Navy Midshipmen's passing attack grades <strong>F</strong> (134th of 134); Army Black Knights's pass defense grades <strong>D+</strong> (111th of 134). That is a clear edge for <strong>Army Black Knights</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Army Black Knights passing vs Navy Midshipmen pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Army Black Knights's passing attack grades <strong>F</strong> (132nd of 134); Navy Midshipmen's pass defense grades <strong>F</strong> (128th of 134). That is a slight edge for <strong>Navy Midshipmen</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Army Black Knights running vs Navy Midshipmen run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Army Black Knights's running attack grades <strong>C</strong> (80th of 134); Navy Midshipmen's run defense grades <strong>A-</strong> (27th of 134). That is essentially even for <strong>Navy Midshipmen</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Navy Midshipmen running vs Army Black Knights run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Navy Midshipmen's running attack grades <strong>F</strong> (126th of 134); Army Black Knights's run defense grades <strong>D+</strong> (103rd of 134). That is essentially even for <strong>Army Black Knights</strong>.</div></li></ul>
-<h4>Availability &amp; conditions</h4><p class="ftext">Both sides are starting their usual quarterbacks with no notable injury gap.</p>
-<h4>Who gets the ball</h4><div class="usageteam"><h5>Army Black Knights</h5><p class="ftext"><strong>Through the air:</strong> <strong>Noah Short</strong> commands 42% of the receptions (2.0 catches, 23 yards a game). Behind him, <strong>Bradyn Anderson</strong> commands 23% of the receptions (1.1 catches, 29 yards a game); <strong>Samari Howard</strong> commands 19% of the receptions (0.9 catches, 11 yards a game). Expect Noah Short to see the ball early and often. The Navy Midshipmen pass defence grades <strong>F</strong> (128th of 134), so this group should be tested repeatedly.</p><p class="ftext"><strong>On the ground:</strong> <strong>Cale Hellums</strong> takes 43% of the carries (23.2 carries, 93 yards a game). <strong>Noah Short</strong> takes 13% of the carries (7.1 carries, 38 yards a game) in a change-of-pace role. They run into a front that holds up well &mdash; Navy Midshipmen grades <strong>A-</strong> against the run (27th of 134).</p></div><div class="usageteam"><h5>Navy Midshipmen</h5><p class="ftext"><strong>Through the air:</strong> <strong>Eli Heidenreich</strong> commands 47% of the receptions (3.6 catches, 71 yards a game). Behind him, <strong>Brandon Chatman</strong> commands 19% of the receptions (1.4 catches, 13 yards a game); <strong>Alex Tecza</strong> commands 12% of the receptions (0.9 catches, 9 yards a game). Expect Eli Heidenreich to see the ball early and often. The Army Black Knights pass defence grades <strong>D+</strong> (111th of 134), so this group should be tested repeatedly.</p><p class="ftext"><strong>On the ground:</strong> <strong>Blake Horvath</strong> takes 38% of the carries (17.0 carries, 99 yards a game). <strong>Alex Tecza</strong> takes 26% of the carries (11.6 carries, 60 yards a game), so this is a committee rather than a bell cow. They run into a defence that has been run on all year &mdash; Army Black Knights grades <strong>D+</strong> against the run (103rd of 134).</p></div>
+<h4>Why this is a Lean</h4><p class="ftext"><strong>Army Black Knights</strong> is a <strong>Lean</strong>: the calibrated chance of winning is <strong>57%</strong>. No moneyline is posted yet, so this is not graded as a bet.</p><p class="ftext">Since 2023, college moneylines the model rated as Leans have gone <strong>124-69</strong> (64%), returning -5.2% per unit staked &mdash; a coin flip with a small tilt.</p><p class="ftext">Locked (). This is the pick of record: it will not change and it is what the tracker grades.</p>
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 2.6 points between them on raw strength. Overall, Army Black Knights is the 86th-rated team in the league (weak) and Navy Midshipmen is 102nd (a real weakness). Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>Army Black Knights by 3</strong> and gives them a 57% chance to win outright.</p><p>Projected score: <strong>Army Black Knights 15, Navy Midshipmen 13</strong> against a market total of 28.</p><p>On how it plays out: neither side owns a clear schematic edge &mdash; the unit ratings are close enough that field position and turnovers likely decide it. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at Army Black Knights -2. The model and the market are essentially in agreement here, which usually means no edge worth chasing.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Quarterbacks &amp; availability</h4><p class="ftext">Both sides are starting their usual quarterbacks with no notable injury gap.</p>
+<h4>Recent form</h4><ul class="factors"><li><strong>Army Black Knights:</strong> 3-1 in the last 4, average margin +5.8: <span class="form-w">W</span> 28&ndash;21 vs Coastal Carolina, <span class="form-w">W</span> 17&ndash;14 vs NON-FBS, <span class="form-w">W</span> 23&ndash;3 @ Air Force, <span class="form-l">L</span> 14&ndash;21 vs UMass.</li><li><strong>Navy Midshipmen:</strong> 2-2 in the last 4, average margin -6.0: <span class="form-l">L</span> 14&ndash;59 @ SMU, <span class="form-w">W</span> 10&ndash;0 vs East Carolina, <span class="form-w">W</span> 31&ndash;6 vs UAB, <span class="form-l">L</span> 18&ndash;32 @ Temple.</li></ul>
+<h4>Players to watch</h4><ul class="factors"><li><strong>Army Black Knights:</strong> QB <strong>Cale Hellums</strong> has been carrying the offense, adding roughly +27.0 points a game over an average quarterback; lead back <strong>Noah Short</strong> has been efficient.</li><li><strong>Navy Midshipmen:</strong> QB <strong>Blake Horvath</strong> has been carrying the offense, adding roughly +25.9 points a game over an average quarterback; the passing game runs through <strong>Eli Heidenreich</strong>; lead back <strong>Alex Tecza</strong> has been efficient.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">Navy Midshipmen passing vs Army Black Knights pass defense</span><span class="fverdict t-mid">a slight edge</span></div><div class="ftext">Navy Midshipmen's passing attack grades <strong>F</strong> (136th of 138); Army Black Knights's pass defense grades <strong>D+</strong> (115th of 138). That is a slight edge for <strong>Army Black Knights</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Army Black Knights passing vs Navy Midshipmen pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Army Black Knights's passing attack grades <strong>F</strong> (132nd of 138); Navy Midshipmen's pass defense grades <strong>F</strong> (133rd of 138). That is essentially even for <strong>Navy Midshipmen</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Army Black Knights running vs Navy Midshipmen run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Army Black Knights's running attack grades <strong>C</strong> (81st of 138); Navy Midshipmen's run defense grades <strong>A-</strong> (34th of 138). That is essentially even for <strong>Navy Midshipmen</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Navy Midshipmen running vs Army Black Knights run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Navy Midshipmen's running attack grades <strong>D</strong> (126th of 138); Army Black Knights's run defense grades <strong>D+</strong> (107th of 138). That is essentially even for <strong>Army Black Knights</strong>.</div></li></ul>
+<h4>Who gets the ball</h4><div class="usageteam"><h5>Army Black Knights</h5><p class="ftext"><strong>Through the air:</strong> <strong>Noah Short</strong> commands 42% of the receptions (2.0 catches, 23 yards a game). Behind him, <strong>Bradyn Anderson</strong> commands 23% of the receptions (1.1 catches, 29 yards a game); <strong>Samari Howard</strong> commands 19% of the receptions (0.9 catches, 11 yards a game). Expect Noah Short to see the ball early and often. The Navy Midshipmen pass defence grades <strong>F</strong> (133rd of 138), so this group should be tested repeatedly.</p><p class="ftext"><strong>On the ground:</strong> <strong>Cale Hellums</strong> takes 43% of the carries (23.2 carries, 93 yards a game). <strong>Noah Short</strong> takes 13% of the carries (7.1 carries, 38 yards a game) in a change-of-pace role. They run into a front that holds up well &mdash; Navy Midshipmen grades <strong>A-</strong> against the run (34th of 138).</p></div><div class="usageteam"><h5>Navy Midshipmen</h5><p class="ftext"><strong>Through the air:</strong> <strong>Eli Heidenreich</strong> commands 47% of the receptions (3.6 catches, 71 yards a game). Behind him, <strong>Brandon Chatman</strong> commands 19% of the receptions (1.4 catches, 13 yards a game); <strong>Alex Tecza</strong> commands 12% of the receptions (0.9 catches, 9 yards a game). Expect Eli Heidenreich to see the ball early and often. The Army Black Knights pass defence grades <strong>D+</strong> (115th of 138), so this group should be tested repeatedly.</p><p class="ftext"><strong>On the ground:</strong> <strong>Blake Horvath</strong> takes 38% of the carries (17.0 carries, 99 yards a game). <strong>Alex Tecza</strong> takes 26% of the carries (11.6 carries, 60 yards a game), so this is a committee rather than a bell cow. They run into a defence that has been run on all year &mdash; Army Black Knights grades <strong>D+</strong> against the run (107th of 138).</p></div>
 <h4>Line movement</h4><p class="ftext">The line has not moved off its open of Army Black Knights -2 &mdash; the market is settled on this number.</p>
 <h4>Unit ratings</h4><table class="units">
 <tr><th>Unit grades</th><th>Army Black Knights</th><th>Navy Midshipmen</th></tr>
-<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">132nd</span></div><div class="gbar"><i class="t-bad" style="width:2%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">134th</span></div><div class="gbar"><i class="t-bad" style="width:0%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">111th</span></div><div class="gbar"><i class="t-bad" style="width:17%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">128th</span></div><div class="gbar"><i class="t-bad" style="width:5%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">80th</span></div><div class="gbar"><i class="t-mid" style="width:41%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">126th</span></div><div class="gbar"><i class="t-bad" style="width:6%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">103rd</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-strong">A-</span><span class="grank">27th</span></div><div class="gbar"><i class="t-strong" style="width:80%"></i></div></td></tr></table>
+<tr><td class="ulabel">Passing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">132nd</span></div><div class="gbar"><i class="t-bad" style="width:4%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">136th</span></div><div class="gbar"><i class="t-bad" style="width:1%"></i></div></td></tr><tr><td class="ulabel">Pass defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D+</span><span class="grank">115th</span></div><div class="gbar"><i class="t-bad" style="width:17%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">F</span><span class="grank">133rd</span></div><div class="gbar"><i class="t-bad" style="width:4%"></i></div></td></tr><tr><td class="ulabel">Rushing offense</td><td class="gcell"><div class="gwrap"><span class="gletter t-mid">C</span><span class="grank">81st</span></div><div class="gbar"><i class="t-mid" style="width:42%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-bad">D</span><span class="grank">126th</span></div><div class="gbar"><i class="t-bad" style="width:9%"></i></div></td></tr><tr><td class="ulabel">Run defense</td><td class="gcell"><div class="gwrap"><span class="gletter t-poor">D+</span><span class="grank">107th</span></div><div class="gbar"><i class="t-poor" style="width:23%"></i></div></td><td class="gcell"><div class="gwrap"><span class="gletter t-good">A-</span><span class="grank">34th</span></div><div class="gbar"><i class="t-good" style="width:76%"></i></div></td></tr></table>
 <div class="meta gnote">Grades compare each unit to the rest of the league
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>
 </div></details>

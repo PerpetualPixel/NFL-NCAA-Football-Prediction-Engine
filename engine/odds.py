@@ -36,6 +36,13 @@ def format_line(team: str, margin: float) -> str:
     return f"{team} PK" if spread == "PK" else f"{team} -{spread}"
 
 
+def format_market(home: str, away: str, spread_line: float) -> str:
+    """The market line named for whichever side the market favours
+    (spread_line is positive when the home team is favoured)."""
+    fav = home if spread_line >= 0 else away
+    return format_line(fav, spread_line)
+
+
 def format_moneyline(win_prob: float, vig: float = 0.045) -> str:
     """Convert a win probability to an American moneyline, with a little
     vig applied so the number reads like a real book price."""
@@ -65,17 +72,22 @@ PICKEM_WIN_PROB = 0.58
 VALUE_EDGE_PTS = 2.5
 
 
-def classify(win_prob: float, edge: float | None) -> list[str]:
-    """Tags for one game: any of lock / pickem / value / upset."""
+def classify(win_prob: float, edge: float | None,
+             spread_line: float | None = None) -> list[str]:
+    """Tags for one game: any of pickem / value / upset.
+
+    `win_prob` is the home side's probability. An upset is a side the
+    *market* has as the underdog, judged from the sign of the market line
+    rather than from the model's own favourite. The "lock" tag comes from
+    the calibrated tier (tracking.tier_for), not from here."""
     tags = []
     confidence = max(win_prob, 1 - win_prob)
-    if confidence >= LOCK_WIN_PROB:
-        tags.append("lock")
-    elif confidence <= PICKEM_WIN_PROB:
+    if confidence <= PICKEM_WIN_PROB:
         tags.append("pickem")
     if edge is not None and abs(edge) >= VALUE_EDGE_PTS:
         tags.append("value")
-        # model likes the side the market has as an underdog
-        if (edge > 0) != (win_prob > 0.5):
+        market_home_fav = (spread_line > 0) if spread_line is not None else (win_prob > 0.5)
+        # model wants points on the side the market has as the underdog
+        if (edge > 0) != market_home_fav:
             tags.append("upset")
     return tags

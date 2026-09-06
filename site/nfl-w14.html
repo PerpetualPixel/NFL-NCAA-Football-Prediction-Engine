@@ -3,40 +3,67 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NFL Week 14 2026 — Gridiron Engine</title><style>
 :root {
-  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
-  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
-  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+  --bg: #f3f5f8; --card: #ffffff; --sunken: #f6f8fb; --ink: #131820;
+  --muted: #5f6b7a; --line: #e2e7ee; --accent: #1f4fd8; --accent-ink: #ffffff;
+  --accent-soft: rgba(31, 79, 216, 0.10);
+  --good: #0f7a57; --good-soft: rgba(15, 122, 87, 0.12);
+  --warn: #b25c07; --warn-soft: rgba(178, 92, 7, 0.12);
+  --bad: #b8262c; --bad-soft: rgba(184, 38, 44, 0.12);
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 14px rgba(16, 24, 40, 0.05);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
-    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
-    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+    --bg: #0b0e12; --card: #151a21; --sunken: #10141a; --ink: #e8ebef;
+    --muted: #97a1ae; --line: #252c36; --accent: #7fa6ff; --accent-ink: #0b0e12;
+    --accent-soft: rgba(127, 166, 255, 0.14);
+    --good: #3ddc9b; --good-soft: rgba(61, 220, 155, 0.14);
+    --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, 0.14);
+    --bad: #ff7b7b; --bad-soft: rgba(255, 123, 123, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
-  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+.wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 72px; }
 header.site {
-  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
-  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
 }
-header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
-header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site h1 {
+  font-size: 1.3rem; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 9px;
+}
+header.site h1 a { color: inherit; text-decoration: none; }
+.mark {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+header.site nav { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
 header.site nav a {
-  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
-  padding: 4px 10px; border-radius: 6px;
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.86rem;
+  padding: 6px 11px; border-radius: 999px;
 }
-header.site nav a:hover { color: var(--accent); background: var(--sunken); }
-.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
-h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+header.site nav a:hover { color: var(--accent); background: var(--accent-soft); }
+header.site nav a.active { color: var(--accent-ink); background: var(--accent); }
+.stamp {
+  color: var(--muted); font-size: 0.78rem; margin: 10px 0 22px; line-height: 1.5;
+}
+.stamp strong { color: var(--ink); }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
 .card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-  padding: 16px 18px; margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
 }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .card .teams { font-size: 1.05rem; font-weight: 700; }
 .card .pick { margin: 6px 0 2px; }
 .card .pick strong { color: var(--accent); }
@@ -68,8 +95,9 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
 .bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
 .bet {
   flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
-  border-radius: 8px; padding: 9px 11px;
+  border-radius: 10px; padding: 10px 12px;
 }
+.bet:first-child { border-color: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .betlabel {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--muted); font-weight: 700;
@@ -124,7 +152,7 @@ ul.factors { padding-left: 0; }
   padding: 9px 12px; border-bottom: 1px solid var(--line);
   color: var(--ink); text-decoration: none;
 }
-.srow:hover { background: rgba(255,255,255,0.04); }
+.srow:hover { background: var(--accent-soft); }
 .steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .steam {
   display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
@@ -174,17 +202,60 @@ table.track a:hover { color: var(--accent); }
   font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
   padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
 }
-.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-lock { color: var(--accent-ink); background: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-pick { color: var(--good); background: var(--good-soft); border-color: transparent; font-weight: 800; }
+.tag-lean { color: var(--muted); background: var(--sunken); border-color: transparent; }
+.tag-pass { color: var(--muted); border-style: dashed; }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
-.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
-.tag-lean { color: var(--muted); }
+.tag-key { color: var(--warn); border-color: var(--warn); }
+.oddssrc { color: var(--muted); font-size: 0.78rem; }
+.form-w { color: var(--good); font-weight: 800; }
+.form-l { color: var(--bad); font-weight: 800; }
+.form-t { color: var(--muted); font-weight: 800; }
+.lgtag.live { color: var(--good); border-color: var(--good); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
 .hero.card {
-  display: block; text-decoration: none; color: inherit;
-  border: 2px solid var(--accent); padding: 18px 20px;
+  display: block; text-decoration: none; color: inherit; position: relative;
+  border: 1px solid var(--accent); padding: 20px 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-soft), var(--card) 60%);
 }
+.hero.card:hover { transform: translateY(-1px); }
+.ladder { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+.rung { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: var(--shadow); }
+.rung .tiletitle { display: flex; justify-content: space-between; gap: 6px; }
+.rung .tilebig { font-size: 1.3rem; }
+.rung .tilesub { line-height: 1.35; }
+.wknav {
+  position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; padding: 8px 0; margin-bottom: 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.86rem;
+  padding: 6px 10px; border-radius: 8px; background: var(--accent-soft);
+}
+.wknav-btn.disabled { color: var(--muted); background: var(--sunken); }
+.wksel { color: var(--muted); font-size: 0.84rem; }
+.wksel select {
+  font: inherit; font-size: 0.86rem; margin-left: 6px; padding: 5px 8px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.weekhead { font-size: 0.95rem; color: var(--muted); margin: -4px 0 14px; }
+footer { color: var(--muted); font-size: 0.78rem; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); }
+.weekgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.9rem; }
+.wt-detail { font-size: 0.78rem; margin-top: 2px; }
+.upcoming { color: var(--accent); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.leagues .card { text-decoration: none; color: inherit; }
+.leagues .card:hover { border-color: var(--accent); }
 .herolabel {
   font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--accent);
@@ -196,8 +267,10 @@ table.track a:hover { color: var(--accent); }
   display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
   text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
 }
-.stage.locked { background: var(--good); color: #fff; }
-.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
+.stage.locked { background: var(--good); color: var(--accent-ink); }
+.stage.leanstage { background: var(--warn-soft); color: var(--warn); }
+.stage.started { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); }
+.stage.noresult { background: var(--bad-soft); color: var(--bad); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -270,35 +343,41 @@ ul.factors li { margin-bottom: 8px; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </style></head>
 <body><div class="wrap">
-<header class="site"><h1>Gridiron Engine</h1>
-<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<header class="site"><h1><span class="mark"></span><a href="index.html">Gridiron Engine</a></h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAAF</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:11 UTC</strong>, hourly
-&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<script>(function(){var p=(location.pathname.split('/').pop()||'index.html');
+document.querySelectorAll('header.site nav a').forEach(function(a){var h=a.getAttribute('href');
+if(h===p||(h==='nfl.html'&&/^nfl-/.test(p))||(h==='ncaa.html'&&/^ncaa-/.test(p)))a.classList.add('active');});})();</script>
+<div class="stamp">Odds, injuries and forecasts as of <strong>Sun Sep 6, 2:33 PM ET</strong>
+&middot; rebuilt twice an hour (GitHub may delay a run) &middot; free public data
+(nflverse / sportsdataverse / ESPN / Open-Meteo) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-w13.html">&larr; Week 13</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html" selected>2026 season</option><option value="nfl-2025-w01.html">2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html">2023 season</option></select></label>
 <label class="wksel">Week:
-  <select id="weekpick"><option value="nfl-w01.html">Week 1 — upcoming</option><option value="nfl-w02.html">Week 2 — upcoming</option><option value="nfl-w03.html">Week 3 — upcoming</option><option value="nfl-w04.html">Week 4 — upcoming</option><option value="nfl-w05.html">Week 5 — upcoming</option><option value="nfl-w06.html">Week 6 — upcoming</option><option value="nfl-w07.html">Week 7 — upcoming</option><option value="nfl-w08.html">Week 8 — upcoming</option><option value="nfl-w09.html">Week 9 — upcoming</option><option value="nfl-w10.html">Week 10 — upcoming</option><option value="nfl-w11.html">Week 11 — upcoming</option><option value="nfl-w12.html">Week 12 — upcoming</option><option value="nfl-w13.html">Week 13 — upcoming</option><option value="nfl-w14.html" selected>Week 14 — upcoming</option><option value="nfl-w15.html">Week 15 — upcoming</option><option value="nfl-w16.html">Week 16 — upcoming</option><option value="nfl-w17.html">Week 17 — upcoming</option><option value="nfl-w18.html">Week 18 — upcoming</option></select>
+  <select id="weekpick"><option value="nfl-w01.html">Week 1 — 10 of 16 out</option><option value="nfl-w02.html">Week 2 — upcoming</option><option value="nfl-w03.html">Week 3 — upcoming</option><option value="nfl-w04.html">Week 4 — upcoming</option><option value="nfl-w05.html">Week 5 — upcoming</option><option value="nfl-w06.html">Week 6 — upcoming</option><option value="nfl-w07.html">Week 7 — upcoming</option><option value="nfl-w08.html">Week 8 — upcoming</option><option value="nfl-w09.html">Week 9 — upcoming</option><option value="nfl-w10.html">Week 10 — upcoming</option><option value="nfl-w11.html">Week 11 — upcoming</option><option value="nfl-w12.html">Week 12 — upcoming</option><option value="nfl-w13.html">Week 13 — upcoming</option><option value="nfl-w14.html" selected>Week 14 — upcoming</option><option value="nfl-w15.html">Week 15 — upcoming</option><option value="nfl-w16.html">Week 16 — upcoming</option><option value="nfl-w17.html">Week 17 — upcoming</option><option value="nfl-w18.html">Week 18 — upcoming</option></select>
 </label>
 <a class="wknav-btn" href="nfl-w15.html">Week 15 &rarr;</a>
 </div>
 <h2>Week 14 &mdash; 2026</h2>
-<div class="weekhead">15 games &mdash; picks release from Sun Dec 6, 7:00 PM, one day before each kickoff</div>
+<div class="weekhead">15 games &mdash; leans release from Thu Dec 3, 8:15 PM ET, one week before each kickoff</div>
+<div class="ladder"><div class="rung"><div class="tiletitle"><span>Locks</span><span>0 this week</span></div><div class="tilebig t-strong">92%</div><div class="tilesub meta">47-4 since 2023 &middot; +1.8% ROI<br>Heavy favourites the model backs at 85%+. Win almost always, pay little.</div></div><div class="rung"><div class="tiletitle"><span>Picks</span><span>2 this week</span></div><div class="tilebig t-strong">74%</div><div class="tilesub meta">161-57 since 2023 &middot; -6.4% ROI<br>Confident sides at 70&ndash;85%. The everyday play.</div></div><div class="rung"><div class="tiletitle"><span>Leans</span><span>7 this week</span></div><div class="tilebig t-strong">63%</div><div class="tilesub meta">238-138 since 2023 &middot; -2.8% ROI<br>A tilt, not a bet. Shown with full reasoning.</div></div><div class="rung"><div class="tiletitle"><span>Pass</span><span>6 this week</span></div><div class="tilebig t-mid">43%</div><div class="tilesub meta">90-119 since 2023 &middot; -17.5% ROI<br>Coin flips. No play.</div></div></div>
 <section class="sched"><div class="schedhead"><span>Week 14 of 18</span><span>15 games</span></div><div class="schedgrid"><a class="srow" href="#g-2026_14_MIN_NE"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Vikings</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">Patriots</div></div><div class="swhen"><strong>Thu, Dec 10</strong>8:15 PM ET</div></a><a class="srow" href="#g-2026_14_TB_BAL"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Buccaneers</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Ravens</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_NO_CAR"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">Saints</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Panthers</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_ATL_CLE"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Falcons</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Browns</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_TEN_DET"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Titans</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DET.png" alt="" loading="lazy" onerror="this.style.display='none'">Lions</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_CHI_MIA"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Bears</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Dolphins</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_DEN_NYJ"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Broncos</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">Jets</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_IND_PHI"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Colts</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Eagles</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_HOU_WAS"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Texans</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Commanders</div></div><div class="swhen"><strong>Sun, Dec 13</strong>1:00 PM ET</div></a><a class="srow" href="#g-2026_14_LAC_LV"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chargers</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Raiders</div></div><div class="swhen"><strong>Sun, Dec 13</strong>4:05 PM ET</div></a><a class="srow" href="#g-2026_14_KC_CIN"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chiefs</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Bengals</div></div><div class="swhen"><strong>Sun, Dec 13</strong>4:25 PM ET</div></a><a class="srow" href="#g-2026_14_NYG_SEA"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">Giants</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seahawks</div></div><div class="swhen"><strong>Sun, Dec 13</strong>4:25 PM ET</div></a><a class="srow" href="#g-2026_14_LA_SF"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Rams</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">49ers</div></div><div class="swhen"><strong>Sun, Dec 13</strong>4:25 PM ET</div></a><a class="srow" href="#g-2026_14_BUF_GB"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Bills</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Packers</div></div><div class="swhen"><strong>Sun, Dec 13</strong>8:20 PM ET</div></a><a class="srow" href="#g-2026_14_PIT_JAX"><div class="steams"><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Steelers</div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/JAX.png" alt="" loading="lazy" onerror="this.style.display='none'">Jaguars</div></div><div class="swhen"><strong>Mon, Dec 14</strong>8:15 PM ET</div></a></div></section>
 
 
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
-    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
-    <button class="chip" data-filter="pick">Picks (value)</button>
-    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Pick</button>
     <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pick">Picks</button>
+    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pass">Pass</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
-    <button class="chip" data-filter="upset">Upset picks</button>
+    <button class="chip" data-filter="upset">Upsets</button>
   </div>
   <label class="ctl-sort">Sort:
     <select id="sortby">
@@ -311,140 +390,140 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game pending" id="g-2026_14_MIN_NE" data-kick="1796860800"
+<div class="card game pending" id="g-2026_14_MIN_NE" data-kick="1796951700"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota Vikings
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NE.png" alt="" loading="lazy" onerror="this.style.display='none'">New England Patriots</div>
-<div class="kick">Wed Dec 9, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Sun Dec 6, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Thu Dec 10, 8:15 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Thu Dec 3, 8:15 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_TB_BAL" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_TB_BAL" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TB.png" alt="" loading="lazy" onerror="this.style.display='none'">Tampa Bay Buccaneers
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BAL.png" alt="" loading="lazy" onerror="this.style.display='none'">Baltimore Ravens</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_NO_CAR" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_NO_CAR" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NO.png" alt="" loading="lazy" onerror="this.style.display='none'">New Orleans Saints
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Carolina Panthers</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_ATL_CLE" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_ATL_CLE" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/ATL.png" alt="" loading="lazy" onerror="this.style.display='none'">Atlanta Falcons
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CLE.png" alt="" loading="lazy" onerror="this.style.display='none'">Cleveland Browns</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_TEN_DET" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_TEN_DET" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/TEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Tennessee Titans
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DET.png" alt="" loading="lazy" onerror="this.style.display='none'">Detroit Lions</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_CHI_MIA" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_CHI_MIA" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Chicago Bears
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/MIA.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami Dolphins</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_DEN_NYJ" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_DEN_NYJ" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/DEN.png" alt="" loading="lazy" onerror="this.style.display='none'">Denver Broncos
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYJ.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Jets</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_IND_PHI" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_IND_PHI" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/IND.png" alt="" loading="lazy" onerror="this.style.display='none'">Indianapolis Colts
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PHI.png" alt="" loading="lazy" onerror="this.style.display='none'">Philadelphia Eagles</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_HOU_WAS" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_HOU_WAS" data-kick="1797184800"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/HOU.png" alt="" loading="lazy" onerror="this.style.display='none'">Houston Texans
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/WSH.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Commanders</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 1:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 1:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_LAC_LV" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_LAC_LV" data-kick="1797195900"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAC.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Chargers
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LV.png" alt="" loading="lazy" onerror="this.style.display='none'">Las Vegas Raiders</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 4:05 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 4:05 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_KC_CIN" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_KC_CIN" data-kick="1797197100"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas City Chiefs
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/CIN.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bengals</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 4:25 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 4:25 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_NYG_SEA" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_NYG_SEA" data-kick="1797197100"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/NYG.png" alt="" loading="lazy" onerror="this.style.display='none'">New York Giants
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SEA.png" alt="" loading="lazy" onerror="this.style.display='none'">Seattle Seahawks</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 4:25 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 4:25 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_LA_SF" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_LA_SF" data-kick="1797197100"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/LAR.png" alt="" loading="lazy" onerror="this.style.display='none'">Los Angeles Rams
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">San Francisco 49ers</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 4:25 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 4:25 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_BUF_GB" data-kick="1797120000"
+<div class="card game pending" id="g-2026_14_BUF_GB" data-kick="1797211200"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/BUF.png" alt="" loading="lazy" onerror="this.style.display='none'">Buffalo Bills
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/GB.png" alt="" loading="lazy" onerror="this.style.display='none'">Green Bay Packers</div>
-<div class="kick">Sat Dec 12, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Wed Dec 9, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Sun Dec 13, 8:20 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sun Dec 6, 8:20 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
-<div class="card game pending" id="g-2026_14_PIT_JAX" data-kick="1797206400"
+<div class="card game pending" id="g-2026_14_PIT_JAX" data-kick="1797297300"
  data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/PIT.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Steelers
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/JAX.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville Jaguars</div>
-<div class="kick">Sun Dec 13, 7:00 PM</div></div>
-<div class="pendingnote">Pick releases <strong>Thu Dec 10, 7:00 PM</strong>
-<span class="meta">&mdash; held until injury reports, starting lineups and the
-forecast are known, then refreshed on game day.</span></div>
+<div class="kick">Mon Dec 14, 8:15 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Mon Dec 7, 8:15 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
 </div>
 </div>
 <script>

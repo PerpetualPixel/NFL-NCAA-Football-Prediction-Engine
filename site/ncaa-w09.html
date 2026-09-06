@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NCAA Week 9 2026 — Gridiron Engine</title><style>
+:root {
+  --bg: #f3f5f8; --card: #ffffff; --sunken: #f6f8fb; --ink: #131820;
+  --muted: #5f6b7a; --line: #e2e7ee; --accent: #1f4fd8; --accent-ink: #ffffff;
+  --accent-soft: rgba(31, 79, 216, 0.10);
+  --good: #0f7a57; --good-soft: rgba(15, 122, 87, 0.12);
+  --warn: #b25c07; --warn-soft: rgba(178, 92, 7, 0.12);
+  --bad: #b8262c; --bad-soft: rgba(184, 38, 44, 0.12);
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 14px rgba(16, 24, 40, 0.05);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0e12; --card: #151a21; --sunken: #10141a; --ink: #e8ebef;
+    --muted: #97a1ae; --line: #252c36; --accent: #7fa6ff; --accent-ink: #0b0e12;
+    --accent-soft: rgba(127, 166, 255, 0.14);
+    --good: #3ddc9b; --good-soft: rgba(61, 220, 155, 0.14);
+    --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, 0.14);
+    --bad: #ff7b7b; --bad-soft: rgba(255, 123, 123, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 72px; }
+header.site {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+}
+header.site h1 {
+  font-size: 1.3rem; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 9px;
+}
+header.site h1 a { color: inherit; text-decoration: none; }
+.mark {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+header.site nav { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
+header.site nav a {
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.86rem;
+  padding: 6px 11px; border-radius: 999px;
+}
+header.site nav a:hover { color: var(--accent); background: var(--accent-soft); }
+header.site nav a.active { color: var(--accent-ink); background: var(--accent); }
+.stamp {
+  color: var(--muted); font-size: 0.78rem; margin: 10px 0 22px; line-height: 1.5;
+}
+.stamp strong { color: var(--ink); }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card .teams { font-size: 1.05rem; font-weight: 700; }
+.card .pick { margin: 6px 0 2px; }
+.card .pick strong { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.edge-pos { color: var(--good); font-weight: 600; }
+.edge-neg { color: var(--bad); font-weight: 600; }
+table.units { border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; width: 100%; max-width: 480px; }
+table.units th, table.units td { text-align: center; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+table.units th:first-child, table.units td.ulabel { text-align: left; }
+table.units th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.ulabel { color: var(--ink); }
+.gwrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.gletter { font-weight: 800; font-size: 0.98rem; }
+.grank { color: var(--muted); font-size: 0.74rem; }
+.gbar { height: 4px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.gbar i { display: block; height: 100%; border-radius: 3px; }
+.gnote { margin-top: 8px; font-size: 0.78rem; }
+/* one colour language across the whole site */
+.t-strong { color: var(--good); }
+.t-good { color: var(--good); opacity: 0.85; }
+.t-mid { color: var(--muted); }
+.t-poor { color: var(--warn); }
+.t-bad { color: var(--bad); }
+.gbar i.t-strong { background: var(--good); }
+.gbar i.t-good { background: var(--good); opacity: 0.7; }
+.gbar i.t-mid { background: var(--muted); }
+.gbar i.t-poor { background: var(--warn); }
+.gbar i.t-bad { background: var(--bad); }
+.bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
+.bet {
+  flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px;
+}
+.bet:first-child { border-color: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.betlabel {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 700;
+}
+.betvalue { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+.betvalue .price { color: var(--muted); font-weight: 600; font-size: 0.88rem; }
+.betnote { font-size: 0.76rem; margin-top: 1px; }
+.outcome {
+  display: inline-block; margin-top: 5px; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.usageteam { margin-bottom: 12px; }
+.usageteam h5 {
+  margin: 8px 0 4px; font-size: 0.82rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--accent);
+}
+.factor { margin-bottom: 11px; list-style: none; }
+ul.factors { padding-left: 0; }
+.fhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fname { font-weight: 700; font-size: 0.88rem; }
+.fverdict {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ftext { font-size: 0.86rem; color: var(--ink); margin-top: 1px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.tilebig { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 4px 0 2px; }
+.tilesub { font-size: 0.78rem; }
+.tablewrap { overflow-x: auto; }
+.crest { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
+.sched { margin: 0 0 18px; }
+.schedhead {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  padding: 8px 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0; font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 800; color: var(--muted);
+}
+.schedgrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line); border-top: none; border-radius: 0 0 8px 8px;
+  overflow: hidden; background: var(--card);
+}
+.schedgrid > .srow:nth-child(odd) { border-right: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .schedgrid { grid-template-columns: minmax(0, 1fr); }
+  .schedgrid > .srow:nth-child(odd) { border-right: none; }
+}
+.srow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+}
+.srow:hover { background: var(--accent-soft); }
+.steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.steam {
+  display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.steam .crest { width: 20px; height: 20px; margin: 0; vertical-align: middle; }
+.steam .sscore { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.steam.lost { color: var(--muted); font-weight: 500; }
+.swhen {
+  text-align: right; font-size: 0.78rem; color: var(--muted); line-height: 1.35;
+  white-space: nowrap; flex-shrink: 0;
+}
+.swhen strong { display: block; color: var(--ink); font-weight: 700; }
+#loadmore { margin-top: 10px; }
+.explain { font-size: 0.88rem; }
+.explainbox { margin: 0 0 12px; border-top: none; padding-top: 0; }
+.explainbox summary { color: var(--muted); font-weight: 600; }
+table.track { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-top: 4px; }
+table.track th, table.track td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+table.track th { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+table.track td.num, table.track th.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.track a { color: var(--ink); text-decoration: none; }
+table.track a:hover { color: var(--accent); }
+.lgtag {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; padding: 1px 5px;
+  border-radius: 3px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px;
+}
+.result-hit { color: var(--good); font-weight: 700; }
+.result-miss { color: var(--bad); font-weight: 700; }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.kick { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+.ctl-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 0.82rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.ctl-sort { color: var(--muted); font-size: 0.82rem; }
+.ctl-sort select {
+  font: inherit; font-size: 0.82rem; margin-left: 6px; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; }
+.tag {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
+}
+.tag-lock { color: var(--accent-ink); background: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-pick { color: var(--good); background: var(--good-soft); border-color: transparent; font-weight: 800; }
+.tag-lean { color: var(--muted); background: var(--sunken); border-color: transparent; }
+.tag-pass { color: var(--muted); border-style: dashed; }
+.tag-value { color: var(--accent); border-color: var(--accent); }
+.tag-upset { color: var(--bad); border-color: var(--bad); }
+.tag-key { color: var(--warn); border-color: var(--warn); }
+.oddssrc { color: var(--muted); font-size: 0.78rem; }
+.form-w { color: var(--good); font-weight: 800; }
+.form-l { color: var(--bad); font-weight: 800; }
+.form-t { color: var(--muted); font-weight: 800; }
+.lgtag.live { color: var(--good); border-color: var(--good); }
+.emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
+.scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
+.hero.card {
+  display: block; text-decoration: none; color: inherit; position: relative;
+  border: 1px solid var(--accent); padding: 20px 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-soft), var(--card) 60%);
+}
+.hero.card:hover { transform: translateY(-1px); }
+.ladder { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+.rung { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: var(--shadow); }
+.rung .tiletitle { display: flex; justify-content: space-between; gap: 6px; }
+.rung .tilebig { font-size: 1.3rem; }
+.rung .tilesub { line-height: 1.35; }
+.wknav {
+  position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; padding: 8px 0; margin-bottom: 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.86rem;
+  padding: 6px 10px; border-radius: 8px; background: var(--accent-soft);
+}
+.wknav-btn.disabled { color: var(--muted); background: var(--sunken); }
+.wksel { color: var(--muted); font-size: 0.84rem; }
+.wksel select {
+  font: inherit; font-size: 0.86rem; margin-left: 6px; padding: 5px 8px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.weekhead { font-size: 0.95rem; color: var(--muted); margin: -4px 0 14px; }
+footer { color: var(--muted); font-size: 0.78rem; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); }
+.weekgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.9rem; }
+.wt-detail { font-size: 0.78rem; margin-top: 2px; }
+.upcoming { color: var(--accent); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.leagues .card { text-decoration: none; color: inherit; }
+.leagues .card:hover { border-color: var(--accent); }
+.herolabel {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent);
+}
+.heroweek { font-size: 1.5rem; font-weight: 800; margin: 2px 0 4px; letter-spacing: -0.02em; }
+.herogo { margin-top: 8px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+.card.pending { border-style: dashed; }
+.stage {
+  display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
+}
+.stage.locked { background: var(--good); color: var(--accent-ink); }
+.stage.leanstage { background: var(--warn-soft); color: var(--warn); }
+.stage.started { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); }
+.stage.noresult { background: var(--bad-soft); color: var(--bad); }
+.pixel.card { border: 2px solid var(--accent); }
+.pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pxbadge {
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.72rem;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+}
+.pxprice { font-size: 1.25rem; font-weight: 800; }
+.pxlegs { list-style: none; padding: 0; margin: 10px 0 4px; }
+.boardcard { border-left: 3px solid var(--accent); }
+.boardnum {
+  font-weight: 800; font-size: 0.95rem; color: var(--accent);
+  background: var(--sunken); border-radius: 5px; padding: 2px 8px;
+}
+.slothead {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); font-weight: 800; margin: 18px 0 8px;
+}
+.pxleg { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pxdetail { font-weight: 700; }
+.tag-pixel { color: #fff; background: var(--accent); border-color: var(--accent); }
+.pendingnote { margin-top: 6px; font-size: 0.9rem; }
+.pendingnote strong { color: var(--accent); }
+details.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+details.more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+  list-style: none; padding: 2px 0;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "\25B8 "; display: inline-block; transition: transform 0.15s; }
+details.more[open] summary::before { transform: rotate(90deg); }
+.analysis { padding-top: 6px; }
+.analysis h4 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.analysis p { margin: 0 0 10px; font-size: 0.9rem; }
+ul.factors { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+ul.factors li { margin-bottom: 8px; }
+.wknav {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 6px;
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+  white-space: nowrap;
+}
+.wknav-btn.disabled { color: var(--muted); opacity: 0.5; }
+.wksel { font-size: 0.85rem; color: var(--muted); }
+.wksel select {
+  font: inherit; font-size: 0.85rem; margin-left: 6px; padding: 4px 8px; max-width: 240px;
+  border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.weekhead { color: var(--muted); font-size: 0.9rem; margin: -6px 0 10px; }
+.weekgrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;
+}
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.92rem; }
+.wt-detail { margin-top: 3px; }
+.wt-detail .good { color: var(--good); font-weight: 600; }
+.wt-detail .bad { color: var(--bad); font-weight: 600; }
+.wt-detail .upcoming { color: var(--accent); font-weight: 600; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.leagues a.card { display: block; text-decoration: none; color: inherit; }
+footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
+</style></head>
+<body><div class="wrap">
+<header class="site"><h1><span class="mark"></span><a href="index.html">Gridiron Engine</a></h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAAF</a>
+<a href="tracking-nfl.html">Tracking (NFL)</a>
+<a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
+<script>(function(){var p=(location.pathname.split('/').pop()||'index.html');
+document.querySelectorAll('header.site nav a').forEach(function(a){var h=a.getAttribute('href');
+if(h===p||(h==='nfl.html'&&/^nfl-/.test(p))||(h==='ncaa.html'&&/^ncaa-/.test(p)))a.classList.add('active');});})();</script>
+<div class="stamp">Odds, injuries and forecasts as of <strong>Sun Sep 6, 2:36 PM ET</strong>
+&middot; rebuilt twice an hour (GitHub may delay a run) &middot; free public data
+(nflverse / sportsdataverse / ESPN / Open-Meteo) &middot; walk-forward model, no leakage</div>
+<div class="wknav">
+<a class="wknav-btn" href="ncaa-w08.html">&larr; Week 8</a>
+<label class="wksel">Season:<select id="seasonpick"><option value="ncaa-w01.html" selected>2026 season</option><option value="ncaa-2025-w01.html">2025 season</option><option value="ncaa-2024-w01.html">2024 season</option><option value="ncaa-2023-w01.html">2023 season</option></select></label>
+<label class="wksel">Week:
+  <select id="weekpick"><option value="ncaa-w01.html">Week 1 — 0-0</option><option value="ncaa-w02.html">Week 2 — picks out</option><option value="ncaa-w03.html">Week 3 — upcoming</option><option value="ncaa-w04.html">Week 4 — upcoming</option><option value="ncaa-w05.html">Week 5 — upcoming</option><option value="ncaa-w06.html">Week 6 — upcoming</option><option value="ncaa-w07.html">Week 7 — upcoming</option><option value="ncaa-w08.html">Week 8 — upcoming</option><option value="ncaa-w09.html" selected>Week 9 — upcoming</option><option value="ncaa-w10.html">Week 10 — upcoming</option><option value="ncaa-w11.html">Week 11 — upcoming</option><option value="ncaa-w12.html">Week 12 — upcoming</option><option value="ncaa-w13.html">Week 13 — upcoming</option><option value="ncaa-w15.html">Week 15 — upcoming</option></select>
+</label>
+<a class="wknav-btn" href="ncaa-w10.html">Week 10 &rarr;</a>
+</div>
+<h2>Week 9 &mdash; 2026</h2>
+<div class="weekhead">56 games &mdash; leans release from Tue Oct 20, 7:00 PM ET, one week before each kickoff</div>
+<div class="ladder"><div class="rung"><div class="tiletitle"><span>Locks</span><span>12 this week</span></div><div class="tilebig t-strong">93%</div><div class="tilesub meta">448-36 since 2023 &middot; -1.0% ROI<br>Heavy favourites the model backs at 85%+. Win almost always, pay little.</div></div><div class="rung"><div class="tiletitle"><span>Picks</span><span>16 this week</span></div><div class="tilebig t-strong">76%</div><div class="tilesub meta">478-150 since 2023 &middot; -5.5% ROI<br>Confident sides at 70&ndash;85%. The everyday play.</div></div><div class="rung"><div class="tiletitle"><span>Leans</span><span>22 this week</span></div><div class="tilebig t-strong">63%</div><div class="tilesub meta">367-216 since 2023 &middot; -5.7% ROI<br>A tilt, not a bet. Shown with full reasoning.</div></div><div class="rung"><div class="tiletitle"><span>Pass</span><span>6 this week</span></div><div class="tilebig t-mid">44%</div><div class="tilesub meta">205-261 since 2023 &middot; -9.2% ROI<br>Coin flips. No play.</div></div></div>
+<section class="sched"><div class="schedhead"><span>Week 9 of 15</span><span>56 games</span></div><div class="schedgrid"><a class="srow" href="#g-401871071"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/48.png" alt="" loading="lazy" onerror="this.style.display='none'">Delaware</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/98.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Kentucky</div></div><div class="swhen"><strong>Tue, Oct 27</strong>7:00 PM ET</div></a><a class="srow" href="#g-401871072"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2534.png" alt="" loading="lazy" onerror="this.style.display='none'">Sam Houston</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2623.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri State</div></div><div class="swhen"><strong>Tue, Oct 27</strong>8:00 PM ET</div></a><a class="srow" href="#g-401871058"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/338.png" alt="" loading="lazy" onerror="this.style.display='none'">Kennesaw State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2393.png" alt="" loading="lazy" onerror="this.style.display='none'">Middle Tennessee</div></div><div class="swhen"><strong>Wed, Oct 28</strong>7:00 PM ET</div></a><a class="srow" href="#g-401871057"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/55.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/166.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico State</div></div><div class="swhen"><strong>Wed, Oct 28</strong>8:00 PM ET</div></a><a class="srow" href="#g-401869963"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2653.png" alt="" loading="lazy" onerror="this.style.display='none'">Troy</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/256.png" alt="" loading="lazy" onerror="this.style.display='none'">James Madison</div></div><div class="swhen"><strong>Thu, Oct 29</strong>7:30 PM ET</div></a><a class="srow" href="#g-401862812"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2226.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Atlantic</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/249.png" alt="" loading="lazy" onerror="this.style.display='none'">North Texas</div></div><div class="swhen"><strong>Thu, Oct 29</strong>7:30 PM ET</div></a><a class="srow" href="#g-401862813"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2655.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulane</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2429.png" alt="" loading="lazy" onerror="this.style.display='none'">Charlotte</div></div><div class="swhen"><strong>Fri, Oct 30</strong>7:00 PM ET</div></a><a class="srow" href="#g-401856844"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/239.png" alt="" loading="lazy" onerror="this.style.display='none'">Baylor</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2116.png" alt="" loading="lazy" onerror="this.style.display='none'">UCF</div></div><div class="swhen"><strong>Fri, Oct 30</strong>7:30 PM ET</div></a><a class="srow" href="#g-401866451"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2309.png" alt="" loading="lazy" onerror="this.style.display='none'">Kent State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/16.png" alt="" loading="lazy" onerror="this.style.display='none'">Sacramento State</div></div><div class="swhen"><strong>Fri, Oct 30</strong>10:30 PM ET</div></a><a class="srow" href="#g-401858280"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/228.png" alt="" loading="lazy" onerror="this.style.display='none'">Clemson</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/52.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856735"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2.png" alt="" loading="lazy" onerror="this.style.display='none'">Auburn</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/145.png" alt="" loading="lazy" onerror="this.style.display='none'">Ole Miss</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856737"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/344.png" alt="" loading="lazy" onerror="this.style.display='none'">Mississippi State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/251.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856842"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/12.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2641.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Tech</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856843"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/9.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/252.png" alt="" loading="lazy" onerror="this.style.display='none'">BYU</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856846"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2306.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/38.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856847"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/197.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/66.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858279"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/103.png" alt="" loading="lazy" onerror="this.style.display='none'">Boston College</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/150.png" alt="" loading="lazy" onerror="this.style.display='none'">Duke</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858508"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2440.png" alt="" loading="lazy" onerror="this.style.display='none'">Nevada</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/26.png" alt="" loading="lazy" onerror="this.style.display='none'">UCLA</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858505"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/77.png" alt="" loading="lazy" onerror="this.style.display='none'">Northwestern</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2483.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858506"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2509.png" alt="" loading="lazy" onerror="this.style.display='none'">Purdue</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/213.png" alt="" loading="lazy" onerror="this.style.display='none'">Penn State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401864529"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/167.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/23.png" alt="" loading="lazy" onerror="this.style.display='none'">San José State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401862816"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/5.png" alt="" loading="lazy" onerror="this.style.display='none'">UAB</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/58.png" alt="" loading="lazy" onerror="this.style.display='none'">South Florida</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858504"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/264.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/158.png" alt="" loading="lazy" onerror="this.style.display='none'">Nebraska</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856848"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/254.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2132.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858278"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2567.png" alt="" loading="lazy" onerror="this.style.display='none'">SMU</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/183.png" alt="" loading="lazy" onerror="this.style.display='none'">Syracuse</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856733"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/142.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/8.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858503"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/356.png" alt="" loading="lazy" onerror="this.style.display='none'">Illinois</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/120.png" alt="" loading="lazy" onerror="this.style.display='none'">Maryland</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401862815"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/218.png" alt="" loading="lazy" onerror="this.style.display='none'">Temple</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/151.png" alt="" loading="lazy" onerror="this.style.display='none'">East Carolina</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858502"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/275.png" alt="" loading="lazy" onerror="this.style.display='none'">Wisconsin</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2294.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401862814"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/235.png" alt="" loading="lazy" onerror="this.style.display='none'">Memphis</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858509"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/194.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/30.png" alt="" loading="lazy" onerror="this.style.display='none'">USC</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858501"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/135.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/84.png" alt="" loading="lazy" onerror="this.style.display='none'">Indiana</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856736"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2579.png" alt="" loading="lazy" onerror="this.style.display='none'">South Carolina</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/201.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858284"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/154.png" alt="" loading="lazy" onerror="this.style.display='none'">Wake Forest</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858507"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/130.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/164.png" alt="" loading="lazy" onerror="this.style.display='none'">Rutgers</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858283"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/24.png" alt="" loading="lazy" onerror="this.style.display='none'">Stanford</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/97.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisville</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401856845"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2305.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2628.png" alt="" loading="lazy" onerror="this.style.display='none'">TCU</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401871097"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2348.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisiana Tech</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/6.png" alt="" loading="lazy" onerror="this.style.display='none'">South Alabama</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401871095"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2572.png" alt="" loading="lazy" onerror="this.style.display='none'">Southern Miss</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2433.png" alt="" loading="lazy" onerror="this.style.display='none'">UL Monroe</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858281"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/59.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Tech</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/221.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858282"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2390.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/153.png" alt="" loading="lazy" onerror="this.style.display='none'">North Carolina</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401860924"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/204.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/278.png" alt="" loading="lazy" onerror="this.style.display='none'">Fresno State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401869846"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2026.png" alt="" loading="lazy" onerror="this.style.display='none'">App State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/290.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Southern</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401858277"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/25.png" alt="" loading="lazy" onerror="this.style.display='none'">California</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/152.png" alt="" loading="lazy" onerror="this.style.display='none'">NC State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401871096"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/276.png" alt="" loading="lazy" onerror="this.style.display='none'">Marshall</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/295.png" alt="" loading="lazy" onerror="this.style.display='none'">Old Dominion</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401869944"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/324.png" alt="" loading="lazy" onerror="this.style.display='none'">Coastal Carolina</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2247.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 AM ET</div></a><a class="srow" href="#g-401859185"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/87.png" alt="" loading="lazy" onerror="this.style.display='none'">Notre Dame</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 PM ET</div></a><a class="srow" href="#g-401866452"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/189.png" alt="" loading="lazy" onerror="this.style.display='none'">Bowling Green</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2711.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Michigan</div></div><div class="swhen"><strong>Sat, Oct 31</strong>12:00 PM ET</div></a><a class="srow" href="#g-401861966"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/41.png" alt="" loading="lazy" onerror="this.style.display='none'">UConn</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2005.png" alt="" loading="lazy" onerror="this.style.display='none'">Air Force</div></div><div class="swhen"><strong>Sat, Oct 31</strong>3:00 PM ET</div></a><a class="srow" href="#g-401856734"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/57.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/61.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia</div></div><div class="swhen"><strong>Sat, Oct 31</strong>3:30 PM ET</div></a><a class="srow" href="#g-401864531"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2638.png" alt="" loading="lazy" onerror="this.style.display='none'">UTEP</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2449.png" alt="" loading="lazy" onerror="this.style.display='none'">North Dakota State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>3:30 PM ET</div></a><a class="srow" href="#g-401860910"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/36.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/328.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>3:30 PM ET</div></a><a class="srow" href="#g-401871059"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2229.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida International</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2335.png" alt="" loading="lazy" onerror="this.style.display='none'">Liberty</div></div><div class="swhen"><strong>Sat, Oct 31</strong>3:30 PM ET</div></a><a class="srow" href="#g-401860909"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/265.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/21.png" alt="" loading="lazy" onerror="this.style.display='none'">San Diego State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>7:00 PM ET</div></a><a class="srow" href="#g-401860908"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/326.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas State</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/68.png" alt="" loading="lazy" onerror="this.style.display='none'">Boise State</div></div><div class="swhen"><strong>Sat, Oct 31</strong>10:00 PM ET</div></a><a class="srow" href="#g-401864530"><div class="steams"><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2459.png" alt="" loading="lazy" onerror="this.style.display='none'">Northern Illinois</div><div class="steam"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2439.png" alt="" loading="lazy" onerror="this.style.display='none'">UNLV</div></div><div class="swhen"><strong>Sat, Oct 31</strong>10:30 PM ET</div></a></div></section>
+
+
+<div class="controls">
+  <div class="ctl-group" role="group" aria-label="Filter games">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Pick</button>
+    <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pick">Picks</button>
+    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pass">Pass</button>
+    <button class="chip" data-filter="pickem">Pick'ems</button>
+    <button class="chip" data-filter="value">Value vs market</button>
+    <button class="chip" data-filter="upset">Upsets</button>
+  </div>
+  <label class="ctl-sort">Sort:
+    <select id="sortby">
+      <option value="kick">Kickoff (chronological)</option>
+      <option value="prob">Win probability</option>
+      <option value="margin">Projected margin</option>
+      <option value="edge">Edge vs market</option>
+    </select>
+  </label>
+</div>
+<div class="emptynote" hidden>No games match this filter.</div>
+<div id="games">
+<div class="card game pending" id="g-401871071" data-kick="1793142000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/48.png" alt="" loading="lazy" onerror="this.style.display='none'">Delaware Blue Hens
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/98.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Kentucky Hilltoppers</div>
+<div class="kick">Tue Oct 27, 7:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Tue Oct 20, 7:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871072" data-kick="1793145600"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2534.png" alt="" loading="lazy" onerror="this.style.display='none'">Sam Houston Bearkats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2623.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri State Bears</div>
+<div class="kick">Tue Oct 27, 8:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Tue Oct 20, 8:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871058" data-kick="1793228400"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/338.png" alt="" loading="lazy" onerror="this.style.display='none'">Kennesaw State Owls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2393.png" alt="" loading="lazy" onerror="this.style.display='none'">Middle Tennessee Blue Raiders</div>
+<div class="kick">Wed Oct 28, 7:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Wed Oct 21, 7:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871057" data-kick="1793232000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/55.png" alt="" loading="lazy" onerror="this.style.display='none'">Jacksonville State Gamecocks
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/166.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico State Aggies</div>
+<div class="kick">Wed Oct 28, 8:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Wed Oct 21, 8:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401869963" data-kick="1793316600"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2653.png" alt="" loading="lazy" onerror="this.style.display='none'">Troy Trojans
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/256.png" alt="" loading="lazy" onerror="this.style.display='none'">James Madison Dukes</div>
+<div class="kick">Thu Oct 29, 7:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Thu Oct 22, 7:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401862812" data-kick="1793316600"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2226.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Atlantic Owls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/249.png" alt="" loading="lazy" onerror="this.style.display='none'">North Texas Mean Green</div>
+<div class="kick">Thu Oct 29, 7:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Thu Oct 22, 7:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401862813" data-kick="1793401200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2655.png" alt="" loading="lazy" onerror="this.style.display='none'">Tulane Green Wave
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2429.png" alt="" loading="lazy" onerror="this.style.display='none'">Charlotte 49ers</div>
+<div class="kick">Fri Oct 30, 7:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Fri Oct 23, 7:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856844" data-kick="1793403000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/239.png" alt="" loading="lazy" onerror="this.style.display='none'">Baylor Bears
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2116.png" alt="" loading="lazy" onerror="this.style.display='none'">UCF Knights</div>
+<div class="kick">Fri Oct 30, 7:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Fri Oct 23, 7:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401866451" data-kick="1793413800"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2309.png" alt="" loading="lazy" onerror="this.style.display='none'">Kent State Golden Flashes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/16.png" alt="" loading="lazy" onerror="this.style.display='none'">Sacramento State Hornets</div>
+<div class="kick">Fri Oct 30, 10:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Fri Oct 23, 10:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858280" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/228.png" alt="" loading="lazy" onerror="this.style.display='none'">Clemson Tigers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/52.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida State Seminoles</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856735" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2.png" alt="" loading="lazy" onerror="this.style.display='none'">Auburn Tigers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/145.png" alt="" loading="lazy" onerror="this.style.display='none'">Ole Miss Rebels</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856737" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/344.png" alt="" loading="lazy" onerror="this.style.display='none'">Mississippi State Bulldogs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/251.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Longhorns</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856842" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/12.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona Wildcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2641.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas Tech Red Raiders</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856843" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/9.png" alt="" loading="lazy" onerror="this.style.display='none'">Arizona State Sun Devils
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/252.png" alt="" loading="lazy" onerror="this.style.display='none'">BYU Cougars</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856846" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2306.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas State Wildcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/38.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado Buffaloes</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856847" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/197.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma State Cowboys
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/66.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa State Cyclones</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858279" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/103.png" alt="" loading="lazy" onerror="this.style.display='none'">Boston College Eagles
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/150.png" alt="" loading="lazy" onerror="this.style.display='none'">Duke Blue Devils</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858508" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2440.png" alt="" loading="lazy" onerror="this.style.display='none'">Nevada Wolf Pack
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/26.png" alt="" loading="lazy" onerror="this.style.display='none'">UCLA Bruins</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858505" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/77.png" alt="" loading="lazy" onerror="this.style.display='none'">Northwestern Wildcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2483.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon Ducks</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858506" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2509.png" alt="" loading="lazy" onerror="this.style.display='none'">Purdue Boilermakers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/213.png" alt="" loading="lazy" onerror="this.style.display='none'">Penn State Nittany Lions</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401864529" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/167.png" alt="" loading="lazy" onerror="this.style.display='none'">New Mexico Lobos
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/23.png" alt="" loading="lazy" onerror="this.style.display='none'">San José State Spartans</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401862816" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/5.png" alt="" loading="lazy" onerror="this.style.display='none'">UAB Blazers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/58.png" alt="" loading="lazy" onerror="this.style.display='none'">South Florida Bulls</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858504" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/264.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington Huskies
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/158.png" alt="" loading="lazy" onerror="this.style.display='none'">Nebraska Cornhuskers</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856848" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/254.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah Utes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2132.png" alt="" loading="lazy" onerror="this.style.display='none'">Cincinnati Bearcats</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858278" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2567.png" alt="" loading="lazy" onerror="this.style.display='none'">SMU Mustangs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/183.png" alt="" loading="lazy" onerror="this.style.display='none'">Syracuse Orange</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856733" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/142.png" alt="" loading="lazy" onerror="this.style.display='none'">Missouri Tigers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/8.png" alt="" loading="lazy" onerror="this.style.display='none'">Arkansas Razorbacks</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858503" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/356.png" alt="" loading="lazy" onerror="this.style.display='none'">Illinois Fighting Illini
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/120.png" alt="" loading="lazy" onerror="this.style.display='none'">Maryland Terrapins</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401862815" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/218.png" alt="" loading="lazy" onerror="this.style.display='none'">Temple Owls
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/151.png" alt="" loading="lazy" onerror="this.style.display='none'">East Carolina Pirates</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858502" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/275.png" alt="" loading="lazy" onerror="this.style.display='none'">Wisconsin Badgers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2294.png" alt="" loading="lazy" onerror="this.style.display='none'">Iowa Hawkeyes</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401862814" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/349.png" alt="" loading="lazy" onerror="this.style.display='none'">Army Black Knights
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/235.png" alt="" loading="lazy" onerror="this.style.display='none'">Memphis Tigers</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858509" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/194.png" alt="" loading="lazy" onerror="this.style.display='none'">Ohio State Buckeyes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/30.png" alt="" loading="lazy" onerror="this.style.display='none'">USC Trojans</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858501" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/135.png" alt="" loading="lazy" onerror="this.style.display='none'">Minnesota Golden Gophers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/84.png" alt="" loading="lazy" onerror="this.style.display='none'">Indiana Hoosiers</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856736" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2579.png" alt="" loading="lazy" onerror="this.style.display='none'">South Carolina Gamecocks
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/201.png" alt="" loading="lazy" onerror="this.style.display='none'">Oklahoma Sooners</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858284" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/258.png" alt="" loading="lazy" onerror="this.style.display='none'">Virginia Cavaliers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/154.png" alt="" loading="lazy" onerror="this.style.display='none'">Wake Forest Demon Deacons</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858507" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/130.png" alt="" loading="lazy" onerror="this.style.display='none'">Michigan Wolverines
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/164.png" alt="" loading="lazy" onerror="this.style.display='none'">Rutgers Scarlet Knights</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858283" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/24.png" alt="" loading="lazy" onerror="this.style.display='none'">Stanford Cardinal
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/97.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisville Cardinals</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856845" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2305.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas Jayhawks
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2628.png" alt="" loading="lazy" onerror="this.style.display='none'">TCU Horned Frogs</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871097" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2348.png" alt="" loading="lazy" onerror="this.style.display='none'">Louisiana Tech Bulldogs
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/6.png" alt="" loading="lazy" onerror="this.style.display='none'">South Alabama Jaguars</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871095" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2572.png" alt="" loading="lazy" onerror="this.style.display='none'">Southern Miss Golden Eagles
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2433.png" alt="" loading="lazy" onerror="this.style.display='none'">UL Monroe Warhawks</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858281" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/59.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Tech Yellow Jackets
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/221.png" alt="" loading="lazy" onerror="this.style.display='none'">Pittsburgh Panthers</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858282" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2390.png" alt="" loading="lazy" onerror="this.style.display='none'">Miami Hurricanes
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/153.png" alt="" loading="lazy" onerror="this.style.display='none'">North Carolina Tar Heels</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401860924" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/204.png" alt="" loading="lazy" onerror="this.style.display='none'">Oregon State Beavers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/278.png" alt="" loading="lazy" onerror="this.style.display='none'">Fresno State Bulldogs</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401869846" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2026.png" alt="" loading="lazy" onerror="this.style.display='none'">App State Mountaineers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/290.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Southern Eagles</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401858277" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/25.png" alt="" loading="lazy" onerror="this.style.display='none'">California Golden Bears
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/152.png" alt="" loading="lazy" onerror="this.style.display='none'">NC State Wolfpack</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871096" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/276.png" alt="" loading="lazy" onerror="this.style.display='none'">Marshall Thundering Herd
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/295.png" alt="" loading="lazy" onerror="this.style.display='none'">Old Dominion Monarchs</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401869944" data-kick="1793419200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/324.png" alt="" loading="lazy" onerror="this.style.display='none'">Coastal Carolina Chanticleers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2247.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia State Panthers</div>
+<div class="kick">Sat Oct 31, 12:00 AM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 AM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401859185" data-kick="1793462400"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/87.png" alt="" loading="lazy" onerror="this.style.display='none'">Notre Dame Fighting Irish
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2426.png" alt="" loading="lazy" onerror="this.style.display='none'">Navy Midshipmen</div>
+<div class="kick">Sat Oct 31, 12:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401866452" data-kick="1793462400"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/189.png" alt="" loading="lazy" onerror="this.style.display='none'">Bowling Green Falcons
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2711.png" alt="" loading="lazy" onerror="this.style.display='none'">Western Michigan Broncos</div>
+<div class="kick">Sat Oct 31, 12:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 12:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401861966" data-kick="1793473200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/41.png" alt="" loading="lazy" onerror="this.style.display='none'">UConn Huskies
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2005.png" alt="" loading="lazy" onerror="this.style.display='none'">Air Force Falcons</div>
+<div class="kick">Sat Oct 31, 3:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 3:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401856734" data-kick="1793475000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/57.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida Gators
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/61.png" alt="" loading="lazy" onerror="this.style.display='none'">Georgia Bulldogs</div>
+<div class="kick">Sat Oct 31, 3:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 3:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401864531" data-kick="1793475000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2638.png" alt="" loading="lazy" onerror="this.style.display='none'">UTEP Miners
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2449.png" alt="" loading="lazy" onerror="this.style.display='none'">North Dakota State Bison</div>
+<div class="kick">Sat Oct 31, 3:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 3:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401860910" data-kick="1793475000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/36.png" alt="" loading="lazy" onerror="this.style.display='none'">Colorado State Rams
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/328.png" alt="" loading="lazy" onerror="this.style.display='none'">Utah State Aggies</div>
+<div class="kick">Sat Oct 31, 3:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 3:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401871059" data-kick="1793475000"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2229.png" alt="" loading="lazy" onerror="this.style.display='none'">Florida International Panthers
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2335.png" alt="" loading="lazy" onerror="this.style.display='none'">Liberty Flames</div>
+<div class="kick">Sat Oct 31, 3:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 3:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401860909" data-kick="1793487600"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/265.png" alt="" loading="lazy" onerror="this.style.display='none'">Washington State Cougars
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/21.png" alt="" loading="lazy" onerror="this.style.display='none'">San Diego State Aztecs</div>
+<div class="kick">Sat Oct 31, 7:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 7:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401860908" data-kick="1793498400"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/326.png" alt="" loading="lazy" onerror="this.style.display='none'">Texas State Bobcats
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/68.png" alt="" loading="lazy" onerror="this.style.display='none'">Boise State Broncos</div>
+<div class="kick">Sat Oct 31, 10:00 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 10:00 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+<div class="card game pending" id="g-401864530" data-kick="1793500200"
+ data-prob="0" data-margin="0" data-edge="0" data-tags="pending">
+<div class="cardhead"><div class="teams"><img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2459.png" alt="" loading="lazy" onerror="this.style.display='none'">Northern Illinois Huskies
+&nbsp;@&nbsp;<img class="crest" src="https://cdn.collegefootballdata.com/logos/500/2439.png" alt="" loading="lazy" onerror="this.style.display='none'">UNLV Rebels</div>
+<div class="kick">Sat Oct 31, 10:30 PM ET</div></div>
+<div class="pendingnote">Lean releases <strong>Sat Oct 24, 10:30 PM ET</strong>
+<span class="meta">&mdash; one week before kickoff. The final pick locks once the injury
+report and the kickoff forecast are in, and no later than two hours before the game.</span></div>
+</div>
+</div>
+<script>
+(function () {
+  var list = document.getElementById('games');
+  if (!list) return;
+  var note = document.querySelector('.emptynote');
+  var filter = 'all';
+
+  function apply() {
+    var key = document.getElementById('sortby').value;
+    var cards = Array.prototype.slice.call(list.querySelectorAll('.game'));
+    cards.sort(function (a, b) {
+      var av = parseFloat(a.dataset[key]), bv = parseFloat(b.dataset[key]);
+      return key === 'kick' ? av - bv : bv - av;   // time ascending, strength descending
+    });
+    cards.forEach(function (c) {
+      list.appendChild(c);
+      var show = filter === 'all' || c.dataset.tags.split(' ').indexOf(filter) !== -1;
+      c.hidden = !show;
+    });
+    var visible = cards.filter(function (c) { return !c.hidden; }).length;
+    if (note) note.hidden = visible !== 0;
+  }
+
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      apply();
+    });
+  });
+  document.getElementById('sortby').addEventListener('change', apply);
+  apply();
+
+  var wk = document.getElementById('weekpick');
+  if (wk) wk.addEventListener('change', function () { window.location.href = wk.value; });
+  var sn = document.getElementById('seasonpick');
+  if (sn) sn.addEventListener('change', function () { window.location.href = sn.value; });
+})();
+</script>
+<footer>Model picks are analytical output, not betting advice. Ratings are opponent-adjusted
+ridge estimates with recency decay; win probabilities from a normal margin model.</footer>
+</div></body></html>

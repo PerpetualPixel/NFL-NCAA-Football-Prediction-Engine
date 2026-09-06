@@ -51,9 +51,12 @@ def grade(preds: pd.DataFrame, margin_sigma: float = 13.5) -> pd.DataFrame:
     else:
         df["ml_price"] = np.nan
     ml_won = np.where(home_favored, df["margin"] > 0, df["margin"] < 0)
+    # a moneyline the book never posted cannot be settled at any price, so
+    # the bet is simply not made rather than graded at an invented number
+    priced = df["ml_price"].notna() & (df["ml_price"].abs() >= 100)
     df["ml_result"] = np.where(
-        ~done, None, np.where(df["margin"] == 0, "push", np.where(ml_won, "win", "loss"))
-    )
+        ~(done & priced), None,
+        np.where(df["margin"] == 0, "push", np.where(ml_won, "win", "loss")))
     df["ml_profit"] = [
         0.0 if r in (None, "push") else
         (american_profit(p) if r == "win" else -FLAT_STAKE)
@@ -72,6 +75,10 @@ def grade(preds: pd.DataFrame, margin_sigma: float = 13.5) -> pd.DataFrame:
         df["ats_price"] = np.where(take_home, df["home_spread_odds"], df["away_spread_odds"])
     else:
         df["ats_price"] = DEFAULT_ODDS
+    # the college feed posts no spread price; -110 is assumed for settlement,
+    # so it is assumed for the calibration and tiering decisions as well
+    df["ats_price_assumed"] = pd.isna(df["ats_price"]) & has_line
+    df["ats_price"] = pd.to_numeric(df["ats_price"], errors="coerce").fillna(DEFAULT_ODDS)
     covered = np.where(take_home, df["margin"] > df["spread_line"], df["margin"] < df["spread_line"])
     push = df["margin"] == df["spread_line"]
     df["ats_result"] = np.where(
@@ -101,27 +108,52 @@ def grade(preds: pd.DataFrame, margin_sigma: float = 13.5) -> pd.DataFrame:
     # frame so the same buckets shown on a game card can be scored later
     edges = df["pred_margin"] - df["spread_line"]
     df["tags"] = [
-        odds.classify(p, e if pd.notna(e) else None)
-        for p, e in zip(df["home_win_prob"], edges)
+        odds.classify(p, e if pd.notna(e) else None, s if pd.notna(s) else None)
+        for p, e, s in zip(df["home_win_prob"], edges, df["spread_line"])
     ]
     return df
 
 
-# A play is only a "Pick" when the calibrated probability says the price is
-# worth taking. Everything else the model has an opinion on is a "Lean":
-# shown with all its reasoning, but not put forward as a bet.
-PICK_EV_THRESHOLD = 0.0
+# Tiers are set by the calibrated chance of winning, because that is what
+# tracks reality. Measured on 2023-2025 (3,400 games), calibrated 85%+
+# moneylines won 93% of the time in both leagues, 70-85% won about 74%,
+# 55-70% about 62%, and anything the model could not separate from a coin
+# flip won 45%. The old tier, keyed on expected value, did the opposite: it
+# promoted the model's biggest disagreements with the price, which were its
+# worst bets (41% in the NFL).
+#
+# A tier says how often a play like this has won, not that it is a good
+# price: an 85% favourite is priced accordingly, so the return on Locks is
+# about breakeven. Low risk and high return are different things, and the
+# tracker reports both.
+LOCK_PROB = 0.85
+PICK_PROB = 0.70
+LEAN_PROB = 0.55
+TIER_LABELS = {"lock": "Lock", "pick": "Pick", "lean": "Lean", "pass": "Pass"}
+TIER_ORDER = ["lock", "pick", "lean", "pass"]
+
+
+def tier_for(prob: float) -> str:
+    if pd.isna(prob):
+        return "lean"
+    if prob >= LOCK_PROB:
+        return "lock"
+    if prob >= PICK_PROB:
+        return "pick"
+    if prob >= LEAN_PROB:
+        return "lean"
+    return "pass"
 
 
 def assign_tiers(graded: pd.DataFrame) -> pd.DataFrame:
-    """Label each side Pick or Lean, per bet type, from calibrated EV."""
+    """Label each moneyline side by calibrated win chance. Spread sides are
+    never more than a lean: measured across 3,000 spread picks they cover
+    49-50% of the time, which is a coin flip at -110."""
     df = graded.copy()
-    for kind in ("ml", "ats"):
-        ev = df.get(f"{kind}_ev")
-        if ev is None:
-            df[f"{kind}_tier"] = "lean"
-            continue
-        df[f"{kind}_tier"] = np.where(ev > PICK_EV_THRESHOLD, "pick", "lean")
+    cal = df["ml_cal"] if "ml_cal" in df.columns else df["ml_prob"]
+    cal = cal.where(cal.notna(), df["ml_prob"])
+    df["ml_tier"] = [tier_for(p) for p in cal]
+    df["ats_tier"] = "lean"
     return df
 
 
@@ -219,6 +251,10 @@ def game_ledger(graded: pd.DataFrame, league: str, season: int,
                 "league": league, "season": season, "week": week,
                 "week_label": week_label, "type": label,
                 "tier": getattr(row, f"{kind}_tier", "lean"),
+                # a wager published before kickoff and frozen, as opposed to
+                # a backtested one the model produced after the fact
+                "live": bool(getattr(row, "frozen", False))
+                        and not bool(getattr(row, "post_kick", False)),
                 "matchup": f"{row.away_team} @ {row.home_team}",
                 "pick": pick,
                 "price": _clean_price(getattr(row, f"{kind}_price", None)),
@@ -239,6 +275,7 @@ def wager_ledger(pick: dict | None, league: str, season: int, week: int,
         "league": league, "season": season, "week": week,
         "week_label": week_label, "type": kind,
         "tier": "pick",
+        "live": bool(pick.get("locked_at")),
         "matchup": f'{len(pick["legs"])} leg' + ("s" if len(pick["legs"]) > 1 else ""),
         "pick": legs,
         "price": round(float(pick["american"]), 0),
@@ -252,6 +289,18 @@ def _clean_price(value):
     if value is None or pd.isna(value) or abs(value) < 100:
         return DEFAULT_ODDS
     return round(float(value), 0)
+
+
+def tier_hit_rates(graded: pd.DataFrame) -> dict:
+    """Realised win rate and ROI per moneyline tier, for the breakdowns."""
+    out = {}
+    if graded is None or graded.empty or "ml_tier" not in graded.columns:
+        return out
+    for tier in TIER_ORDER:
+        rec = record(graded[graded["ml_tier"] == tier], "ml")
+        if rec["decided"]:
+            out[tier] = rec
+    return out
 
 
 def _clean_float(value):

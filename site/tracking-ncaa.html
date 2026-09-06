@@ -3,40 +3,67 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NCAAF tracking — Gridiron Engine</title><style>
 :root {
-  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
-  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
-  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+  --bg: #f3f5f8; --card: #ffffff; --sunken: #f6f8fb; --ink: #131820;
+  --muted: #5f6b7a; --line: #e2e7ee; --accent: #1f4fd8; --accent-ink: #ffffff;
+  --accent-soft: rgba(31, 79, 216, 0.10);
+  --good: #0f7a57; --good-soft: rgba(15, 122, 87, 0.12);
+  --warn: #b25c07; --warn-soft: rgba(178, 92, 7, 0.12);
+  --bad: #b8262c; --bad-soft: rgba(184, 38, 44, 0.12);
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 14px rgba(16, 24, 40, 0.05);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
-    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
-    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+    --bg: #0b0e12; --card: #151a21; --sunken: #10141a; --ink: #e8ebef;
+    --muted: #97a1ae; --line: #252c36; --accent: #7fa6ff; --accent-ink: #0b0e12;
+    --accent-soft: rgba(127, 166, 255, 0.14);
+    --good: #3ddc9b; --good-soft: rgba(61, 220, 155, 0.14);
+    --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, 0.14);
+    --bad: #ff7b7b; --bad-soft: rgba(255, 123, 123, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
-  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+.wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 72px; }
 header.site {
-  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
-  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
 }
-header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
-header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site h1 {
+  font-size: 1.3rem; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 9px;
+}
+header.site h1 a { color: inherit; text-decoration: none; }
+.mark {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+header.site nav { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
 header.site nav a {
-  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
-  padding: 4px 10px; border-radius: 6px;
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.86rem;
+  padding: 6px 11px; border-radius: 999px;
 }
-header.site nav a:hover { color: var(--accent); background: var(--sunken); }
-.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
-h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+header.site nav a:hover { color: var(--accent); background: var(--accent-soft); }
+header.site nav a.active { color: var(--accent-ink); background: var(--accent); }
+.stamp {
+  color: var(--muted); font-size: 0.78rem; margin: 10px 0 22px; line-height: 1.5;
+}
+.stamp strong { color: var(--ink); }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
 .card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-  padding: 16px 18px; margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
 }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .card .teams { font-size: 1.05rem; font-weight: 700; }
 .card .pick { margin: 6px 0 2px; }
 .card .pick strong { color: var(--accent); }
@@ -68,8 +95,9 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
 .bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
 .bet {
   flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
-  border-radius: 8px; padding: 9px 11px;
+  border-radius: 10px; padding: 10px 12px;
 }
+.bet:first-child { border-color: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .betlabel {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--muted); font-weight: 700;
@@ -124,7 +152,7 @@ ul.factors { padding-left: 0; }
   padding: 9px 12px; border-bottom: 1px solid var(--line);
   color: var(--ink); text-decoration: none;
 }
-.srow:hover { background: rgba(255,255,255,0.04); }
+.srow:hover { background: var(--accent-soft); }
 .steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .steam {
   display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
@@ -174,17 +202,60 @@ table.track a:hover { color: var(--accent); }
   font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
   padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
 }
-.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-lock { color: var(--accent-ink); background: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-pick { color: var(--good); background: var(--good-soft); border-color: transparent; font-weight: 800; }
+.tag-lean { color: var(--muted); background: var(--sunken); border-color: transparent; }
+.tag-pass { color: var(--muted); border-style: dashed; }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
-.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
-.tag-lean { color: var(--muted); }
+.tag-key { color: var(--warn); border-color: var(--warn); }
+.oddssrc { color: var(--muted); font-size: 0.78rem; }
+.form-w { color: var(--good); font-weight: 800; }
+.form-l { color: var(--bad); font-weight: 800; }
+.form-t { color: var(--muted); font-weight: 800; }
+.lgtag.live { color: var(--good); border-color: var(--good); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
 .hero.card {
-  display: block; text-decoration: none; color: inherit;
-  border: 2px solid var(--accent); padding: 18px 20px;
+  display: block; text-decoration: none; color: inherit; position: relative;
+  border: 1px solid var(--accent); padding: 20px 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-soft), var(--card) 60%);
 }
+.hero.card:hover { transform: translateY(-1px); }
+.ladder { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+.rung { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: var(--shadow); }
+.rung .tiletitle { display: flex; justify-content: space-between; gap: 6px; }
+.rung .tilebig { font-size: 1.3rem; }
+.rung .tilesub { line-height: 1.35; }
+.wknav {
+  position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; padding: 8px 0; margin-bottom: 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.86rem;
+  padding: 6px 10px; border-radius: 8px; background: var(--accent-soft);
+}
+.wknav-btn.disabled { color: var(--muted); background: var(--sunken); }
+.wksel { color: var(--muted); font-size: 0.84rem; }
+.wksel select {
+  font: inherit; font-size: 0.86rem; margin-left: 6px; padding: 5px 8px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.weekhead { font-size: 0.95rem; color: var(--muted); margin: -4px 0 14px; }
+footer { color: var(--muted); font-size: 0.78rem; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); }
+.weekgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.9rem; }
+.wt-detail { font-size: 0.78rem; margin-top: 2px; }
+.upcoming { color: var(--accent); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.leagues .card { text-decoration: none; color: inherit; }
+.leagues .card:hover { border-color: var(--accent); }
 .herolabel {
   font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--accent);
@@ -196,8 +267,10 @@ table.track a:hover { color: var(--accent); }
   display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
   text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
 }
-.stage.locked { background: var(--good); color: #fff; }
-.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
+.stage.locked { background: var(--good); color: var(--accent-ink); }
+.stage.leanstage { background: var(--warn-soft); color: var(--warn); }
+.stage.started { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); }
+.stage.noresult { background: var(--bad-soft); color: var(--bad); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -270,17 +343,21 @@ ul.factors li { margin-bottom: 8px; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </style></head>
 <body><div class="wrap">
-<header class="site"><h1>Gridiron Engine</h1>
-<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<header class="site"><h1><span class="mark"></span><a href="index.html">Gridiron Engine</a></h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAAF</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:13 UTC</strong>, hourly
-&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<script>(function(){var p=(location.pathname.split('/').pop()||'index.html');
+document.querySelectorAll('header.site nav a').forEach(function(a){var h=a.getAttribute('href');
+if(h===p||(h==='nfl.html'&&/^nfl-/.test(p))||(h==='ncaa.html'&&/^ncaa-/.test(p)))a.classList.add('active');});})();</script>
+<div class="stamp">Odds, injuries and forecasts as of <strong>Sun Sep 6, 2:36 PM ET</strong>
+&middot; rebuilt twice an hour (GitHub may delay a run) &middot; free public data
+(nflverse / sportsdataverse / ESPN / Open-Meteo) &middot; walk-forward model, no leakage</div>
 <h2>NCAAF tracking</h2>
 <div class="controls scopebar">
-  <label class="ctl-sort">Season:<select id="scopeseason"><option value="2026">2026 season</option><option value="2025">2025 season</option><option value="2024">2024 season</option><option value="2023">2023 season</option></select></label>
+  <label class="ctl-sort">Season:<select id="scopeseason"><option value="2026" selected>2026 season</option><option value="2025">2025 season</option><option value="2024">2024 season</option><option value="2023">2023 season</option></select></label>
 </div>
-<div class="tiles"><div class="tile scoped" data-league="ncaa" data-season="2026"><div class="tiletitle">Moneyline</div><div class="tilebig t-good">2-2</div><div class="tilesub meta">50% &middot; -0.2 units (-4.5% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2025"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">560-241</div><div class="tilesub meta">70% &middot; -21.6 units (-2.7% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2025"><div class="tiletitle">Spread</div><div class="tilebig t-mid">397-388</div><div class="tilesub meta">51% &middot; -27.1 units (-3.5% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2025"><div class="tiletitle">Closing line value</div><div class="tilebig t-bad">34%</div><div class="tilesub meta">market moved toward the pick on 685 spread picks</div></div><div class="tile scoped" data-league="ncaa" data-season="2025"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-bad">7-9</div><div class="tilesub meta">44% &middot; -2.6 units (-16.5% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2025"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">20-34</div><div class="tilesub meta">37% &middot; -9.2 units (-17.1% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2024"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">503-239</div><div class="tilesub meta">68% &middot; -28.7 units (-3.9% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2024"><div class="tiletitle">Spread</div><div class="tilebig t-bad">335-358</div><div class="tilesub meta">48% &middot; -53.5 units (-7.7% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2024"><div class="tiletitle">Closing line value</div><div class="tilebig t-bad">39%</div><div class="tilesub meta">market moved toward the pick on 618 spread picks</div></div><div class="tile scoped" data-league="ncaa" data-season="2024"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-good">8-7</div><div class="tilesub meta">53% &middot; +0.3 units (+1.8% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2024"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">16-35</div><div class="tilesub meta">31% &middot; -15.7 units (-30.7% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2023"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">541-207</div><div class="tilesub meta">72% &middot; +7.4 units (+1.0% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2023"><div class="tiletitle">Spread</div><div class="tilebig t-mid">355-342</div><div class="tilesub meta">51% &middot; -19.3 units (-2.8% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2023"><div class="tiletitle">Closing line value</div><div class="tilebig t-bad">37%</div><div class="tilesub meta">market moved toward the pick on 658 spread picks</div></div><div class="tile scoped" data-league="ncaa" data-season="2023"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-mid">7-7</div><div class="tilesub meta">50% &middot; -0.6 units (-4.5% ROI)</div></div><div class="tile scoped" data-league="ncaa" data-season="2023"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">17-33</div><div class="tilesub meta">34% &middot; -11.6 units (-23.3% ROI)</div></div></div>
+<div class="tiles"><div class="tile scoped" hidden data-league="ncaa" data-season="2025"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">531-242</div><div class="tilesub meta">69% &middot; -49.9 units (-6.5% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2025"><div class="tiletitle">Spread</div><div class="tilebig t-mid">394-390</div><div class="tilesub meta">50% &middot; -31.8 units (-4.1% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2025"><div class="tiletitle">Closing line value</div><div class="tilebig t-bad">35%</div><div class="tilesub meta">market moved toward the pick on 678 spread picks</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2025"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-strong">1-1</div><div class="tilesub meta">50% &middot; +0.4 units (+20.9% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2025"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">17-31</div><div class="tilesub meta">35% &middot; -10.6 units (-22.0% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2024"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">471-234</div><div class="tilesub meta">67% &middot; -53.0 units (-7.5% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2024"><div class="tiletitle">Spread</div><div class="tilebig t-mid">336-357</div><div class="tilesub meta">48% &middot; -51.5 units (-7.4% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2024"><div class="tiletitle">Closing line value</div><div class="tilebig t-bad">40%</div><div class="tilesub meta">market moved toward the pick on 614 spread picks</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2024"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-bad">2-5</div><div class="tilesub meta">29% &middot; -3.5 units (-50.4% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2024"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">15-29</div><div class="tilesub meta">34% &middot; -9.7 units (-22.0% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2023"><div class="tiletitle">Moneyline</div><div class="tilebig t-strong">496-187</div><div class="tilesub meta">73% &middot; -13.2 units (-1.9% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2023"><div class="tiletitle">Spread</div><div class="tilebig t-mid">350-347</div><div class="tilesub meta">50% &middot; -28.8 units (-4.1% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2023"><div class="tiletitle">Closing line value</div><div class="tilebig t-bad">35%</div><div class="tilesub meta">market moved toward the pick on 607 spread picks</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2023"><div class="tiletitle">Pixel&rsquo;s Picks</div><div class="tilebig t-bad">5-8</div><div class="tilesub meta">38% &middot; -3.8 units (-29.0% ROI)</div></div><div class="tile scoped" hidden data-league="ncaa" data-season="2023"><div class="tiletitle">Parlay board</div><div class="tilebig t-bad">17-26</div><div class="tilesub meta">40% &middot; -6.3 units (-14.6% ROI)</div></div></div>
 
 <h2>Every wager</h2>
 <details class="more explainbox"><summary>What is in this table</summary>
@@ -303,8 +380,21 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
   </div>
 </div>
 <div class="controls">
+  <div class="ctl-group" id="tierfilter">
+    <button class="chip active" data-t="all">All tiers</button>
+    <button class="chip" data-t="lock">Locks</button>
+    <button class="chip" data-t="pick">Picks</button>
+    <button class="chip" data-t="lean">Leans</button>
+    <button class="chip" data-t="pass">Pass</button>
+  </div>
+  <div class="ctl-group" id="livefilter">
+    <button class="chip active" data-l="all">Backtest + live</button>
+    <button class="chip" data-l="live">Live only (published before kickoff)</button>
+  </div>
+</div>
+<div class="controls">
   <label class="ctl-sort">Week:<select id="weekfilter">
-    <option value="all">All weeks</option><option value="1">Week 1</option></select></label>
+    <option value="all">All weeks</option><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Week 15</option><option value="16">Week 16</option><option value="17">Bowls &amp; Playoff</option></select></label>
   <label class="ctl-sort">Sort:<select id="ledgersort">
     <option value="week">Most recent first</option>
     <option value="profit">Biggest win</option>
@@ -324,7 +414,8 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
 <script>
 (function () {
   var rows = [], view = [], shown = 0, PAGE = 100;
-  var state = {season: null, week: 'all', type: 'all', result: 'all', sort: 'week'};
+  var state = {season: null, week: 'all', type: 'all', result: 'all', tier: 'all',
+               live: 'all', sort: 'week'};
   var tbody = document.querySelector('#ledger tbody');
   var note = document.querySelector('.emptynote');
   var more = document.getElementById('loadmore');
@@ -339,8 +430,10 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
     var html = slice.map(function (r) {
       var tone = r.result === 'win' ? 't-strong' : (r.result === 'loss' ? 't-bad' : 't-mid');
       var prob = r.prob == null ? '' : Math.round(r.prob * 100) + '%';
+      var tier = r.tier ? ' <span class="lgtag">' + r.tier + '</span>' : '';
+      var live = r.live ? ' <span class="lgtag live">live</span>' : '';
       return '<tr><td>' + r.week_label + ' <span class="meta">' + r.season + '</span></td>' +
-        '<td>' + (LABEL[r.type] || r.type) + '</td>' +
+        '<td>' + (LABEL[r.type] || r.type) + tier + live + '</td>' +
         '<td>' + r.pick + ' <span class="meta">' + r.matchup + '</span></td>' +
         '<td class="num">' + fmtPrice(r.price) + '</td>' +
         '<td class="num meta">' + prob + '</td>' +
@@ -364,7 +457,9 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
       return (state.season == null || r.season === state.season)
         && (state.week === 'all' || String(r.week) === state.week)
         && (state.type === 'all' || r.type === state.type)
-        && (state.result === 'all' || r.result === state.result);
+        && (state.result === 'all' || r.result === state.result)
+        && (state.tier === 'all' || r.tier === state.tier)
+        && (state.live === 'all' || r.live);
     });
     var s = state.sort;
     view.sort(function (a, b) {
@@ -384,7 +479,7 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
           b.classList.remove('active');
         });
         btn.classList.add('active');
-        state[key] = btn.dataset.f || btn.dataset.r;
+        state[key] = btn.dataset.f || btn.dataset.r || btn.dataset.t || btn.dataset.l;
         apply();
       });
     });
@@ -395,12 +490,28 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
       rows = data;
       var sel = document.getElementById('scopeseason');
       state.season = sel ? parseInt(sel.value, 10) : null;
+      rebuildWeeks();
       apply();
     })
     .catch(function () { if (count) count.textContent = 'results unavailable'; });
 
   bindChips('typefilter', 'type');
   bindChips('resultfilter', 'result');
+  bindChips('tierfilter', 'tier');
+  bindChips('livefilter', 'live');
+  function rebuildWeeks() {
+    var sel = document.getElementById('weekfilter');
+    var seen = {}, opts = [];
+    rows.forEach(function (r) {
+      if (state.season != null && r.season !== state.season) return;
+      if (!seen[r.week]) { seen[r.week] = true; opts.push([r.week, r.week_label]); }
+    });
+    opts.sort(function (a, b) { return a[0] - b[0]; });
+    sel.innerHTML = '<option value="all">All weeks</option>' + opts.map(function (o) {
+      return '<option value="' + o[0] + '">' + o[1] + '</option>';
+    }).join('');
+    state.week = 'all';
+  }
   document.getElementById('weekfilter').addEventListener('change', function (e) {
     state.week = e.target.value; apply();
   });
@@ -415,6 +526,7 @@ posted, so a winning underdog returns more than a winning favourite.</span></det
     document.querySelectorAll('.scoped').forEach(function (el) {
       el.hidden = el.dataset.season && el.dataset.season !== e.target.value;
     });
+    rebuildWeeks();
     apply();
   });
 })();
