@@ -112,9 +112,39 @@ One shared pipeline, two leagues (`engine/config.py` holds the per-league tuning
 | `tracking.py` | Grading, tiers, records, ROI, closing line value, the wager ledger |
 | `analysis.py` | The written breakdowns |
 | `site.py` | Static site generation |
+| `feed.py` | `picks.json` — the same week written for a program |
 
 Every feature for a game is computed using only games that finished before it.
 No rating ever sees the game it is predicting.
+
+## The picks feed
+
+Everything the week page shows is also published as JSON, so another site can
+read the engine's picks rather than scrape its markup:
+
+**[`picks.json`](https://perpetualpixel.github.io/NFL-NCAA-Football-Prediction-Engine/picks.json)**
+— rebuilt on every run, alongside the pages.
+
+It carries the current week of each league and the one after it (books post
+next week's games before this week's are all played), one entry per released
+game: the moneyline and spread picks, the tier, the calibrated probability, the
+market numbers the pick was priced against, the release stage, and every
+breakdown paragraph from the card as plain text. Pending games are not in it —
+an unreleased pick is not a pick.
+
+Each pick also carries `agreement`: the model's calibrated probability, the
+price's implied probability, and the signed gap between them. That field exists
+because of the measurements in *How it actually performs* below — the model's
+largest disagreements with the market have been its worst bets, so a consumer
+that treats a big positive gap as an edge is reading the feed backwards. The
+same warning ships inside every build as the feed's `disclosure` string.
+
+`feed_version` is bumped whenever a field changes meaning or goes away; new
+fields can appear without one. Every field but the identifiers can be null.
+
+[perpetualpicks.com](https://perpetualpicks.com) reads this feed to lay the
+engine's read over its own live odds board — see `docs/gridiron.js` in
+[PerpetualCode](https://github.com/PerpetualPixel/PerpetualCode).
 
 ## Usage
 
