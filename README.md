@@ -41,10 +41,27 @@ stacked in confidence order until the combined price reaches +100 or better,
 grouped by the day they play.
 
 **Breakdowns.** Per game: why the side carries its tier, in the tracker's own
-numbers; the projected score against the market total; the game script; the
-final injury report with names and designations; the kickoff forecast; recent
-form; unit grades against the rest of the league; the target hierarchy and
-backfield split; quarterback status; line movement.
+numbers; the projected score against the market total; the game script; who is
+out, with names and reasons; the kickoff forecast; recent form; unit grades
+against the rest of the league; the target hierarchy and backfield split;
+quarterback status; line movement.
+
+**Players are checked against today's roster.** Every name on the site is
+looked up on the current roster before it is printed, by player id. Anyone who
+has changed teams, been released or retired is not named at all; anyone on a
+reserve list or carrying a game-status designation is named as unavailable
+rather than as the man to watch; positions and spellings come from the roster
+rather than from last season's file. Where the production behind a name is a
+previous season's, the sentence says so and is written in the past tense.
+Every page carries the timestamp of the roster it was checked against, and a
+pick will not lock while that roster is stale.
+
+This matters most in exactly the week it used to matter least. Measured
+against the current rosters, of the players an NFL team leaned on last season
+21% are now under contract elsewhere and 7% are out of the league; in college
+23% have transferred and 31% are on no roster at all. A week-one breakdown
+built from last season's production named the wrong player more often than the
+right one.
 
 **Tracking.** One page per league. Every settled wager, filterable by season,
 week, bet type, tier, result, and whether it was published live before
@@ -57,7 +74,7 @@ posted; closing line value.
 |---|---|---|
 | Scheduled | more than a week out | Nothing published |
 | **Lean** | one week out | The model's current read, refreshed on every build as prices, injuries and forecasts change |
-| **Locked** | final injury report + kickoff forecast in, or two hours before kickoff, whichever is first | Final. Frozen and never changed; this is what the tracker grades |
+| **Locked** | current roster + final injury report + kickoff forecast in, or two hours before kickoff, whichever is first | Final. Frozen and never changed; this is what the tracker grades |
 
 Locked picks are written to a state file that ships with the site and is read
 back on every build, so a later run cannot quietly move a number that was
@@ -82,11 +99,12 @@ One shared pipeline, two leagues (`engine/config.py` holds the per-league tuning
 
 | Module | Does |
 |---|---|
-| `data/ingest.py` | Cached parquet downloads: play-by-play, schedules, betting lines, injuries, snap counts, rosters |
+| `data/ingest.py` | Cached parquet downloads: play-by-play, schedules, betting lines, injuries, snap counts, weekly rosters, depth charts |
+| `rosters.py` | Who is on each team today and who is ruled out; every published name is resolved through it |
 | `data/espn_odds.py` | Current spread and moneylines from ESPN's keyless scoreboard, laid over the archived lines |
 | `weather.py` | Real kickoff instants, venue coordinates, Open-Meteo kickoff forecasts |
 | `features/ratings.py` | Weighted ridge solve: `margin = strength(home) − strength(away) + HFA`, recency-decayed |
-| `pipeline.py` | Walk-forward features, unit ratings, quarterback values, injury burden, player usage |
+| `pipeline.py` | Walk-forward features, unit ratings, quarterback values, injury and reserve-list burden, player usage |
 | `calibrate.py` | Logistic fit on the model's log-odds *and* the price's, so staking uses a probability that accounts for the market |
 | `model.py` | Ridge margin model and win probabilities |
 | `locks.py` | Release stages (pending → lean → locked) and freezing published picks |
@@ -145,8 +163,17 @@ Walk-forward, 2021–2025, from week 5:
 
 | League | Margin MAE | Straight-up | Benchmark |
 |---|---|---|---|
-| NFL | 9.97 pts | 64.9% | closing line: 9.72 MAE on the same games |
+| NFL | 9.99 pts | 64.7% | closing line: 9.79 MAE on the same games |
 | NCAA | 12.78 pts | 70.0% | — |
+
+Counting reserve lists as absences, not just the weekly injury report, was
+measured over 739 walk-forward NFL games from 2022: margin MAE 10.07 → 9.99,
+Brier 0.2190 → 0.2182, ATS 47.0% → 49.0%, straight-up 65.2% → 64.7%. Better on
+margin error, calibration and against the spread; a shade worse picking
+winners outright. It is kept because a team that has lost a starter for the
+season is a fact the model should not be blind to, and because the week where
+it matters most — week one, before any injury report exists — is the week the
+old feature saw nothing at all.
 
 **Low risk and high return are different things, and only one of them is on
 offer.** The calibrated tiers deliver the win rates in the table above — Locks
@@ -176,8 +203,15 @@ visible rather than implied.
 - **Coverage matchups are not in free data.** The breakdown reports who
   commands targets and how the opposing unit grades; it does not claim to know
   which corner shadows whom.
-- **College has no injury feed**, so college picks lock on the day-before
-  forecast (or the two-hour clock) and the injury section is NFL-only.
+- **College has no injury feed.** College rosters are current — a transfer or
+  a departure is caught — but no free source publishes who is hurt, so the
+  "who is out" section is NFL-only and a college page never claims a team is
+  healthy. College picks lock on the day-before forecast (or the two-hour
+  clock) once the roster has been read.
+- **A roster says who is on the team, not who will play.** Being active is
+  not the same as being in the game plan, and a healthy scratch is not
+  announced until ninety minutes before kickoff — long after a pick is
+  published, so game-day inactives are deliberately not used.
 - **The college mirror publishes no spread prices** and, as of September 2026,
   no 2026 lines at all; live prices come from ESPN's scoreboard, which is
   best-effort.
