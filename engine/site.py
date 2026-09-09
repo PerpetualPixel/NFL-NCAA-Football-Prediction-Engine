@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import analysis, calibrate, grades, locks, model as model_mod
+from . import analysis, calibrate, feed, grades, locks, model as model_mod
 from . import odds, pipeline, pixel, teams, tracking, weather
 from .config import LEAGUES
 from .data import espn_odds
@@ -1831,6 +1831,8 @@ def build_site(out_dir: Path = SITE_DIR, refresh: bool = True) -> Path:
     summaries = []
     league_weeks: dict[tuple[str, int], list[dict]] = {}
     cur_season: dict[str, int] = {}
+    # (league, week, page) for picks.json — see engine/feed.py
+    feed_entries: list[tuple[str, dict, str]] = []
     for league in ("nfl", "ncaa"):
         # Seasons are built oldest first so each one's calibration is seeded
         # with every settled game that came before it, the same way the live
@@ -1883,6 +1885,17 @@ def build_site(out_dir: Path = SITE_DIR, refresh: bool = True) -> Path:
         current = next((w for w in weeks if not w["complete"]), weeks[-1] if weeks else None)
         summaries.append((league, season_summary, current))
 
+        # picks.json carries the current week and the one after it. A site
+        # reading this feed is looking at a live odds board, and books post
+        # next week's games days before this week's are all played — one week
+        # alone would leave those games unmatched every Sunday night.
+        if current is not None:
+            idx = weeks.index(current)
+            feed_entries += [
+                (league, w, week_slug(league, w["week"], season, season))
+                for w in weeks[idx:idx + 2]
+            ]
+
     import json
     for league in ("nfl", "ncaa"):
         by_season = {season: weeks for (lg, season), weeks in league_weeks.items()
@@ -1896,6 +1909,13 @@ def build_site(out_dir: Path = SITE_DIR, refresh: bool = True) -> Path:
             _page(f"{LEAGUE_TITLE[league]} tracking — Gridiron Engine",
                   _tracking_page(league, by_season))
         )
+
+    # The same week, written for a program rather than a reader: one entry per
+    # published game with its pick, tier, calibrated probability and every
+    # breakdown paragraph as plain text. perpetualpicks.com reads this to lay
+    # the engine's read over its own odds board.
+    (out_dir / "picks.json").write_text(
+        json.dumps(feed.build(feed_entries), ensure_ascii=False))
 
     cards = "\n".join(
         f'<a class="card" href="{week_slug(league, cur["week"]) if cur else f"{league}.html"}">'
