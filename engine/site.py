@@ -139,6 +139,11 @@ ul.factors { padding-left: 0; }
   font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
 }
 .ftext { font-size: 0.86rem; color: var(--ink); margin-top: 1px; }
+.provenance {
+  font-size: 0.74rem; color: var(--muted); margin-top: 8px;
+  border-top: 1px dashed var(--line); padding-top: 6px;
+}
+.stale { color: var(--warn, #b45309); font-weight: 700; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
 .tiletitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
@@ -383,9 +388,9 @@ ridge estimates with recency decay; win probabilities from a normal margin model
 </div></body></html>"""
 
 
-def _usage_html(row: pd.Series, usage) -> str:
+def _usage_html(row: pd.Series, usage, roster=None) -> str:
     """Target hierarchy and backfield split for both sides."""
-    reports = analysis.usage_report(row, usage)
+    reports = analysis.usage_report(row, usage, roster)
     if not reports:
         return ""
     blocks = "".join(
@@ -394,7 +399,33 @@ def _usage_html(row: pd.Series, usage) -> str:
         + "</div>"
         for r in reports
     )
-    return f'<h4>Who gets the ball</h4>{blocks}'
+    # every name above is only as good as the roster it was checked against,
+    # so the page says which roster that was and when it was published
+    note = reports[0].get("note") if reports else ""
+    source = f'<p class="provenance">{note}</p>' if note else ""
+    return f'<h4>Who gets the ball</h4>{blocks}{source}'
+
+
+def _roster_banner(league: str, roster) -> str:
+    """The page's standing claim about how current its player data is.
+
+    Put where a reader sees it before any name: what was checked, when, and
+    — if the feed could not be read this build — that the names below are
+    not vouched for.
+    """
+    if roster is None or getattr(roster, "empty", True):
+        return ('<div class="weekhead"><span class="stale">Rosters could not be '
+                'verified for this build</span> &mdash; player names and positions '
+                'below come from past production and may be out of date. Picks stay '
+                'provisional until a roster is read.</div>')
+    where = "depth charts and injury reports" if league == "nfl" else "team rosters"
+    if not roster.fresh:
+        return (f'<div class="weekhead"><span class="stale">Roster data is stale</span> '
+                f'&mdash; the newest {where} this build could read are from '
+                f'{roster.as_of_text()}. Names below are as of then.</div>')
+    return (f'<div class="weekhead">Rosters, {where} read '
+            f'{roster.as_of_text()}. Every player named below was on that roster; '
+            f'anyone ruled out is marked.</div>')
 
 
 def _movement_html(row: pd.Series) -> str:
@@ -582,11 +613,12 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None,
     case_html = ("<h4>Why this is a " + tracking.TIER_LABELS.get(row.get("ml_tier") or "lean", "Lean")
                  + "</h4>" + "".join(f'<p class="ftext">{p}</p>' for p in case)) if case else ""
 
-    injuries = analysis.injury_report(row, ctx.get("reports"), league)
+    roster = ctx.get("roster")
+    injuries = analysis.injury_report(row, ctx.get("reports"), league, roster)
     inj_html = ""
     if injuries:
         items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in injuries)
-        inj_html = f'<h4>Injury report</h4><ul class="factors">{items}</ul>'
+        inj_html = f'<h4>Who is out</h4><ul class="factors">{items}</ul>'
 
     form = analysis.recent_form(row, ctx.get("games"), league)
     form_html = ""
@@ -598,12 +630,12 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None,
     cond_html = f'<h4>Conditions</h4><p class="ftext">{cond}</p>' if cond else ""
 
     player_html = ""
-    people = analysis.key_players(row, players)
+    people = analysis.key_players(row, players, roster)
     if people:
         items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in people)
         player_html = f'<h4>Players to watch</h4><ul class="factors">{items}</ul>'
 
-    avail = analysis.availability_note(row)
+    avail = analysis.availability_note(row, roster)
     avail_html = (f'<h4>Quarterbacks &amp; availability</h4><p class="ftext">{avail}</p>'
                   if avail else "")
     factor_html = ""
@@ -626,7 +658,7 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None,
 {inj_html}{avail_html}{cond_html}
 {form_html}
 {player_html}{factor_html}
-{_usage_html(row, usage)}
+{_usage_html(row, usage, roster)}
 {_movement_html(row)}
 <h4>Unit ratings</h4>{_unit_table(row)}
 </div></details>"""
@@ -1043,6 +1075,7 @@ def build_league_weeks(
     state = state if state is not None else {"games": {}, "tickets": {}}
     now = now or pd.Timestamp.now(tz="UTC")
     reports = (availability or {}).get("injury_reports")
+    roster = (availability or {}).get("roster")
     season = int(games["season"].max()) if season is None else season
     # predict_week trains on everything before the target week, so keep the
     # full feature history and iterate only the current season's weeks
@@ -1066,7 +1099,7 @@ def build_league_weeks(
         if preds.empty:
             continue
         # release stage per game; frozen games take their values of record
-        preds = locks.stage_games(preds, league, state, now, reports, live)
+        preds = locks.stage_games(preds, league, state, now, reports, live, roster)
         preds = tracking.grade(preds, margin_sigma=cfg.margin_sigma)
         # calibrate against everything already settled this build
         history = (pd.concat(settled, ignore_index=True) if settled
@@ -1168,6 +1201,7 @@ def build_league_weeks(
     for w in weeks:
         w["players"] = players
         w["usage"] = usage
+        w["roster"] = roster
     if not write_pages:
         return weeks, season_summary, season
 
@@ -1207,15 +1241,16 @@ def write_week_pages(league: str, weeks: list[dict], season: int, cur_season: in
         players = w.get("players")
         usage = w.get("usage")
         ctx = {"tier_rates": w.get("tier_rates"), "reports": w.get("reports"),
-               "games": w.get("games")}
+               "games": w.get("games"), "roster": w.get("roster")}
         body = [
             _week_nav(league, weeks, w["week"], cur_season,
                       seasons=season_index, season=season),
             f'<h2>{w["label"]} &mdash; {season}</h2>',
             f'<div class="weekhead">{w["headline"]}</div>',
+            _roster_banner(league, w.get("roster")),
             _ladder(w, league),
             _schedule_grid(league, w, weeks),
-            _pixel_section(w, league, players),
+            _pixel_section(w, league, players, w.get("roster")),
             _board_section(w),
             CONTROLS,
             '<div id="games">',
@@ -1298,7 +1333,7 @@ def _league_hub(league: str, by_season: list[tuple[int, list[dict]]],
 {TRACK_SCRIPT}"""
 
 
-def _pixel_section(week: dict, league: str, players) -> str:
+def _pixel_section(week: dict, league: str, players, roster=None) -> str:
     """The week's headline pick, with the full case for it."""
     pick = week.get("pixel")
     if not pick:
@@ -1319,7 +1354,7 @@ def _pixel_section(week: dict, league: str, players) -> str:
                    f' &middot; {graded["profit"]:+.2f}u</span>')
     rationale = "".join(
         f"<p class='ftext'>{p}</p>"
-        for p in analysis.pixel_rationale(pick, week["preds"], league)
+        for p in analysis.pixel_rationale(pick, week["preds"], league, roster)
     )
     return f"""<div class="pixel card">
 <div class="pxhead"><span class="pxbadge">Pixel&rsquo;s Pick</span>

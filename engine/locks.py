@@ -7,8 +7,9 @@ A pick goes through three public states:
 * **lean** — inside a week. The model's current read, explicitly provisional,
   refreshed on every build as prices, injuries and forecasts change.
 * **locked** — final. Reached as soon as the things a pick waits for are in
-  (the final injury report and a kickoff forecast) or, failing that, two
-  hours before kickoff. From this point the pick never changes.
+  (a current roster, the final injury report and a kickoff forecast) or,
+  failing that, two hours before kickoff. From this point the pick never
+  changes.
 
 "Never changes" has to be enforced, not just labelled. Every build re-runs
 the model on fresh data, so without a record of what was published a
@@ -137,9 +138,19 @@ def nfl_final_reports(reports: pd.DataFrame | None, season: int, week: int) -> t
     return designated, week_in
 
 
-def news_in(row, league: str, hours: float, designated: set, week_in: bool) -> tuple[bool, str]:
-    """(is the news in, what is still missing) for one game."""
+def news_in(row, league: str, hours: float, designated: set, week_in: bool,
+            roster=None) -> tuple[bool, str]:
+    """(is the news in, what is still missing) for one game.
+
+    A pick that calls itself final is claiming the things it waits for are
+    known. Who is on the roster is one of those things: if the roster feed
+    has not been read successfully for this build, the pick stays a lean
+    and says what it is waiting for, rather than freezing a breakdown built
+    on names nobody has checked.
+    """
     weather_known = bool(_clean(row.get("indoors_venue")) or _clean(row.get("forecast_at")))
+    if roster is not None and not getattr(roster, "fresh", False):
+        return False, "a current roster"
     if league == "nfl":
         both = row["home_team"] in designated and row["away_team"] in designated
         injuries_known = both or (week_in and hours <= NEWS_LOCK_MAX_HOURS)
@@ -162,7 +173,7 @@ def news_in(row, league: str, hours: float, designated: set, week_in: bool) -> t
 # ---------------------------------------------------------------------------
 
 def stage_games(preds: pd.DataFrame, league: str, state: dict, now: pd.Timestamp,
-                reports: pd.DataFrame | None, live: bool) -> pd.DataFrame:
+                reports: pd.DataFrame | None, live: bool, roster=None) -> pd.DataFrame:
     """Decide each game's stage and freeze what needs freezing.
 
     Adds: release_stage, locked_at, lock_reason, waiting_on, kickoff, hours_out,
@@ -226,7 +237,7 @@ def stage_games(preds: pd.DataFrame, league: str, state: dict, now: pd.Timestamp
             df.at[i, "release_stage"] = "lean"
             continue
 
-        ready, missing = news_in(row, league, hours, designated, week_in)
+        ready, missing = news_in(row, league, hours, designated, week_in, roster)
         if hours <= LOCK_LEAD_HOURS or ready:
             reason = ("inside two hours of kickoff" if hours <= LOCK_LEAD_HOURS
                       else ("final injury report and kickoff forecast in" if league == "nfl"

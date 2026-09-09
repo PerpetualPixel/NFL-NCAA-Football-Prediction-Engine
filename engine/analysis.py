@@ -9,13 +9,119 @@ from __future__ import annotations
 
 import pandas as pd
 
-from . import grades, odds, teams, weather
+from . import grades, odds, rosters, teams, weather
 
 # Unit rating thresholds in EPA/play, roughly: 0.05 is a noticeable edge,
 # 0.10 is a strong unit, 0.15+ is elite (or, negative, a real liability).
 NOTABLE = 0.05
 STRONG = 0.10
 ELITE = 0.15
+
+
+# Whether a player is expected to take the field, and how the numbers beside
+# their name should be described, are separate questions and are answered
+# separately. A player is only ever presented as current after the roster has
+# confirmed them; production from a previous season is always labelled as
+# such rather than written in the present tense.
+
+# Below this share of a team's targets or carries a player is not part of the
+# distribution, they are a rounding error — a quarterback's one reception, a
+# fourth receiver's two targets — and naming them makes the hierarchy harder
+# to read rather than more complete.
+MINOR_SHARE = 0.04
+
+
+def _availability(row) -> str:
+    value = getattr(row, "availability", None)
+    return value if isinstance(value, str) else rosters.UNKNOWN
+
+
+def _availability_suffix(row) -> str:
+    """The parenthetical that keeps a name honest: on injured reserve, out
+    with an ankle, unconfirmed by the roster. Empty for an available player,
+    who needs no qualifier."""
+    note = getattr(row, "roster_note", None)
+    if _availability(row) == rosters.AVAILABLE or not isinstance(note, str) or not note:
+        return ""
+    return f" &mdash; <em>{note}</em>"
+
+
+def _is_out(row) -> bool:
+    return _availability(row) in (rosters.OUT, rosters.RESERVE)
+
+
+def _plays_this_week(frame: pd.DataFrame) -> pd.DataFrame:
+    """The rows for players who are expected to play."""
+    if frame is None or frame.empty or "availability" not in frame.columns:
+        return frame
+    return frame[~frame["availability"].isin([rosters.OUT, rosters.RESERVE])]
+
+
+def _ruled_out(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame is None or frame.empty or "availability" not in frame.columns:
+        return frame.iloc[0:0] if frame is not None else frame
+    return frame[frame["availability"].isin([rosters.OUT, rosters.RESERVE])]
+
+
+def _stats_are_current(frame: pd.DataFrame) -> bool:
+    if frame is None or frame.empty or "stats_are_current" not in frame.columns:
+        return True
+    return bool(frame["stats_are_current"].iloc[0])
+
+
+def _stat_season(frame: pd.DataFrame) -> int | None:
+    if frame is None or frame.empty or "stat_season" not in frame.columns:
+        return None
+    value = frame["stat_season"].iloc[0]
+    return int(value) if pd.notna(value) else None
+
+
+def _provenance(frame: pd.DataFrame, roster=None) -> str:
+    """One line saying where these names and numbers come from and when.
+
+    A reader deciding whether to trust a target share needs to know it is
+    last season's, and that the man it is attached to is on this week's
+    roster. Both facts go on the page.
+    """
+    bits = []
+    if not _stats_are_current(frame):
+        season = _stat_season(frame)
+        bits.append(f"Usage is {season} production" if season
+                    else "Usage is last season's production")
+    else:
+        bits.append("Usage is this season to date")
+    if roster is not None and not getattr(roster, "empty", True):
+        state = "verified" if roster.fresh else "last verified"
+        bits.append(f"roster {state} {roster.as_of_text()}")
+    else:
+        bits.append("roster could not be verified for this build")
+    return "; ".join(bits) + "."
+
+
+def _out_sentence(frame: pd.DataFrame, limit: int = 3) -> str:
+    """Who among these players will not be on the field."""
+    gone = _ruled_out(frame)
+    if gone is None or gone.empty:
+        return ""
+    if "share" in gone.columns:
+        gone = gone[gone["share"] >= MINOR_SHARE].nlargest(limit, "share")
+    elif "plays" in gone.columns and "plays" in frame.columns and len(frame):
+        # the production table has no share; a fifth of the busiest player's
+        # volume is the same idea — enough of a role for the absence to matter
+        floor = float(frame["plays"].max()) * MINOR_SHARE * 5
+        gone = gone[gone["plays"] >= floor].nlargest(limit, "plays")
+    else:
+        gone = gone.head(limit)
+    if gone.empty:
+        return ""
+    named = []
+    for r in gone.itertuples():
+        note = getattr(r, "roster_note", None)
+        tail = f" ({note})" if isinstance(note, str) and note else ""
+        named.append(f"<strong>{r.player}</strong>{tail}")
+    if not named:
+        return ""
+    return f" Not available: {', '.join(named)} &mdash; that work is going elsewhere."
 
 
 def _grade(value: float) -> str:
@@ -144,11 +250,20 @@ def game_script(row: pd.Series, league: str) -> list[str]:
 ROLE_LABEL = {"QB": "quarterback", "RB": "rushing", "REC": "receiving"}
 
 
-def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str, str]]:
+def key_players(row: pd.Series, players: pd.DataFrame | None,
+                roster=None) -> list[tuple[str, str]]:
     """(team, sentence) pairs naming the players driving each side's offense,
-    with the production that earns them the mention."""
+    with the production that earns them the mention.
+
+    Only players the current roster still places on the team are named, and
+    where the production is a previous season's the sentence says so instead
+    of writing last year in the present tense.
+    """
     if players is None or players.empty:
         return []
+    current = _stats_are_current(players)
+    season = _stat_season(players)
+    when = "" if current else (f" in {season}" if season else " last season")
     out = []
     # players are keyed by the data source's team code, while display uses
     # the full name, so look up by key and label by name
@@ -158,8 +273,9 @@ def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str,
         side = players[players["team"] == key]
         if side.empty:
             continue
+        playing = _plays_this_week(side)
         bits = []
-        qb = side[side["role"] == "QB"].nlargest(1, "total_epa")
+        qb = playing[playing["role"] == "QB"].nlargest(1, "total_epa")
         if not qb.empty:
             q = qb.iloc[0]
             verdict = ("carrying the offense" if q.epa_per_play >= 0.15
@@ -167,31 +283,50 @@ def key_players(row: pd.Series, players: pd.DataFrame | None) -> list[tuple[str,
                        else "steady but not a difference-maker" if q.epa_per_play >= 0.0
                        else "a drag on the offense")
             bits.append(
+                f"QB <strong>{q.player}</strong> was {verdict}{when}, worth roughly "
+                f"{q.epa_per_play * 35:+.1f} points a game over an average quarterback"
+                if when else
                 f"QB <strong>{q.player}</strong> has been {verdict}, adding roughly "
                 f"{q.epa_per_play * 35:+.1f} points a game over an average quarterback"
             )
-        top_rec = side[side["role"] == "REC"].nlargest(2, "total_epa")
+        top_rec = playing[playing["role"] == "REC"].nlargest(2, "total_epa")
         if not top_rec.empty:
             names = " and ".join(f"<strong>{r.player}</strong>" for r in top_rec.itertuples())
-            bits.append(f"the passing game runs through {names}")
+            bits.append(f"the passing game ran through {names}{when}" if when
+                        else f"the passing game runs through {names}")
         # rusher_player_name includes QB scrambles, so drop anyone who is
         # this team's passer before naming a running back
         qbs = set(side.loc[side["role"] == "QB", "player"])
-        rb = side[(side["role"] == "RB") & ~side["player"].isin(qbs)].nlargest(1, "total_epa")
+        rb = playing[(playing["role"] == "RB")
+                     & ~playing["player"].isin(qbs)].nlargest(1, "total_epa")
         if not rb.empty:
             r = rb.iloc[0]
-            quality = ("been efficient" if r.epa_per_play >= 0.02
+            quality = ("was efficient" if r.epa_per_play >= 0.02
+                       else "held his own" if r.epa_per_play >= -0.05
+                       else "struggled to move the ball") if when else (
+                       "been efficient" if r.epa_per_play >= 0.02
                        else "held his own" if r.epa_per_play >= -0.05
                        else "struggled to move the ball")
-            bits.append(f"lead back <strong>{r.player}</strong> has {quality}")
+            lead_in = "lead back <strong>%s</strong>" % r.player
+            bits.append(f"{lead_in} {quality}{when}" if when
+                        else f"{lead_in} has {quality}")
+        missing = _out_sentence(side, limit=2).strip()
         if bits:
-            out.append((team, "; ".join(bits) + "."))
+            out.append((team, "; ".join(bits) + "." + (f" {missing}" if missing else "")))
+        elif missing:
+            out.append((team, missing))
     return out
 
 
-def availability_note(row: pd.Series) -> str:
+def availability_note(row: pd.Series, roster=None) -> str:
     """Plain-language read on quarterbacks and injuries for this game."""
     bits = []
+    home_key = row.get("home_key", row.home_team)
+    away_key = row.get("away_key", row.away_team)
+    starters = _starting_quarterbacks(roster, home_key, away_key,
+                                      row.home_team, row.away_team)
+    if starters:
+        bits.append(starters)
     qb_change = row.get("qb_change", 0.0)
     if pd.notna(qb_change) and abs(qb_change) >= 0.04:
         side = row.home_team if qb_change < 0 else row.away_team
@@ -209,12 +344,31 @@ def availability_note(row: pd.Series) -> str:
         healthier = row.home_team if inj > 0 else row.away_team
         bits.append(
             f"<strong>{healthier}</strong> is the healthier side this week by the "
-            "injury report, weighted by who is actually missing"
+            "injury report and the reserve lists, weighted by who is actually missing"
         )
     if not bits:
         return ("Both sides are starting their usual quarterbacks with no notable "
                 "injury gap.")
     return _sentence_case("; ".join(bits)) + "."
+
+
+def _starting_quarterbacks(roster, home_key, away_key, home, away) -> str:
+    """Name the quarterbacks the clubs themselves list first this week.
+
+    Whose name is on top of the depth chart is a fact about today. Who threw
+    the most passes last season is not the same fact, and in September they
+    are routinely different people.
+    """
+    if roster is None or getattr(roster, "empty", True) or roster.league != "nfl":
+        return ""
+    named = []
+    for key, team in ((home_key, home), (away_key, away)):
+        listed = roster.starters(key, "QB", limit=1)
+        if listed:
+            named.append(f"{team} list <strong>{listed[0].name}</strong> at quarterback")
+    if not named:
+        return ""
+    return " and ".join(named)
 
 
 def _sentence_case(text: str) -> str:
@@ -271,7 +425,8 @@ def key_factors(row: pd.Series) -> list[dict]:
     return out
 
 
-def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str) -> list[str]:
+def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str,
+                    roster=None) -> list[str]:
     """The case for a Pixel's Pick: why these legs, why this price.
 
     A high-confidence tag is only worth something if the reasoning behind it
@@ -322,7 +477,7 @@ def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str) -> list[str]:
                 side = row["home_team"] if edge > 0 else row["away_team"]
                 bits.append(f"the model wants {abs(edge):.1f} more points on {side} "
                             "than the market prices")
-        note = availability_note(row)
+        note = availability_note(row, roster)
         paras.append(
             f"<strong>{leg['matchup']} &mdash; {leg['detail']}.</strong> "
             + _sentence_case("; ".join(bits)) + ". " + note
@@ -343,8 +498,16 @@ def _num(row, field):
     return value if value is not None and pd.notna(value) else None
 
 
-def _fmt_player(row, kind: str) -> str:
-    """One player's line, in the shape a broadcast would read it."""
+def _fmt_player(row, kind: str, current: bool = True) -> str:
+    """One player's line, in the shape a broadcast would read it.
+
+    `current` says whether the numbers are from the season being played. If
+    they are not, the sentence goes into the past tense, because "commands
+    27% of the targets" is a claim about now and last year's file cannot
+    support it.
+    """
+    commands = "commands" if current else "commanded"
+    takes = "takes" if current else "took"
     if kind == "REC":
         catches_only = bool(getattr(row, "completions_only", False))
         bits = []
@@ -361,8 +524,8 @@ def _fmt_player(row, kind: str) -> str:
         noun = "receptions" if catches_only else "targets"
         position = getattr(row, "position", None)
         label = f" ({position})" if isinstance(position, str) and position else ""
-        return (f"<strong>{row.player}</strong>{label} commands {row.share:.0%} of the "
-                f"{noun} ({detail} a game){depth}")
+        return (f"<strong>{row.player}</strong>{label} {commands} {row.share:.0%} of the "
+                f"{noun} ({detail} a game){depth}{_availability_suffix(row)}")
     bits = []
     carries, yards = _num(row, "carries_pg"), _num(row, "rush_yards_pg")
     if carries is not None:
@@ -370,8 +533,8 @@ def _fmt_player(row, kind: str) -> str:
     if yards is not None:
         bits.append(f"{yards:.0f} yards")
     detail = ", ".join(bits)
-    return (f"<strong>{row.player}</strong> takes {row.share:.0%} of the carries "
-            f"({detail} a game)")
+    return (f"<strong>{row.player}</strong> {takes} {row.share:.0%} of the carries "
+            f"({detail} a game){_availability_suffix(row)}")
 
 
 def _team_count(row: pd.Series) -> int:
@@ -383,16 +546,24 @@ def _team_count(row: pd.Series) -> int:
     return 32
 
 
-def usage_report(row: pd.Series, usage: pd.DataFrame | None) -> list[dict]:
+def usage_report(row: pd.Series, usage: pd.DataFrame | None,
+                 roster=None) -> list[dict]:
     """Who gets the ball for each side, and what the other side does about it.
 
     This is the part a reader cannot get from a rating: the target hierarchy,
     the backfield split, how far downfield the offense works, and whether the
     defence across from them is equipped to handle it.
+
+    Players who have left the team have already been removed upstream; the
+    ones ruled out for this game are named separately rather than presented
+    as the people to watch, and where the depth chart disagrees with last
+    season's usage the depth chart decides who is called the starter.
     """
     if usage is None or usage.empty:
         return []
     n = _team_count(row)
+    current = _stats_are_current(usage)
+    note = _provenance(usage, roster)
     out = []
     sides = [
         (row.get("home_key", row.home_team), row.home_team, row.away_team,
@@ -406,10 +577,11 @@ def usage_report(row: pd.Series, usage: pd.DataFrame | None) -> list[dict]:
             continue
         paras = []
 
-        recs = side[side["role"] == "REC"].nsmallest(3, "rank")
+        rec_all = _receivers(side)
+        recs = _order(_plays_this_week(rec_all), 3)
         if not recs.empty:
             lead = recs.iloc[0]
-            lines = [_fmt_player(r, "REC") for r in recs.itertuples()]
+            lines = [_fmt_player(r, "REC", current) for r in recs.itertuples()]
             defence = ""
             if pd.notna(row.get(f"{pass_def_key}_rank")):
                 rank = int(row[f"{pass_def_key}_rank"])
@@ -420,16 +592,21 @@ def usage_report(row: pd.Series, usage: pd.DataFrame | None) -> list[dict]:
                 defence = (f" The {opponent} pass defence grades "
                            f"<strong>{grades.grade(pct)}</strong> "
                            f"({grades.rank_label(rank, n)}), so this group {verdict}.")
+            expect = (f" Expect {lead.player} to see the ball early and often."
+                      if _availability(lead) == rosters.AVAILABLE else "")
             paras.append(
                 f"<strong>Through the air:</strong> {lines[0]}"
                 + (f". Behind him, {'; '.join(lines[1:])}" if len(lines) > 1 else "")
-                + f". Expect {lead.player} to see the ball early and often."
-                + defence
+                + "." + expect + _out_sentence(rec_all) + defence
             )
+        elif not rec_all.empty:
+            paras.append("<strong>Through the air:</strong> everyone this offence "
+                         "leaned on is unavailable." + _out_sentence(rec_all))
 
-        runs = side[side["role"] == "RUSH"].nsmallest(2, "rank")
+        run_all = _material(side[side["role"] == "RUSH"])
+        runs = _order(_plays_this_week(run_all), 2)
         if not runs.empty:
-            lines = [_fmt_player(r, "RUSH") for r in runs.itertuples()]
+            lines = [_fmt_player(r, "RUSH", current) for r in runs.itertuples()]
             split = (f" {lines[1]}, so this is a committee rather than a bell cow."
                      if len(lines) > 1 and runs.iloc[1].share >= 0.25
                      else (f" {lines[1]} in a change-of-pace role."
@@ -444,11 +621,67 @@ def usage_report(row: pd.Series, usage: pd.DataFrame | None) -> list[dict]:
                 defence = (f" They run into {verdict} &mdash; {opponent} grades "
                            f"<strong>{grades.grade(pct)}</strong> against the run "
                            f"({grades.rank_label(rank, n)}).")
-            paras.append(f"<strong>On the ground:</strong> {lines[0]}.{split}{defence}")
+            paras.append(f"<strong>On the ground:</strong> {lines[0]}.{split}"
+                         + _out_sentence(run_all) + defence)
+        elif not run_all.empty:
+            paras.append("<strong>On the ground:</strong> the backs who carried this "
+                         "offence are unavailable." + _out_sentence(run_all))
 
+        depth_line = _depth_chart_line(roster, key)
+        if depth_line:
+            # a player who joined this summer has no usage with this team at
+            # all, so on last season's numbers the depth chart is the only
+            # place his name can come from — it goes first
+            if current:
+                paras.append(depth_line)
+            else:
+                paras.insert(0, depth_line)
         if paras:
-            out.append({"team": team, "paragraphs": paras})
+            out.append({"team": team, "paragraphs": paras, "note": note})
     return out
+
+
+def _material(frame: pd.DataFrame) -> pd.DataFrame:
+    """Players with enough of the work to be part of the hierarchy."""
+    if frame is None or frame.empty or "share" not in frame.columns:
+        return frame if frame is not None else pd.DataFrame()
+    return frame[frame["share"] >= MINOR_SHARE]
+
+
+def _receivers(side: pd.DataFrame) -> pd.DataFrame:
+    """The pass catchers, which does not include the man throwing to them."""
+    recs = _material(side[side["role"] == "REC"])
+    if recs is None or recs.empty or "position" not in recs.columns:
+        return recs
+    return recs[recs["position"].astype(str).str.upper() != "QB"]
+
+
+def _order(frame: pd.DataFrame, limit: int) -> pd.DataFrame:
+    """The top few by share of the work, the depth chart breaking ties."""
+    if frame is None or frame.empty:
+        return frame if frame is not None else pd.DataFrame()
+    df = frame.copy()
+    df["_depth"] = df["depth_rank"].fillna(99) if "depth_rank" in df.columns else 99
+    return df.sort_values(["share", "_depth"], ascending=[False, True]).head(limit)
+
+
+def _depth_chart_line(roster, team) -> str:
+    """The starters as the club itself lists them, which in the first weeks
+    of a season is the only current statement about who plays."""
+    if roster is None or getattr(roster, "empty", True) or roster.league != "nfl":
+        return ""
+    bits = []
+    for label, position in (("QB", "QB"), ("RB", "RB"), ("TE", "TE")):
+        named = roster.starters(team, position, limit=1)
+        if named:
+            bits.append(f"{label} <strong>{named[0].name}</strong>")
+    wrs = roster.starters(team, "WR", limit=3)
+    if wrs:
+        bits.append("WR " + ", ".join(f"<strong>{w.name}</strong>" for w in wrs))
+    if not bits:
+        return ""
+    return ("<strong>On the depth chart:</strong> the club lists "
+            + "; ".join(bits) + ".")
 
 
 def line_movement(row: pd.Series) -> str:
@@ -510,39 +743,89 @@ _POSITION_PRIORITY = {"QB": 0, "WR": 1, "RB": 1, "TE": 2, "T": 2, "G": 3, "C": 3
                       "K": 4, "P": 5, "LS": 6}
 
 
-def injury_report(row: pd.Series, reports: pd.DataFrame | None, league: str) -> list[tuple[str, str]]:
-    """(team, sentence) for each side's game-status designations this week,
-    named, most important positions first."""
-    if league != "nfl" or reports is None or reports.empty:
-        return []
-    if "report_status" not in reports.columns:
-        return []
-    wk = reports[(reports["season"] == row.get("season")) & (reports["week"] == row.get("week"))]
-    if wk.empty:
+def injury_report(row: pd.Series, reports: pd.DataFrame | None, league: str,
+                  roster=None) -> list[tuple[str, str]]:
+    """(team, sentence) for each side: who is ruled out and who is a question
+    mark, named, most important positions first.
+
+    Two sources, because the weekly report alone is not the answer. The
+    game-status designations cover players in this week's plan; the roster's
+    reserve lists cover the ones who have been out for weeks and therefore
+    never appear on a report again. Before the first report of a week is
+    filed — which is the entire situation in week one — the reserve lists
+    are all there is, and a page that showed nothing was not saying "nobody
+    is hurt", it was failing to say anything.
+    """
+    # College availability is not published in any free feed, so there is
+    # nothing to report and the section stays off rather than implying a
+    # clean bill of health nobody has given.
+    if league != "nfl":
         return []
     out = []
     for key, team in ((row.get("home_key", row.home_team), row.home_team),
                       (row.get("away_key", row.away_team), row.away_team)):
-        side = wk[(wk["team"] == key) & wk["report_status"].notna()].copy()
-        if side.empty:
-            out.append((team, "no game-status designations on the final report."))
-            continue
-        side["_s"] = side["report_status"].map(_STATUS_ORDER).fillna(3)
-        side["_p"] = side["position"].map(_POSITION_PRIORITY).fillna(4)
-        side = side.sort_values(["_s", "_p"])
-        groups = []
-        for status in ("Out", "Doubtful", "Questionable"):
-            names = []
-            for r in side[side["report_status"] == status].head(6).itertuples():
-                inj = getattr(r, "report_primary_injury", None)
-                inj = f", {str(inj).lower()}" if isinstance(inj, str) and inj else ""
-                names.append(f"<strong>{r.full_name}</strong> ({r.position}{inj})")
-            extra = (side["report_status"] == status).sum() - len(names)
-            if names:
-                groups.append(f"{status}: " + ", ".join(names)
-                              + (f" and {extra} more" if extra > 0 else ""))
-        out.append((team, "; ".join(groups) + "." if groups else "no designations."))
+        named = _designations(reports, row, key, league)
+        sidelined = _reserve_list(roster, key, exclude=named["ids"])
+        groups = named["groups"] + sidelined
+        if groups:
+            out.append((team, "; ".join(groups) + "."))
+        elif named["filed"] or (roster is not None and roster.covers(key)):
+            out.append((team, "nobody ruled out and no game-status designations."))
+        else:
+            out.append((team, "no availability data published for this team."))
     return out
+
+
+def _designations(reports: pd.DataFrame | None, row: pd.Series, key: object,
+                  league: str) -> dict:
+    """This week's game-status designations for one team."""
+    blank = {"groups": [], "ids": set(), "filed": False}
+    if league != "nfl" or reports is None or reports.empty:
+        return blank
+    if "report_status" not in reports.columns:
+        return blank
+    wk = reports[(reports["season"] == row.get("season"))
+                 & (reports["week"] == row.get("week"))]
+    if wk.empty:
+        return blank
+    side = wk[(wk["team"] == key) & wk["report_status"].notna()].copy()
+    if side.empty:
+        return {"groups": [], "ids": set(), "filed": True}
+    side["_s"] = side["report_status"].map(_STATUS_ORDER).fillna(3)
+    side["_p"] = side["position"].map(_POSITION_PRIORITY).fillna(4)
+    side = side.sort_values(["_s", "_p"])
+    groups, ids = [], set()
+    for status in ("Out", "Doubtful", "Questionable"):
+        names = []
+        for r in side[side["report_status"] == status].head(6).itertuples():
+            inj = getattr(r, "report_primary_injury", None)
+            inj = f", {str(inj).lower()}" if isinstance(inj, str) and inj else ""
+            names.append(f"<strong>{r.full_name}</strong> ({r.position}{inj})")
+            gsis = getattr(r, "gsis_id", None)
+            if isinstance(gsis, str):
+                ids.add(gsis)
+        extra = (side["report_status"] == status).sum() - len(names)
+        if names:
+            groups.append(f"{status}: " + ", ".join(names)
+                          + (f" and {extra} more" if extra > 0 else ""))
+    return {"groups": groups, "ids": ids, "filed": True}
+
+
+def _reserve_list(roster, key: object, exclude: set, limit: int = 6) -> list[str]:
+    """The players a club has parked on a reserve list, which is the half of
+    "who is out" the weekly report never shows."""
+    if roster is None or getattr(roster, "empty", True) or not roster.covers(key):
+        return []
+    sidelined = [p for p in roster.unavailable(key) if p.player_id not in exclude]
+    if not sidelined:
+        return []
+    names = []
+    for player in sidelined[:limit]:
+        reason = f", {player.reason}" if player.reason else ""
+        names.append(f"<strong>{player.name}</strong> ({player.position or '—'}{reason})")
+    extra = len(sidelined) - len(names)
+    return ["Ruled out: " + ", ".join(names)
+            + (f" and {extra} more" if extra > 0 else "")]
 
 
 def recent_form(row: pd.Series, games: pd.DataFrame | None, league: str,
