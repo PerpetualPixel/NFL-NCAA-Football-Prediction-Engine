@@ -1,0 +1,41 @@
+name: Tests
+
+# The site workflow builds and deploys; nothing ran the test suite, so every
+# change so far has merged on tests that were only ever run on a contributor's
+# own machine. This runs them on the pull request, before the change lands.
+#
+# Everything in tests/ is offline by design — fixtures stand in for the data
+# feeds — so this needs no network, no keys, and finishes in seconds.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Superseded runs on the same ref are pointless; a new push re-runs anyway.
+# Deliberately not the "pages" group the deploy workflow uses, so a test run
+# can never cancel a deploy or the other way round.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Offline tests
+        run: python -m tests.test_engine
+      - name: Every module imports
+        # a syntax error or a bad import in a module the tests happen not to
+        # touch would otherwise only surface in the deploy build
+        run: python -m compileall -q engine tests
