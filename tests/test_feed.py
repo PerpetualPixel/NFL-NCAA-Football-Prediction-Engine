@@ -142,10 +142,14 @@ def test_analysis_is_plain_text_throughout():
     assert blocks["script"], "the game script always has something to say"
     text = " ".join(blocks["script"] + blocks["confidence"])
     assert "<" not in text and "&mdash;" not in text
-    # the college feed has no injury report and this fixture passes no players;
-    # empty sections stay empty rather than being filled with placeholder prose
-    assert blocks["injuries"] == []
+    # this fixture passes no player usage, and a section with nothing to say
+    # stays empty rather than being filled with placeholder prose
     assert blocks["players"] == []
+    # an availability section with no feed behind it says exactly that, on the
+    # card and in the feed alike — a silent empty list would read as "nobody
+    # is hurt", which is a different claim
+    assert [i["text"] for i in blocks["injuries"]] == [
+        "no availability data published for this team."] * 2
 
 
 def test_the_league_header_names_the_week_and_its_measured_tier_rates():
