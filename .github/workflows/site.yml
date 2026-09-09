@@ -2,11 +2,13 @@ name: Build and deploy predictions site
 
 on:
   schedule:
-    # Hourly. Picks lock two hours before kickoff, so a four-hour cadence
-    # could miss that window entirely; rebuilding every hour guarantees the
-    # locked version is published in time and carries the latest odds,
-    # inactives and lineup news.
-    - cron: "0 * * * *"
+    # Twice an hour, off the top of the hour. GitHub delays scheduled runs
+    # most at :00, and in practice an hourly "0 * * * *" fired every four
+    # to five hours; two off-minute entries make it far more likely a build
+    # lands inside a pick's two-hour lock window. Picks also lock on news
+    # (final injury report + forecast), so most do not depend on this.
+    - cron: "17 * * * *"
+    - cron: "47 * * * *"
   workflow_dispatch:
   push:
     branches: [main]

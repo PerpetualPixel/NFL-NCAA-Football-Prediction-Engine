@@ -19,6 +19,8 @@ CFB_TEAM_INFO_URL = (
     "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
     "team_info/parquet/cfb_team_info_{year}.parquet"
 )
+# newest first; the mirror publishes a file per season once it exists
+TEAM_INFO_YEARS = (2026, 2025, 2024, 2023)
 
 
 @lru_cache(maxsize=1)
@@ -37,7 +39,7 @@ def nfl_names() -> dict[str, str]:
 
 @lru_cache(maxsize=1)
 def ncaa_names() -> dict[str, str]:
-    for year in (2024, 2023, 2022):
+    for year in TEAM_INFO_YEARS:
         dest = DATA_DIR / "ncaa" / f"team_info_{year}.parquet"
         try:
             df = _cached_parquet(CFB_TEAM_INFO_URL.format(year=year), dest)
@@ -56,7 +58,7 @@ def ncaa_names() -> dict[str, str]:
 def ncaa_fbs_teams() -> frozenset[str]:
     """School names of the FBS teams, used to keep unit ratings and their
     ranks scoped to the level the site actually covers."""
-    for year in (2024, 2023, 2022):
+    for year in TEAM_INFO_YEARS:
         dest = DATA_DIR / "ncaa" / f"team_info_{year}.parquet"
         try:
             df = _cached_parquet(CFB_TEAM_INFO_URL.format(year=year), dest)
@@ -91,7 +93,7 @@ def _nfl_logos() -> dict[str, str]:
 
 @lru_cache(maxsize=1)
 def _ncaa_logos() -> dict[str, str]:
-    for year in (2024, 2023, 2022):
+    for year in TEAM_INFO_YEARS:
         dest = DATA_DIR / "ncaa" / f"team_info_{year}.parquet"
         try:
             df = _cached_parquet(CFB_TEAM_INFO_URL.format(year=year), dest)

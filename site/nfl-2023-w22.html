@@ -3,40 +3,67 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NFL Super Bowl 2023 — Gridiron Engine</title><style>
 :root {
-  --bg: #f4f6f8; --card: #ffffff; --sunken: #f8fafc; --ink: #14181d;
-  --muted: #64707e; --line: #e3e8ee; --accent: #1d4ed8;
-  --good: #047857; --warn: #b45309; --bad: #b91c1c;
+  --bg: #f3f5f8; --card: #ffffff; --sunken: #f6f8fb; --ink: #131820;
+  --muted: #5f6b7a; --line: #e2e7ee; --accent: #1f4fd8; --accent-ink: #ffffff;
+  --accent-soft: rgba(31, 79, 216, 0.10);
+  --good: #0f7a57; --good-soft: rgba(15, 122, 87, 0.12);
+  --warn: #b25c07; --warn-soft: rgba(178, 92, 7, 0.12);
+  --bad: #b8262c; --bad-soft: rgba(184, 38, 44, 0.12);
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 14px rgba(16, 24, 40, 0.05);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1014; --card: #171c23; --sunken: #12161c; --ink: #e7eaee;
-    --muted: #98a2b0; --line: #262d36; --accent: #7aa2ff;
-    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+    --bg: #0b0e12; --card: #151a21; --sunken: #10141a; --ink: #e8ebef;
+    --muted: #97a1ae; --line: #252c36; --accent: #7fa6ff; --accent-ink: #0b0e12;
+    --accent-soft: rgba(127, 166, 255, 0.14);
+    --good: #3ddc9b; --good-soft: rgba(61, 220, 155, 0.14);
+    --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, 0.14);
+    --bad: #ff7b7b; --bad-soft: rgba(255, 123, 123, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
-  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+.wrap { max-width: 940px; margin: 0 auto; padding: 20px 16px 72px; }
 header.site {
-  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
-  margin-bottom: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
 }
-header.site h1 { font-size: 1.45rem; margin: 0; letter-spacing: -0.02em; }
-header.site nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.site h1 {
+  font-size: 1.3rem; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 9px;
+}
+header.site h1 a { color: inherit; text-decoration: none; }
+.mark {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+header.site nav { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
 header.site nav a {
-  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
-  padding: 4px 10px; border-radius: 6px;
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.86rem;
+  padding: 6px 11px; border-radius: 999px;
 }
-header.site nav a:hover { color: var(--accent); background: var(--sunken); }
-.stamp { color: var(--muted); font-size: 0.82rem; margin: 12px 0 22px; }
-h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+header.site nav a:hover { color: var(--accent); background: var(--accent-soft); }
+header.site nav a.active { color: var(--accent-ink); background: var(--accent); }
+.stamp {
+  color: var(--muted); font-size: 0.78rem; margin: 10px 0 22px; line-height: 1.5;
+}
+.stamp strong { color: var(--ink); }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
 .card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-  padding: 16px 18px; margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
 }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .card .teams { font-size: 1.05rem; font-weight: 700; }
 .card .pick { margin: 6px 0 2px; }
 .card .pick strong { color: var(--accent); }
@@ -68,8 +95,9 @@ table.units th { color: var(--muted); font-size: 0.76rem; text-transform: upperc
 .bets { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
 .bet {
   flex: 1 1 150px; background: var(--sunken); border: 1px solid var(--line);
-  border-radius: 8px; padding: 9px 11px;
+  border-radius: 10px; padding: 10px 12px;
 }
+.bet:first-child { border-color: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .betlabel {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--muted); font-weight: 700;
@@ -124,7 +152,7 @@ ul.factors { padding-left: 0; }
   padding: 9px 12px; border-bottom: 1px solid var(--line);
   color: var(--ink); text-decoration: none;
 }
-.srow:hover { background: rgba(255,255,255,0.04); }
+.srow:hover { background: var(--accent-soft); }
 .steams { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .steam {
   display: flex; align-items: center; gap: 7px; font-size: 0.9rem; font-weight: 600;
@@ -174,17 +202,60 @@ table.track a:hover { color: var(--accent); }
   font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
   padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted);
 }
-.tag-lock { color: var(--good); border-color: var(--good); }
+.tag-lock { color: var(--accent-ink); background: var(--good); border-color: var(--good); font-weight: 800; }
+.tag-pick { color: var(--good); background: var(--good-soft); border-color: transparent; font-weight: 800; }
+.tag-lean { color: var(--muted); background: var(--sunken); border-color: transparent; }
+.tag-pass { color: var(--muted); border-style: dashed; }
 .tag-value { color: var(--accent); border-color: var(--accent); }
 .tag-upset { color: var(--bad); border-color: var(--bad); }
-.tag-pick { color: var(--good); border-color: var(--good); font-weight: 800; }
-.tag-lean { color: var(--muted); }
+.tag-key { color: var(--warn); border-color: var(--warn); }
+.oddssrc { color: var(--muted); font-size: 0.78rem; }
+.form-w { color: var(--good); font-weight: 800; }
+.form-l { color: var(--bad); font-weight: 800; }
+.form-t { color: var(--muted); font-weight: 800; }
+.lgtag.live { color: var(--good); border-color: var(--good); }
 .emptynote { color: var(--muted); font-size: 0.9rem; padding: 8px 2px; }
 .scopebar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
 .hero.card {
-  display: block; text-decoration: none; color: inherit;
-  border: 2px solid var(--accent); padding: 18px 20px;
+  display: block; text-decoration: none; color: inherit; position: relative;
+  border: 1px solid var(--accent); padding: 20px 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-soft), var(--card) 60%);
 }
+.hero.card:hover { transform: translateY(-1px); }
+.ladder { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+.rung { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: var(--shadow); }
+.rung .tiletitle { display: flex; justify-content: space-between; gap: 6px; }
+.rung .tilebig { font-size: 1.3rem; }
+.rung .tilesub { line-height: 1.35; }
+.wknav {
+  position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; padding: 8px 0; margin-bottom: 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.wknav-btn {
+  color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.86rem;
+  padding: 6px 10px; border-radius: 8px; background: var(--accent-soft);
+}
+.wknav-btn.disabled { color: var(--muted); background: var(--sunken); }
+.wksel { color: var(--muted); font-size: 0.84rem; }
+.wksel select {
+  font: inherit; font-size: 0.86rem; margin-left: 6px; padding: 5px 8px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.weekhead { font-size: 0.95rem; color: var(--muted); margin: -4px 0 14px; }
+footer { color: var(--muted); font-size: 0.78rem; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); }
+.weekgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.weektile {
+  display: block; text-decoration: none; color: inherit; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.weektile:hover { border-color: var(--accent); }
+.wt-label { font-weight: 700; font-size: 0.9rem; }
+.wt-detail { font-size: 0.78rem; margin-top: 2px; }
+.upcoming { color: var(--accent); font-weight: 700; }
+.leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.leagues .card { text-decoration: none; color: inherit; }
+.leagues .card:hover { border-color: var(--accent); }
 .herolabel {
   font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--accent);
@@ -196,8 +267,10 @@ table.track a:hover { color: var(--accent); }
   display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
   text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 8px;
 }
-.stage.locked { background: var(--good); color: #fff; }
-.stage.leanstage { border: 1px solid var(--warn); color: var(--warn); }
+.stage.locked { background: var(--good); color: var(--accent-ink); }
+.stage.leanstage { background: var(--warn-soft); color: var(--warn); }
+.stage.started { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); }
+.stage.noresult { background: var(--bad-soft); color: var(--bad); }
 .pixel.card { border: 2px solid var(--accent); }
 .pxhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pxbadge {
@@ -270,35 +343,41 @@ ul.factors li { margin-bottom: 8px; }
 footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </style></head>
 <body><div class="wrap">
-<header class="site"><h1>Gridiron Engine</h1>
-<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAA</a>
+<header class="site"><h1><span class="mark"></span><a href="index.html">Gridiron Engine</a></h1>
+<nav><a href="index.html">Home</a><a href="nfl.html">NFL</a><a href="ncaa.html">NCAAF</a>
 <a href="tracking-nfl.html">Tracking (NFL)</a>
 <a href="tracking-ncaa.html">Tracking (NCAAF)</a></nav></header>
-<div class="stamp">Odds and picks refreshed <strong>2026-09-04 04:11 UTC</strong>, hourly
-&middot; free public data (nflverse / sportsdataverse) &middot; walk-forward model, no leakage</div>
+<script>(function(){var p=(location.pathname.split('/').pop()||'index.html');
+document.querySelectorAll('header.site nav a').forEach(function(a){var h=a.getAttribute('href');
+if(h===p||(h==='nfl.html'&&/^nfl-/.test(p))||(h==='ncaa.html'&&/^ncaa-/.test(p)))a.classList.add('active');});})();</script>
+<div class="stamp">Odds, injuries and forecasts as of <strong>Sun Sep 6, 2:32 PM ET</strong>
+&middot; rebuilt twice an hour (GitHub may delay a run) &middot; free public data
+(nflverse / sportsdataverse / ESPN / Open-Meteo) &middot; walk-forward model, no leakage</div>
 <div class="wknav">
 <a class="wknav-btn" href="nfl-2023-w21.html">&larr; Conference Championships</a>
 <label class="wksel">Season:<select id="seasonpick"><option value="nfl-w01.html">2026 season</option><option value="nfl-2025-w01.html">2025 season</option><option value="nfl-2024-w01.html">2024 season</option><option value="nfl-2023-w01.html" selected>2023 season</option></select></label>
 <label class="wksel">Week:
-  <select id="weekpick"><option value="nfl-2023-w01.html">Week 1 — 8-8</option><option value="nfl-2023-w02.html">Week 2 — 8-8</option><option value="nfl-2023-w03.html">Week 3 — 11-5</option><option value="nfl-2023-w04.html">Week 4 — 10-6</option><option value="nfl-2023-w05.html">Week 5 — 8-6</option><option value="nfl-2023-w06.html">Week 6 — 11-4</option><option value="nfl-2023-w07.html">Week 7 — 5-8</option><option value="nfl-2023-w08.html">Week 8 — 9-7</option><option value="nfl-2023-w09.html">Week 9 — 10-4</option><option value="nfl-2023-w10.html">Week 10 — 10-4</option><option value="nfl-2023-w11.html">Week 11 — 12-2</option><option value="nfl-2023-w12.html">Week 12 — 9-7</option><option value="nfl-2023-w13.html">Week 13 — 8-5</option><option value="nfl-2023-w14.html">Week 14 — 8-7</option><option value="nfl-2023-w15.html">Week 15 — 10-6</option><option value="nfl-2023-w16.html">Week 16 — 10-6</option><option value="nfl-2023-w17.html">Week 17 — 12-4</option><option value="nfl-2023-w18.html">Week 18 — 10-6</option><option value="nfl-2023-w19.html">Wild Card Round — 5-1</option><option value="nfl-2023-w20.html">Divisional Round — 3-1</option><option value="nfl-2023-w21.html">Conference Championships — 1-1</option><option value="nfl-2023-w22.html" selected>Super Bowl — 0-1</option></select>
+  <select id="weekpick"><option value="nfl-2023-w01.html">Week 1 — 8-8</option><option value="nfl-2023-w02.html">Week 2 — 8-8</option><option value="nfl-2023-w03.html">Week 3 — 11-5</option><option value="nfl-2023-w04.html">Week 4 — 10-6</option><option value="nfl-2023-w05.html">Week 5 — 8-6</option><option value="nfl-2023-w06.html">Week 6 — 11-4</option><option value="nfl-2023-w07.html">Week 7 — 5-8</option><option value="nfl-2023-w08.html">Week 8 — 9-7</option><option value="nfl-2023-w09.html">Week 9 — 11-3</option><option value="nfl-2023-w10.html">Week 10 — 10-4</option><option value="nfl-2023-w11.html">Week 11 — 12-2</option><option value="nfl-2023-w12.html">Week 12 — 9-7</option><option value="nfl-2023-w13.html">Week 13 — 7-6</option><option value="nfl-2023-w14.html">Week 14 — 8-7</option><option value="nfl-2023-w15.html">Week 15 — 10-6</option><option value="nfl-2023-w16.html">Week 16 — 10-6</option><option value="nfl-2023-w17.html">Week 17 — 12-4</option><option value="nfl-2023-w18.html">Week 18 — 10-6</option><option value="nfl-2023-w19.html">Wild Card Round — 5-1</option><option value="nfl-2023-w20.html">Divisional Round — 3-1</option><option value="nfl-2023-w21.html">Conference Championships — 1-1</option><option value="nfl-2023-w22.html" selected>Super Bowl — 0-1</option></select>
 </label>
 <span class="wknav-btn disabled">Next &rarr;</span>
 </div>
 <h2>Super Bowl &mdash; 2023</h2>
 <div class="weekhead">0-1 on the moneyline, 0-1 against the spread</div>
+<div class="ladder"><div class="rung"><div class="tiletitle"><span>Locks</span><span>0 this week</span></div><div class="tilebig t-mid">&mdash;</div><div class="tilesub meta">no history yet<br>Heavy favourites the model backs at 85%+. Win almost always, pay little.</div></div><div class="rung"><div class="tiletitle"><span>Picks</span><span>0 this week</span></div><div class="tilebig t-strong">72%</div><div class="tilesub meta">38-15 since 2023 &middot; -12.8% ROI<br>Confident sides at 70&ndash;85%. The everyday play.</div></div><div class="rung"><div class="tiletitle"><span>Leans</span><span>0 this week</span></div><div class="tilebig t-strong">61%</div><div class="tilesub meta">89-57 since 2023 &middot; -6.2% ROI<br>A tilt, not a bet. Shown with full reasoning.</div></div><div class="rung"><div class="tiletitle"><span>Pass</span><span>1 this week</span></div><div class="tilebig t-mid">57%</div><div class="tilesub meta">42-32 since 2023 &middot; +4.6% ROI<br>Coin flips. No play.</div></div></div>
 <section class="sched"><div class="schedhead"><span>Super Bowl</span><span>1 games</span></div><div class="schedgrid"><a class="srow" href="#g-2023_22_SF_KC"><div class="steams"><div class="steam lost"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">49ers<span class="sscore">22</span></div><div class="steam"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Chiefs<span class="sscore">25</span></div></div><div class="swhen"><strong>Final</strong></div></a></div></section>
 
 
 <div class="controls">
   <div class="ctl-group" role="group" aria-label="Filter games">
     <button class="chip active" data-filter="all">All</button>
-    <button class="chip" data-filter="pixel">Pixel&rsquo;s Picks</button>
-    <button class="chip" data-filter="pick">Picks (value)</button>
-    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pixel">Pixel&rsquo;s Pick</button>
     <button class="chip" data-filter="lock">Locks</button>
+    <button class="chip" data-filter="pick">Picks</button>
+    <button class="chip" data-filter="lean">Leans</button>
+    <button class="chip" data-filter="pass">Pass</button>
     <button class="chip" data-filter="pickem">Pick'ems</button>
     <button class="chip" data-filter="value">Value vs market</button>
-    <button class="chip" data-filter="upset">Upset picks</button>
+    <button class="chip" data-filter="upset">Upsets</button>
   </div>
   <label class="ctl-sort">Sort:
     <select id="sortby">
@@ -311,25 +390,27 @@ footer { margin-top: 48px; color: var(--muted); font-size: 0.8rem; }
 </div>
 <div class="emptynote" hidden>No games match this filter.</div>
 <div id="games">
-<div class="card game" id="g-2023_22_SF_KC" data-kick="1707609600" data-prob="0.5823" data-margin="2.742" data-edge="1.242" data-tags="lean">
+<div class="card game" id="g-2023_22_SF_KC" data-kick="1707694200" data-prob="0.5854" data-margin="2.847" data-edge="1.347" data-tags="pass">
 <div class="cardhead"><div class="teams"><img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/SF.png" alt="" loading="lazy" onerror="this.style.display='none'">San Francisco 49ers
 &nbsp;@&nbsp;<img class="crest" src="https://a.espncdn.com/i/teamlogos/nfl/500/KC.png" alt="" loading="lazy" onerror="this.style.display='none'">Kansas City Chiefs (neutral site)</div>
 <div class="kick">Sun, Feb 11 &middot; 6:30 PM ET</div></div>
 <div class="bets">
-<div class="bet"><div class="betlabel">Moneyline pick</div>
-<div class="betvalue">San Francisco 49ers <span class="price">-155</span></div>
-<div class="betnote meta">58% to win outright</div><span class="outcome t-bad">LOSS</span></div>
+<div class="bet"><div class="betlabel">Moneyline pick &middot; Pass</div>
+<div class="betvalue">San Francisco 49ers <span class="price">-120</span></div>
+<div class="betnote meta">52% to win &middot; fair price -155</div><span class="outcome t-bad">LOSS</span></div>
 <div class="bet"><div class="betlabel">Projected line</div>
-<div class="betvalue">San Francisco 49ers -2.5</div>
+<div class="betvalue">San Francisco 49ers -3</div>
 <div class="betnote meta">model projection</div></div>
-<div class="bet"><div class="betlabel">Spread pick</div><div class="betvalue">San Francisco 49ers -1.5</div><div class="betnote meta">1.2 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
-<div class="chips"><span class="tag tag-lean">lean</span><span class="tag tag-key">near 3</span></div>
-<div class="meta">Market line: Kansas City Chiefs -1.5 &middot; <span class="meta">model -1.2 toward San Francisco 49ers</span></div><div class="meta">Final: Kansas City Chiefs 25&ndash;22 &middot; <span class="result-miss">MISS</span></div><details class="more">
-<summary>More info &mdash; full analysis</summary>
+<div class="bet"><div class="betlabel">Spread lean</div><div class="betvalue">San Francisco 49ers -1.5</div><div class="betnote meta">1.3 pt edge vs market</div><span class="outcome t-bad">LOSS</span></div></div>
+<div class="chips"><span class="tag tag-pass">pass</span><span class="tag tag-key">near 3</span></div>
+<div class="meta">Market line: San Francisco 49ers -1.5 &middot; <span class="meta">model 1.3 toward San Francisco 49ers</span></div><div class="meta">Final: San Francisco 49ers 22 &ndash; Kansas City Chiefs 25 &middot; <span class="result-miss">MISS</span></div><details class="more">
+<summary>Full breakdown</summary>
 <div class="analysis">
-<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.9 points between them on raw strength. Overall, Kansas City Chiefs is the 5th-rated team in the league (very good) and San Francisco 49ers is 1st (elite). Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>San Francisco 49ers by 2.5</strong> and gives them a 58% chance to win outright.</p><p>On how it plays out: the passing game tilts toward <strong>San Francisco 49ers</strong> &mdash; a slight edge through the air; and <strong>San Francisco 49ers</strong> has the better ground matchup, a clear edge on the run. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at San Francisco 49ers -1.5. The model leans 1.2 points toward San Francisco 49ers, a mild difference rather than a strong disagreement.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Why this is a Pass</h4><p class="ftext"><strong>San Francisco 49ers</strong> is a <strong>Pass</strong>: the calibrated chance of winning is <strong>52%</strong>. The price (-120) implies 55%, essentially the model's number: a fair price, no edge either way.</p><p class="ftext">Since 2023, NFL moneylines the model rated as a Pass have gone <strong>42-32</strong> (57%), returning +4.6% per unit staked &mdash; no play.</p><p class="ftext">The model cannot separate these two: it still shows a side so the reasoning is visible, but this is not put forward as a pick.</p><p class="ftext">Locked (). This is the pick of record: it will not change and it is what the tracker grades.</p>
+<h4>How the model sees it playing out</h4><p>The power ratings see two closely matched teams, with only 1.9 points between them on raw strength. Overall, Kansas City Chiefs is the 5th-rated team in the league (very good) and San Francisco 49ers is 1st (elite). Neither side banks a home-field bump at this neutral site. Rolling that together, the engine projects <strong>San Francisco 49ers by 3</strong> and gives them a 59% chance to win outright.</p><p>Projected score: <strong>Kansas City Chiefs 22, San Francisco 49ers 25</strong> against a market total of 47.</p><p>On how it plays out: the passing game tilts toward <strong>San Francisco 49ers</strong> &mdash; a slight edge through the air; and <strong>San Francisco 49ers</strong> has the better ground matchup, a clear edge on the run. Expect a game that stays within one score into the fourth quarter, where late possessions carry outsized weight.</p><p>The market has this at San Francisco 49ers -1.5. The model leans 1.3 points toward San Francisco 49ers, a mild difference rather than a strong disagreement.</p><p>One caution: the projection sits near 3, a key number in football margins. Games cluster on it, so small errors in the estimate flip outcomes against the spread more often than the point difference suggests.</p>
+<h4>Quarterbacks &amp; availability</h4><p class="ftext"><strong>San Francisco 49ers</strong> has the clear edge at quarterback.</p><h4>Conditions</h4><p class="ftext">Played indoors, so weather is not a factor.</p>
+<h4>Recent form</h4><ul class="factors"><li><strong>Kansas City Chiefs:</strong> 4-0 in the last 4, average margin +7.5: <span class="form-w">W</span> 17&ndash;10 @ Ravens, <span class="form-w">W</span> 27&ndash;24 @ Bills, <span class="form-w">W</span> 26&ndash;7 vs Dolphins, <span class="form-w">W</span> 13&ndash;12 @ Chargers.</li><li><strong>San Francisco 49ers:</strong> 3-1 in the last 4, average margin +5.5: <span class="form-w">W</span> 34&ndash;31 vs Lions, <span class="form-w">W</span> 24&ndash;21 vs Packers, <span class="form-l">L</span> 20&ndash;21 vs Rams, <span class="form-w">W</span> 27&ndash;10 @ Commanders.</li></ul>
 <h4>Players to watch</h4><ul class="factors"><li><strong>Kansas City Chiefs:</strong> QB <strong>P.Mahomes</strong> has been playing well, adding roughly +4.5 points a game over an average quarterback; the passing game runs through <strong>T.Kelce</strong> and <strong>T.Thornton</strong>; lead back <strong>K.Hunt</strong> has been efficient.</li><li><strong>San Francisco 49ers:</strong> QB <strong>B.Purdy</strong> has been playing well, adding roughly +4.4 points a game over an average quarterback; the passing game runs through <strong>C.McCaffrey</strong> and <strong>G.Kittle</strong>; lead back <strong>B.Robinson</strong> has held his own.</li></ul><h4>Key matchups</h4><ul class="factors"><li class="factor"><div class="fhead"><span class="fname">San Francisco 49ers running vs Kansas City Chiefs run defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">San Francisco 49ers's running attack grades <strong>A+</strong> (2nd of 32); Kansas City Chiefs's run defense grades <strong>D</strong> (29th of 32). That is a clear edge for <strong>San Francisco 49ers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">San Francisco 49ers passing vs Kansas City Chiefs pass defense</span><span class="fverdict t-good">a clear edge</span></div><div class="ftext">San Francisco 49ers's passing attack grades <strong>A+</strong> (1st of 32); Kansas City Chiefs's pass defense grades <strong>A+</strong> (1st of 32). That is a clear edge for <strong>San Francisco 49ers</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Kansas City Chiefs running vs San Francisco 49ers run defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Kansas City Chiefs's running attack grades <strong>A-</strong> (7th of 32); San Francisco 49ers's run defense grades <strong>B</strong> (14th of 32). That is essentially even for <strong>Kansas City Chiefs</strong>.</div></li><li class="factor"><div class="fhead"><span class="fname">Kansas City Chiefs passing vs San Francisco 49ers pass defense</span><span class="fverdict t-mid">essentially even</span></div><div class="ftext">Kansas City Chiefs's passing attack grades <strong>A-</strong> (6th of 32); San Francisco 49ers's pass defense grades <strong>A</strong> (5th of 32). That is essentially even for <strong>Kansas City Chiefs</strong>.</div></li></ul>
-<h4>Availability &amp; conditions</h4><p class="ftext"><strong>San Francisco 49ers</strong> has the clear edge at quarterback; played indoors, so weather is not a factor.</p>
 <h4>Who gets the ball</h4><div class="usageteam"><h5>Kansas City Chiefs</h5><p class="ftext"><strong>Through the air:</strong> <strong>Travis Kelce</strong> (TE) commands 20% of the targets (6.4 targets, 4.5 catches, 50 yards a game), working 6.8 yards downfield on average. Behind him, <strong>Rashee Rice</strong> (WR) commands 14% of the targets (4.6 targets, 3.1 catches, 34 yards a game), working 4.3 yards downfield on average; <strong>Marquise Brown</strong> (WR) commands 13% of the targets (4.4 targets, 2.9 catches, 35 yards a game), working 11.3 yards downfield on average. Expect Travis Kelce to see the ball early and often. The San Francisco 49ers pass defence grades <strong>A</strong> (5th of 32), so this group will make them work for it.</p><p class="ftext"><strong>On the ground:</strong> <strong>Kareem Hunt</strong> takes 38% of the carries (9.6 carries, 36 yards a game). <strong>Isiah Pacheco</strong> takes 27% of the carries (6.9 carries, 27 yards a game), so this is a committee rather than a bell cow. They run into an average front &mdash; San Francisco 49ers grades <strong>B</strong> against the run (14th of 32).</p></div><div class="usageteam"><h5>San Francisco 49ers</h5><p class="ftext"><strong>Through the air:</strong> <strong>Christian McCaffrey</strong> (RB) commands 23% of the targets (7.5 targets, 5.9 catches, 53 yards a game), working 2.8 yards downfield on average. Behind him, <strong>Jauan Jennings</strong> (WR) commands 17% of the targets (5.3 targets, 3.1 catches, 38 yards a game), working 10.3 yards downfield on average; <strong>George Kittle</strong> (TE) commands 12% of the targets (3.7 targets, 3.1 catches, 33 yards a game), working 6.7 yards downfield on average. Expect Christian McCaffrey to see the ball early and often. The Kansas City Chiefs pass defence grades <strong>A+</strong> (1st of 32), so this group will make them work for it.</p><p class="ftext"><strong>On the ground:</strong> <strong>Christian McCaffrey</strong> takes 63% of the carries (17.7 carries, 68 yards a game). <strong>Brian Robinson</strong> takes 18% of the carries (5.0 carries, 21 yards a game) in a change-of-pace role. They run into a defence that has been run on all year &mdash; Kansas City Chiefs grades <strong>D</strong> against the run (29th of 32).</p></div>
 
 <h4>Unit ratings</h4><table class="units">

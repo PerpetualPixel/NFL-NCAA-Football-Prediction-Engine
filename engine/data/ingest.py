@@ -25,10 +25,16 @@ NFL_PBP_URL = (
 NFL_SCHED_URL = (
     "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv"
 )
-CFB_SCHED_URL = (
+# The mirror renamed its schedule files during 2026: seasons through 2025
+# were published as schedules_{year}, the current one as cfb_schedules_{year}.
+# Both names are tried so neither an old cache nor a new season goes missing.
+CFB_SCHED_URLS = (
     "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
-    "schedules/parquet/schedules_{year}.parquet"
+    "schedules/parquet/cfb_schedules_{year}.parquet",
+    "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
+    "schedules/parquet/schedules_{year}.parquet",
 )
+CFB_SCHED_URL = CFB_SCHED_URLS[1]
 CFB_LINES_URL = (
     "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
     "betting/parquet/cfb_line_odds.parquet"
@@ -83,7 +89,8 @@ NFL_SNAPS_URL = (
     "snap_counts_{year}.parquet"
 )
 INJURY_COLUMNS = ["season", "week", "team", "gsis_id", "position",
-                  "full_name", "report_status"]
+                  "full_name", "report_status", "report_primary_injury",
+                  "practice_status"]
 SNAP_COLUMNS = ["season", "week", "team", "player", "pfr_player_id",
                 "position", "offense_pct", "defense_pct"]
 
@@ -106,6 +113,25 @@ def _download(url: str, dest: Path, retries: int = 3) -> Path:
 def _cached_parquet(url: str, dest: Path, refresh: bool = False) -> pd.DataFrame:
     if refresh or not dest.exists():
         _download(url, dest)
+    return pd.read_parquet(dest)
+
+
+def _cached_parquet_any(urls: list[str], dest: Path, refresh: bool = False) -> pd.DataFrame:
+    """Like _cached_parquet, trying each URL in turn; raises the last HTTP
+    error only if none of them is published."""
+    if refresh or not dest.exists():
+        last: Exception | None = None
+        for url in urls:
+            try:
+                _download(url, dest)
+                last = None
+                break
+            except requests.HTTPError as exc:
+                last = exc
+        if last is not None:
+            if dest.exists():
+                return pd.read_parquet(dest)  # keep the cache rather than fail
+            raise last
     return pd.read_parquet(dest)
 
 
@@ -171,7 +197,8 @@ def load_ncaa_schedules(seasons: list[int], refresh_latest: bool = False) -> pd.
         dest = DATA_DIR / "ncaa" / f"schedules_{year}.parquet"
         refresh = refresh_latest and year == max(seasons)
         try:
-            df = _cached_parquet(CFB_SCHED_URL.format(year=year), dest, refresh)
+            df = _cached_parquet_any([u.format(year=year) for u in CFB_SCHED_URLS],
+                                     dest, refresh)
         except requests.HTTPError:
             # primary mirror hasn't published this season; fall back to the
             # live-updating ESPN mirror, inferring FBS membership from the
@@ -311,4 +338,9 @@ def ncaa_game_odds(schedule: pd.DataFrame, refresh: bool = False) -> pd.DataFram
     for col in ("home_moneyline", "away_moneyline", "home_spread_odds", "away_spread_odds"):
         if col in out.columns:
             out[col] = out[col].where(out[col].abs() >= 100)
+    # a median across an even number of books lands on quarter points no
+    # book posts; round to the half point like a real line
+    for col in ("spread_line", "open_spread_line", "total_line"):
+        if col in out.columns:
+            out[col] = (out[col] * 2).round() / 2
     return out
