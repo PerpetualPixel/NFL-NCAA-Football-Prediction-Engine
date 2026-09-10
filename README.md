@@ -40,6 +40,12 @@ this rung cannot hit like a Lock does; it is the best play *at that price*.
 stacked in confidence order until the combined price reaches +100 or better,
 grouped by the day they play.
 
+**Reading a card.** The pick is the largest thing on it: the side, its tier
+badge and the price, on a panel colour-coded by tier — green for a Lock or a
+Pick, amber for a Lean, dashed grey for a Pass. Everything else on the card is
+supporting detail. Every tag explains itself on hover or keyboard focus, so
+`near 3` does not send anyone hunting for a legend.
+
 **Breakdowns.** Per game: why the side carries its tier, in the tracker's own
 numbers; the projected score against the market total; the game script; who is
 out, with names and reasons; the kickoff forecast; recent form; unit grades
@@ -72,9 +78,16 @@ posted; closing line value.
 
 | Stage | When | Meaning |
 |---|---|---|
-| Scheduled | more than a week out | Nothing published |
+| **Early lean** | more than a week out | Published, and marked early: no injury report exists for the game yet |
 | **Lean** | one week out | The model's current read, refreshed on every build as prices, injuries and forecasts change |
 | **Locked** | current roster + final injury report + kickoff forecast in, or two hours before kickoff, whichever is first | Final. Frozen and never changed; this is what the tracker grades |
+
+Every game on a week's page carries a lean, whatever its stage — including
+games rated Pass, which are shown with their full reasoning and never counted
+as picks. Only the *locking* is staged: an early lean keeps moving until the
+news is in. Pixel's Pick and the parlay board still draw only from games
+inside a week of kickoff, because a headline play is a commitment and an
+early lean is not.
 
 Locked picks are written to a state file that ships with the site and is read
 back on every build, so a later run cannot quietly move a number that was
@@ -141,6 +154,11 @@ same warning ships inside every build as the feed's `disclosure` string.
 
 `feed_version` is bumped whenever a field changes meaning or goes away; new
 fields can appear without one. Every field but the identifiers can be null.
+
+**Version 2** carries early leans — games more than a week from kickoff, which
+version 1 left out — so the feed lists exactly what the site lists. They come
+through with `stage: "pending"` and `locked: false`; filter on `stage` to get
+version 1's set back.
 
 [perpetualpicks.com](https://perpetualpicks.com) reads this feed to lay the
 engine's read over its own live odds board — see `docs/gridiron.js` in

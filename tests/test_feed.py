@@ -117,14 +117,25 @@ def test_projected_score_splits_the_margin_across_the_market_total():
     assert bare["model"]["projected_score"] is None
 
 
-def test_only_released_games_still_to_play_are_published():
+def test_every_game_still_to_play_is_published_including_early_leans():
+    """The site carries a lean for every game it lists, so the feed does too.
+
+    A game already played is history and belongs to the tracking pages; an
+    early lean is a live read and belongs here, labelled so a consumer can
+    tell it apart.
+    """
     rows = [
         _row(game_id="released"),
         _row(game_id="pending", release_stage="pending"),
         _row(game_id="played", completed=True, margin=7.0),
     ]
-    ids = [g["game_id"] for g in _build(rows)["games"]]
-    assert ids == ["released"]
+    games = _build(rows)["games"]
+    assert sorted(g["game_id"] for g in games) == ["pending", "released"]
+    stages = {g["game_id"]: g["stage"] for g in games}
+    assert stages["pending"] == "pending" and stages["released"] == "lean"
+    # ...and it is not passed off as final
+    early = next(g for g in games if g["game_id"] == "pending")
+    assert early["locked"] is False
 
 
 def test_a_locked_pick_says_so_and_carries_its_reason():

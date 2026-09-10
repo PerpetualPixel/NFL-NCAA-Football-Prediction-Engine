@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from engine import analysis, locks, odds, pipeline, rosters, tracking, weather
+from engine import analysis, locks, odds, pipeline, rosters, site, tracking, weather
 from engine.data import espn_odds
 
 
@@ -347,6 +347,84 @@ def test_production_is_split_from_the_season_being_played():
                        pd.DataFrame([{"season": 2026, "home_team": "A",
                                       "away_team": "B", "completed": False}])])
     assert pipeline._player_season(plays, games) == (2025, 2026)
+
+
+# ---------------------------------------------------------------------------
+# The card: one unmissable pick, a lean on every game, and tags that explain
+# themselves
+# ---------------------------------------------------------------------------
+
+def _card(tier="lean", prob=0.62, price=-140.0, stage="lean", **over):
+    row = pd.Series({
+        "game_id": "x1", "home_team": "Kansas City Chiefs",
+        "away_team": "Arizona Cardinals", "home_key": "KC", "away_key": "ARI",
+        "season": 2026, "week": 1, "n_teams": 32, "pred_margin": 3.2,
+        "home_win_prob": prob, "neutral": False, "hfa_fit": 1.8,
+        "home_rating": 4.0, "away_rating": -2.0, "spread_line": 0.5,
+        "completed": False, "margin": float("nan"), "ml_tier": tier,
+        "ml_pick": "Kansas City Chiefs", "ml_cal": prob, "ml_price": price,
+        "ats_pick": "Arizona Cardinals", "ats_line": -0.5, "ats_edge": 2.7,
+        "release_stage": stage, "game_type": "REG",
+        "gameday": pd.Timestamp("2026-09-13"), "gametime": "13:00", **over,
+    })
+    return site._game_card(row, graded=False, league="nfl", ctx={})
+
+
+def test_the_pick_is_the_loudest_thing_on_the_card():
+    html = _card(tier="pick", prob=0.76, price=-260.0)
+    assert 'class="pickhero t-pick"' in html
+    assert '<div class="pickteam">Kansas City Chiefs</div>' in html
+    # the tier badge sits with the pick, not adrift in the chip row
+    hero = html.split('class="pickhero')[1].split("</div></div>")[0]
+    assert "Moneyline pick" in hero and 'tag-pick' in hero
+
+
+def test_a_pass_never_reads_as_a_recommendation():
+    html = _card(tier="pass", prob=0.52, price=110.0)
+    assert 'class="pickhero t-pass"' in html
+    assert "no play" in html
+    assert "not counted as a pick" in html
+
+
+def test_every_game_carries_a_lean_however_far_out():
+    """A game more than a week from kickoff used to publish nothing at all."""
+    html = _card(stage="pending")
+    assert 'class="pickhero' in html and "Kansas City Chiefs" in html
+    # ...and it says how much weight to put on a lean made before any
+    # injury report exists
+    assert "Early lean" in html
+
+
+def test_the_stage_still_says_whether_a_pick_is_final():
+    assert "Early lean" in _card(stage="pending")
+    assert "not final" in _card(stage="lean")
+    assert "locked" in _card(stage="locked", locked_at="2026-09-13T10:00:00+00:00")
+
+
+def test_every_tag_explains_itself_on_hover():
+    html = _card(tier="lock", prob=0.9, price=-450.0)
+    chips = html.split('<div class="chips">')[1].split("</div>")[0]
+    # no chip ships without a bubble
+    for chip in chips.split("<span")[1:]:
+        assert "data-tip=" in chip, chip
+    # and the tier badge in the hero has one too
+    assert 'class="tag tag-lock" data-tip=' in html
+
+
+def test_near_three_says_what_it_means():
+    tip = site._key_number_tip(3)
+    assert "within a point of 3" in tip and "field goal" in tip
+    assert "touchdown" in site._key_number_tip(7)
+    html = _card()
+    assert "near 3" in html and 'data-tip="The projected margin is within a point of 3' in html
+
+
+def test_tier_filters_still_work_after_the_badge_moved():
+    """The tier chip moved into the hero, but the card's data-tags — which is
+    what the filter buttons read — must still carry it."""
+    html = _card(tier="lock", prob=0.9, price=-450.0)
+    tags = html.split('data-tags="')[1].split('"')[0].split()
+    assert "lock" in tags
 
 
 def test_market_line_names_the_market_favourite():
