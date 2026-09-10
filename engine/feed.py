@@ -38,8 +38,13 @@ STABILITY
 fields may appear at any time without a bump. Every game field except the
 identifiers can be null: the college feed posts no injuries and often no
 spread price, a game with no posted moneyline is not graded as a bet at all,
-and a pending game has no pick yet (those are omitted from the feed entirely
-rather than published with an empty pick).
+and a game rated Pass carries a side with `counted: false` rather than no side
+at all.
+
+Version 2 added early leans: games more than a week from kickoff, which
+version 1 omitted. They arrive with `stage: "pending"` and are the model's
+read before any injury report exists for the game. Filter them out on `stage`
+to get version 1's set back.
 """
 from __future__ import annotations
 
@@ -51,7 +56,7 @@ import pandas as pd
 from . import analysis, odds, pixel, tracking
 from .config import LEAGUES
 
-FEED_VERSION = 1
+FEED_VERSION = 2
 
 SITE_URL = "https://perpetualpixel.github.io/NFL-NCAA-Football-Prediction-Engine/"
 
@@ -72,7 +77,10 @@ DISCLOSURE = (
 # projection internally, but publishing one would put a number on a game whose
 # injuries and weather are still a week out — exactly what the two-stage
 # release exists to prevent.
-PUBLISHED_STAGES = ("lean", "locked", "started")
+# Every game the site lists carries a lean, so the feed carries them all too.
+# `stage` separates them: "pending" is an early lean made before any injury
+# report exists, and a consumer that only wants settled reads can filter on it.
+PUBLISHED_STAGES = ("pending", "lean", "locked", "started")
 
 _TAG = re.compile(r"<[^>]+>")
 
@@ -233,13 +241,15 @@ def _analysis(row, league: str, ctx: dict) -> dict:
             row, ctx.get("tier_rates"), league)],
         "script": [plain(p) for p in analysis.game_script(row, league)],
         "injuries": [{"team": plain(t), "text": plain(x)}
-                     for t, x in analysis.injury_report(row, ctx.get("reports"), league)],
+                     for t, x in analysis.injury_report(row, ctx.get("reports"), league,
+                                                        ctx.get("roster"))],
         "form": [{"team": plain(t), "text": plain(x)}
                  for t, x in analysis.recent_form(row, ctx.get("games"), league)],
         "players": [{"team": plain(t), "text": plain(x)}
-                    for t, x in analysis.key_players(row, ctx.get("players"))],
+                    for t, x in analysis.key_players(row, ctx.get("players"),
+                                                      ctx.get("roster"))],
         "conditions": _str(analysis.conditions_note(row)),
-        "availability": _str(analysis.availability_note(row)),
+        "availability": _str(analysis.availability_note(row, ctx.get("roster"))),
         "movement": _str(analysis.line_movement(row)),
         "factors": factors,
     }
@@ -376,6 +386,9 @@ def build(entries: list[tuple[str, dict, str]], now: pd.Timestamp | None = None)
             "reports": week.get("reports"),
             "games": week.get("games"),
             "players": week.get("players"),
+            # without this the feed loses the reserve lists and the named
+            # starting quarterbacks that the pages carry
+            "roster": week.get("roster"),
         }
         published = preds[preds["release_stage"].isin(PUBLISHED_STAGES)]
         # A game already played is history; the tracking pages carry those.
