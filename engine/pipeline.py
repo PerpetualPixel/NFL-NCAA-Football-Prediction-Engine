@@ -9,11 +9,17 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from . import rosters
 from .config import LeagueConfig, LEAGUES
 from .data import ingest
 from .features.ratings import recency_weights, solve_ratings
 
 FCS_BUCKET = "NON-FBS"
+
+# How many games a team must have played before its usage table means
+# anything — and, equivalently, before a new season can describe its own
+# players rather than deferring to the last one.
+USAGE_MIN_GAMES = 3
 
 
 def load_league_inputs(
@@ -36,22 +42,26 @@ def load_league_inputs(
         pbp = ingest.load_nfl_pbp(seasons, refresh_latest=refresh)
         unit_stats = nfl_unit_game_stats(pbp)
         injuries = ingest.load_nfl_injuries(seasons, refresh_latest=refresh)
+        weekly_rosters = ingest.load_nfl_weekly_roster_history(
+            seasons, refresh_latest=refresh)
         availability = {
             "qb_values": nfl_qb_game_value(pbp),
             "injury": nfl_injury_burden(
                 injuries, ingest.load_nfl_snaps(seasons, refresh_latest=refresh),
+                weekly_rosters,
             ),
             # the raw reports, so the site can tell when a week's final
             # (game-status) report has been filed
             "injury_reports": injuries,
         }
         if with_players:
-            season = _player_season(pbp)
-            players = nfl_player_production(pbp, season)
-            availability["usage"] = nfl_expand_names(
-                nfl_player_usage(pbp, season),
-                ingest.load_nfl_rosters([season], refresh_latest=refresh),
-            )
+            stat_season, current = _player_season(pbp, games)
+            roster = rosters.build("nfl", current, _current_week(games, current))
+            availability["roster"] = roster
+            players = _current_players(
+                nfl_player_production(pbp, stat_season), roster, stat_season, current)
+            availability["usage"] = _current_players(
+                nfl_player_usage(pbp, stat_season), roster, stat_season, current)
     else:
         plays = ingest.load_ncaa_plays(seasons, refresh_latest=refresh)
         if not plays.empty:
@@ -63,9 +73,17 @@ def load_league_inputs(
                 plays = plays[plays["team"].isin(fbs) & plays["opponent"].isin(fbs)]
             unit_stats = ncaa_unit_game_stats(plays)
             if with_players:
-                season = _player_season(plays)
-                players = ncaa_player_production(plays, season)
-                availability = {"usage": ncaa_player_usage(plays, season)}
+                stat_season, current = _player_season(plays, games)
+                roster = rosters.build("ncaa", current, _current_week(games, current))
+                players = _current_players(
+                    ncaa_player_production(plays, stat_season), roster,
+                    stat_season, current)
+                availability = {
+                    "roster": roster,
+                    "usage": _current_players(
+                        ncaa_player_usage(plays, stat_season), roster,
+                        stat_season, current),
+                }
     if with_players:
         return games, unit_stats, players, availability
     return games, unit_stats, availability
@@ -128,15 +146,23 @@ def ncaa_player_production(plays: pd.DataFrame, season: int, min_plays: int = 25
     roles = [("completion_player", "QB"), ("rush_player", "RB"), ("reception_player", "REC")]
     frames = []
     for col, role in roles:
+        # group on the athlete id rather than the name: the id is what the
+        # current roster can be checked against, and the roster's spelling of
+        # the name is the better one anyway
+        id_col = f"{col}_id"
         sub = df[df[col].notna()]
+        if sub.empty or id_col not in sub.columns:
+            continue
+        sub = sub[sub[id_col].notna()]
         if sub.empty:
             continue
         agg = (
-            sub.groupby(["team", col])
-            .agg(plays=("success", "size"), epa_per_play=("success", "mean"),
-                 total_epa=("yards_gained", "sum"))
+            sub.assign(**{id_col: sub[id_col].astype("Int64").astype(str)})
+            .groupby(["team", id_col])
+            .agg(player=(col, "first"), plays=("success", "size"),
+                 epa_per_play=("success", "mean"), total_epa=("yards_gained", "sum"))
             .reset_index()
-            .rename(columns={"team": "team", col: "player"})
+            .rename(columns={id_col: "player_id"})
         )
         agg["role"] = role
         frames.append(agg[agg["plays"] >= min_plays])
@@ -151,26 +177,32 @@ def nfl_player_production(pbp: pd.DataFrame, season: int, min_plays: int = 25) -
     """
     recent = pbp[(pbp["season"] == season) & pbp["epa"].notna()]
     roles = [
-        ("passer_player_name", "pass", "QB"),
-        ("rusher_player_name", "run", "RB"),
-        ("receiver_player_name", "pass", "REC"),
+        ("passer_player", "pass", "QB"),
+        ("rusher_player", "run", "RB"),
+        ("receiver_player", "pass", "REC"),
     ]
     frames = []
-    for col, play_type, role in roles:
+    for stem, play_type, role in roles:
+        col, id_col = f"{stem}_name", f"{stem}_id"
         sub = recent[recent[col].notna() & recent["play_type"].eq(play_type)]
+        if sub.empty or id_col not in sub.columns:
+            continue
+        # keyed by gsis id, so the player can be looked up on today's roster
+        sub = sub[sub[id_col].notna()]
         if sub.empty:
             continue
         agg = (
-            sub.groupby(["posteam", col])
-            .agg(plays=("epa", "size"), total_epa=("epa", "sum"),
-                 epa_per_play=("epa", "mean"), success=("success", "mean"))
+            sub.groupby(["posteam", id_col])
+            .agg(player=(col, "first"), plays=("epa", "size"),
+                 total_epa=("epa", "sum"), epa_per_play=("epa", "mean"),
+                 success=("success", "mean"))
             .reset_index()
-            .rename(columns={"posteam": "team", col: "player"})
+            .rename(columns={"posteam": "team", id_col: "player_id"})
         )
         agg["role"] = role
         frames.append(agg[agg["plays"] >= min_plays])
     if not frames:
-        return pd.DataFrame(columns=["team", "player", "role", "plays",
+        return pd.DataFrame(columns=["team", "player", "player_id", "role", "plays",
                                      "epa_per_play", "total_epa", "success"])
     return pd.concat(frames, ignore_index=True)
 
@@ -277,16 +309,85 @@ def nfl_unit_game_stats(pbp: pd.DataFrame) -> pd.DataFrame:
 # Walk-forward feature building
 # ---------------------------------------------------------------------------
 
-def _player_season(plays: pd.DataFrame, min_plays: int = 5000) -> int:
-    """Latest season with enough plays to describe players by.
+def _player_season(plays: pd.DataFrame, games: pd.DataFrame | None = None,
+                   min_team_games: int = USAGE_MIN_GAMES) -> tuple[int, int]:
+    """(season the production numbers come from, season being played).
 
-    A season that has just kicked off has only a handful of games, which
-    would name players off two hours of football; fall back to the last
-    full season until the new one has accumulated real volume.
+    A season three games old cannot describe how a team distributes the ball
+    — one blowout and one weather game is not a target share — so until every
+    club has played a few, production falls back to the last full season.
+    The two seasons are returned separately because they are different
+    claims: how a player has produced is a fact about last autumn, whereas
+    who he plays for is a fact about today, and the site has to be able to
+    say which is which rather than run them together.
+
+    Both leagues use the same rule. Measuring it in games rather than raw
+    plays matters: a single college Saturday clears any play count, and
+    would otherwise have the college pages describing target shares off one
+    afternoon while the NFL pages still used last season.
     """
     counts = plays.groupby("season").size()
-    usable = counts[counts >= min_plays]
-    return int(usable.index.max()) if len(usable) else int(counts.index.max())
+    seasons = sorted(int(x) for x in counts.index) if len(counts) else []
+    played = seasons[-1] if seasons else 0
+    current = played
+    if games is not None and len(games) and "season" in games.columns:
+        current = max(current, int(games["season"].max()))
+    stat_season = played
+    if _too_early(games, current, min_team_games):
+        earlier = [x for x in seasons if x < current]
+        if earlier:
+            stat_season = earlier[-1]
+    return stat_season, current
+
+
+def _too_early(games: pd.DataFrame | None, season: int, min_team_games: int) -> bool:
+    """Whether the season is too young to describe players by."""
+    if games is None or not len(games) or "season" not in games.columns:
+        return False
+    done = games[(games["season"] == season) & games["completed"].astype(bool)]
+    if done.empty:
+        return True
+    played = pd.concat([done["home_team"], done["away_team"]]).value_counts()
+    return bool(played.median() < min_team_games)
+
+
+def _current_week(games: pd.DataFrame | None, season: int) -> int | None:
+    """The week of `season` being played now: the earliest one still holding
+    a game that has not finished, or the last one if the season is over."""
+    if games is None or not len(games) or "season" not in games.columns:
+        return None
+    this = games[games["season"] == season]
+    if this.empty or "week" not in this.columns:
+        return None
+    pending = this[~this["completed"].astype(bool)] if "completed" in this else this
+    weeks = (pending if not pending.empty else this)["week"].dropna()
+    if weeks.empty:
+        return None
+    return int(weeks.min() if not pending.empty else weeks.max())
+
+
+def _current_players(frame: pd.DataFrame | None, roster, stat_season: int,
+                     current_season: int) -> pd.DataFrame | None:
+    """Put a table of players through the current roster before anyone sees it.
+
+    Players who have moved on are removed, the rest carry today's status and
+    the roster's spelling of their name and position, and every row records
+    which season its numbers came from so the prose can say so rather than
+    implying they are this week's.
+    """
+    if frame is None or frame.empty:
+        return frame
+    df = frame.copy()
+    df["stat_season"] = stat_season
+    df["stats_are_current"] = stat_season == current_season
+    if roster is None or getattr(roster, "empty", True):
+        # nothing to check against: say so rather than vouching for the names
+        df["availability"] = rosters.UNKNOWN
+        df["roster_note"] = "roster not verified"
+        df["roster_verified"] = False
+        df["depth_rank"] = None
+        return df
+    return roster.annotate(df)
 
 
 def _qb_state(qb_values, window, cfg, season, week):
@@ -522,37 +623,89 @@ def nfl_qb_game_value(pbp: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def nfl_injury_burden(injuries: pd.DataFrame, snaps: pd.DataFrame) -> pd.DataFrame:
+def nfl_injury_burden(injuries: pd.DataFrame, snaps: pd.DataFrame,
+                      weekly_rosters: pd.DataFrame | None = None) -> pd.DataFrame:
     """Per (season, week, team): a weighted count of who is missing.
 
     Availability is reported before kickoff, so this is legitimately known
     at prediction time. Each absence is weighted by the player's recent snap
     share and by position, then summed.
-    """
-    if injuries.empty:
-        return pd.DataFrame(columns=["season", "week", "team", "inj_burden"])
-    inj = injuries[injuries["report_status"].isin(OUT_WEIGHT)].copy()
-    if inj.empty:
-        return pd.DataFrame(columns=["season", "week", "team", "inj_burden"])
 
-    share = pd.Series(0.55, index=inj.index)  # default for an unmatched name
-    if not snaps.empty:
+    Two things count as missing, and the second used to be invisible:
+
+    * a game-status designation on the week's injury report (Out, Doubtful,
+      Questionable), weighted by how firm it is; and
+    * being on a reserve list that week — injured reserve, PUP, the exempt
+      list. A player put on IR in August never appears on a game-status
+      report again, because he was never in that week's game plan, so a
+      team missing its best receiver for the season registered no injury
+      burden at all. In week one, when no report has been filed, this is
+      the *only* signal there is.
+
+    Reserve lists are filed days ahead, so counting them keeps the feature
+    walk-forward honest. Game-day inactives are deliberately not counted:
+    they are published ninety minutes before kickoff, long after a pick is.
+    """
+    frames = []
+    if injuries is not None and not injuries.empty:
+        inj = injuries[injuries["report_status"].isin(OUT_WEIGHT)].copy()
+        if not inj.empty:
+            inj["weight"] = inj["report_status"].map(OUT_WEIGHT).fillna(0.0)
+            frames.append(inj[["season", "week", "team", "full_name",
+                               "position", "weight"]])
+    reserve = _nfl_reserve_absences(weekly_rosters)
+    if reserve is not None and not reserve.empty:
+        frames.append(reserve)
+    if not frames:
+        return pd.DataFrame(columns=["season", "week", "team", "inj_burden"])
+    out = pd.concat(frames, ignore_index=True)
+    # a player on injured reserve who is also listed Out is one absence
+    out = out.sort_values("weight", ascending=False).drop_duplicates(
+        subset=["season", "week", "team", "full_name"], keep="first")
+
+    share = pd.Series(0.55, index=out.index)  # default for an unmatched name
+    if snaps is not None and not snaps.empty:
         snaps = snaps.copy()
         snaps["snap_pct"] = snaps[["offense_pct", "defense_pct"]].max(axis=1)
         # a player's typical role, averaged over the season to date
         role = (snaps.groupby(["season", "team", "player"])["snap_pct"]
                 .mean().rename("snap_share").reset_index())
-        inj = inj.merge(
+        out = out.merge(
             role, left_on=["season", "team", "full_name"],
             right_on=["season", "team", "player"], how="left",
         )
-        share = inj["snap_share"].fillna(0.55).clip(0, 1)
+        share = out["snap_share"].fillna(0.55).clip(0, 1)
 
-    pos_w = inj["position"].map(POSITION_WEIGHT).fillna(0.7)
-    status_w = inj["report_status"].map(OUT_WEIGHT).fillna(0.0)
-    inj["burden"] = share * pos_w * status_w
-    return (inj.groupby(["season", "week", "team"])["burden"].sum()
+    pos_w = out["position"].map(POSITION_WEIGHT).fillna(0.7)
+    out["burden"] = share * pos_w * out["weight"]
+    return (out.groupby(["season", "week", "team"])["burden"].sum()
             .rename("inj_burden").reset_index())
+
+
+def _nfl_reserve_absences(weekly_rosters: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Players a club had on a reserve list in a given week, as absences.
+
+    A reserve listing is a full absence, so it carries the same weight an
+    "Out" designation does.
+    """
+    if weekly_rosters is None or weekly_rosters.empty:
+        return None
+    if not {"status", "week", "team", "season"} <= set(weekly_rosters.columns):
+        return None
+    df = weekly_rosters[
+        weekly_rosters["status"].astype(str).str.upper().isin(rosters.RESERVE_STATUSES)
+    ].copy()
+    if df.empty:
+        return None
+    # the depth-chart position is the more specific of the two ("LT", not "T")
+    pos = pd.Series(None, index=df.index, dtype=object)
+    if "depth_chart_position" in df.columns:
+        pos = df["depth_chart_position"]
+    if "position" in df.columns:
+        pos = pos.fillna(df["position"])
+    df["position"] = pos
+    df["weight"] = OUT_WEIGHT["Out"]
+    return df[["season", "week", "team", "full_name", "position", "weight"]]
 
 
 # ---------------------------------------------------------------------------
@@ -564,39 +717,6 @@ def nfl_injury_burden(injuries: pd.DataFrame, snaps: pd.DataFrame) -> pd.DataFra
 # "their passing game is good" and "their number one runs 27% of the routes
 # targeted and averages 9 yards a catch".
 
-USAGE_MIN_GAMES = 3
-
-
-def _abbreviate(full_name: str) -> str:
-    """The play-by-play's name form: first initial, dot, surname."""
-    parts = str(full_name).split()
-    if len(parts) < 2:
-        return str(full_name)
-    return f"{parts[0][0]}.{' '.join(parts[1:])}"
-
-
-def nfl_expand_names(usage: pd.DataFrame, rosters: pd.DataFrame) -> pd.DataFrame:
-    """Swap "C.Sutton" for "Courtland Sutton", and attach the position.
-
-    The play-by-play abbreviates names; a reader wants them written out, and
-    knowing whether the number two is a receiver or a tight end changes how
-    the passing game reads.
-    """
-    if usage.empty or rosters.empty:
-        return usage
-    ref = rosters.dropna(subset=["full_name", "team"]).copy()
-    ref["abbrev"] = ref["full_name"].map(_abbreviate)
-    ref = ref.drop_duplicates(subset=["team", "abbrev"], keep="last")
-    lookup = ref.set_index(["team", "abbrev"])
-    out = usage.copy()
-    keys = list(zip(out["team"], out["player"]))
-    out["player"] = [
-        lookup["full_name"].get(k, k[1]) for k in keys
-    ]
-    out["position"] = [
-        lookup["position"].get(k) if k in lookup.index else None for k in keys
-    ]
-    return out
 
 
 def nfl_player_usage(pbp: pd.DataFrame, season: int) -> pd.DataFrame:
@@ -608,28 +728,30 @@ def nfl_player_usage(pbp: pd.DataFrame, season: int) -> pd.DataFrame:
     games = df.groupby("posteam")["game_id"].nunique().rename("team_games")
 
     # --- receiving: a named receiver on a pass play is a target ----------
-    tgt = df[df["receiver_player_name"].notna() & df["pass_attempt"].eq(1)]
-    rec = (tgt.groupby(["posteam", "receiver_player_name"])
-           .agg(targets=("pass_attempt", "sum"),
+    tgt = df[df["receiver_player_id"].notna() & df["pass_attempt"].eq(1)]
+    rec = (tgt.groupby(["posteam", "receiver_player_id"])
+           .agg(player=("receiver_player_name", "first"),
+                targets=("pass_attempt", "sum"),
                 catches=("complete_pass", "sum"),
                 rec_yards=("yards_gained", "sum"),
                 air=("air_yards", "mean"),
                 yac=("yards_after_catch", "mean"),
                 epa=("epa", "mean"))
            .reset_index().rename(columns={"posteam": "team",
-                                          "receiver_player_name": "player"}))
+                                          "receiver_player_id": "player_id"}))
     rec["role"] = "REC"
     team_targets = rec.groupby("team")["targets"].transform("sum")
     rec["share"] = rec["targets"] / team_targets
 
     # --- rushing ---------------------------------------------------------
-    car = df[df["rusher_player_name"].notna() & df["rush_attempt"].eq(1)]
-    run = (car.groupby(["posteam", "rusher_player_name"])
-           .agg(carries=("rush_attempt", "sum"),
+    car = df[df["rusher_player_id"].notna() & df["rush_attempt"].eq(1)]
+    run = (car.groupby(["posteam", "rusher_player_id"])
+           .agg(player=("rusher_player_name", "first"),
+                carries=("rush_attempt", "sum"),
                 rush_yards=("yards_gained", "sum"),
                 epa=("epa", "mean"))
            .reset_index().rename(columns={"posteam": "team",
-                                          "rusher_player_name": "player"}))
+                                          "rusher_player_id": "player_id"}))
     run["role"] = "RUSH"
     team_carries = run.groupby("team")["carries"].transform("sum")
     run["share"] = run["carries"] / team_carries
@@ -658,20 +780,22 @@ def ncaa_player_usage(plays: pd.DataFrame, season: int) -> pd.DataFrame:
         return pd.DataFrame()
     games = df.groupby("team")["game_id"].nunique().rename("team_games")
 
-    tgt = df[df["reception_player"].notna()]
-    rec = (tgt.groupby(["team", "reception_player"])
-           .agg(catches=("success", "size"), rec_yards=("reception_yds", "sum"),
-                epa=("success", "mean"))
-           .reset_index().rename(columns={"reception_player": "player"}))
+    tgt = df[df["reception_player_id"].notna()]
+    tgt = tgt.assign(reception_player_id=tgt["reception_player_id"].astype("Int64").astype(str))
+    rec = (tgt.groupby(["team", "reception_player_id"])
+           .agg(player=("reception_player", "first"), catches=("success", "size"),
+                rec_yards=("reception_yds", "sum"), epa=("success", "mean"))
+           .reset_index().rename(columns={"reception_player_id": "player_id"}))
     rec["targets"] = rec["catches"]      # the feed records completions only
     rec["role"] = "REC"
     rec["share"] = rec["catches"] / rec.groupby("team")["catches"].transform("sum")
 
-    car = df[df["rush_player"].notna()]
-    run = (car.groupby(["team", "rush_player"])
-           .agg(carries=("success", "size"), rush_yards=("rush_yds", "sum"),
-                epa=("success", "mean"))
-           .reset_index().rename(columns={"rush_player": "player"}))
+    car = df[df["rush_player_id"].notna()]
+    car = car.assign(rush_player_id=car["rush_player_id"].astype("Int64").astype(str))
+    run = (car.groupby(["team", "rush_player_id"])
+           .agg(player=("rush_player", "first"), carries=("success", "size"),
+                rush_yards=("rush_yds", "sum"), epa=("success", "mean"))
+           .reset_index().rename(columns={"rush_player_id": "player_id"}))
     run["role"] = "RUSH"
     run["share"] = run["carries"] / run.groupby("team")["carries"].transform("sum")
 

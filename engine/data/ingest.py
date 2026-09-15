@@ -52,6 +52,8 @@ CFB_PLAY_COLUMNS = [
     "game_id", "season", "week", "team", "opponent", "down", "distance",
     "yards_to_goal", "completion_player", "completion_yds", "rush_player",
     "rush_yds", "incompletion_player", "reception_player", "reception_yds",
+    # athlete ids, so a player can be checked against the current roster
+    "completion_player_id", "rush_player_id", "reception_player_id",
 ]
 
 CFB_ESPN_SCHED_URL = (
@@ -67,7 +69,9 @@ NFL_PBP_COLUMNS = [
     "epa", "success", "qb_dropback", "sack", "yards_gained",
     # player attribution, for the key-players breakdown and QB ratings
     "passer_player_name", "rusher_player_name", "receiver_player_name",
-    "passer_player_id",
+    # ids, not just names: "C.Sutton" cannot be matched against a roster with
+    # any confidence, and a gsis id can
+    "passer_player_id", "rusher_player_id", "receiver_player_id",
     # usage and role: who gets the targets and carries, how far downfield,
     # and how much of it they convert
     "complete_pass", "air_yards", "yards_after_catch",
@@ -93,6 +97,45 @@ INJURY_COLUMNS = ["season", "week", "team", "gsis_id", "position",
                   "practice_status"]
 SNAP_COLUMNS = ["season", "week", "team", "player", "pfr_player_id",
                 "position", "offense_pct", "defense_pct"]
+
+# --- who is on the team right now ----------------------------------------
+# The files above describe seasons. These describe *today*, and they are what
+# the breakdowns are allowed to name players from. nflverse republishes them
+# several times a day, so they are cached with an age limit rather than
+# "download once" like an archive.
+NFL_WEEKLY_ROSTER_URL = (
+    "https://github.com/nflverse/nflverse-data/releases/download/weekly_rosters/"
+    "roster_weekly_{year}.parquet"
+)
+WEEKLY_ROSTER_COLUMNS = [
+    "season", "week", "team", "position", "depth_chart_position", "status",
+    "status_description_abbr", "full_name", "football_name", "gsis_id",
+    "jersey_number", "years_exp",
+]
+# The published depth chart, re-scraped through the day: this is what makes a
+# week-one breakdown able to name the starter rather than last year's starter.
+NFL_DEPTH_CHART_URL = (
+    "https://github.com/nflverse/nflverse-data/releases/download/depth_charts/"
+    "depth_charts_{year}.parquet"
+)
+DEPTH_CHART_COLUMNS = ["dt", "team", "player_name", "gsis_id", "pos_grp",
+                       "pos_abb", "pos_name", "pos_slot", "pos_rank"]
+
+# College rosters. The mirror renamed these the same way it renamed the
+# schedules, so both names are tried.
+CFB_ROSTER_URLS = (
+    "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
+    "rosters/parquet/cfb_rosters_{year}.parquet",
+    "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/"
+    "rosters/parquet/rosters_{year}.parquet",
+)
+CFB_ROSTER_COLUMNS = ["athlete_id", "first_name", "last_name", "team",
+                      "position", "jersey", "year", "season"]
+
+# How old a "who is available right now" file may be before it is refetched.
+# The site builds twice an hour; an hour keeps every build on the day's data
+# without re-downloading the same file twice in one hour.
+LIVE_MAX_AGE_HOURS = 1.0
 
 
 def _download(url: str, dest: Path, retries: int = 3) -> Path:
@@ -133,6 +176,84 @@ def _cached_parquet_any(urls: list[str], dest: Path, refresh: bool = False) -> p
                 return pd.read_parquet(dest)  # keep the cache rather than fail
             raise last
     return pd.read_parquet(dest)
+
+
+def _age_hours(dest: Path) -> float:
+    """How long ago the cached copy was written, in hours."""
+    try:
+        return (time.time() - dest.stat().st_mtime) / 3600.0
+    except OSError:
+        return float("inf")
+
+
+def _cached_live(urls: tuple[str, ...] | list[str], dest: Path,
+                 max_age_hours: float = LIVE_MAX_AGE_HOURS,
+                 columns: list[str] | None = None
+                 ) -> tuple[pd.DataFrame, pd.Timestamp | None]:
+    """A feed that describes the present, with its age attached.
+
+    Unlike the archive loaders this refetches whenever the cached copy is
+    older than `max_age_hours`, because a roster from last week is not a
+    roster. Returns (frame, as_of); an empty frame and None if the feed
+    cannot be read at all, so callers can tell "nobody is hurt" apart from
+    "we do not know who is hurt".
+    """
+    if _age_hours(dest) > max_age_hours:
+        for url in urls:
+            try:
+                _download(url, dest)
+                break
+            except requests.RequestException:
+                continue
+    if not dest.exists():
+        return pd.DataFrame(), None
+    try:
+        df = pd.read_parquet(dest)
+    except (OSError, ValueError):
+        return pd.DataFrame(), None
+    if columns:
+        df = df[[c for c in columns if c in df.columns]]
+    as_of = pd.Timestamp(dest.stat().st_mtime, unit="s", tz="UTC")
+    return df, as_of
+
+
+def load_nfl_weekly_rosters(season: int) -> tuple[pd.DataFrame, pd.Timestamp | None]:
+    """Every club's roster week by week, with each player's status.
+
+    `status` is the roster status the club filed: ACT (active), DEV (practice
+    squad), RES (a reserve list — injured reserve, PUP, suspended), CUT, RET,
+    EXE. That column is the difference between "this receiver leads the team
+    in targets" and "this receiver has been on injured reserve since August".
+    """
+    dest = DATA_DIR / "nfl" / f"roster_weekly_{season}.parquet"
+    return _cached_live([NFL_WEEKLY_ROSTER_URL.format(year=season)], dest,
+                        columns=WEEKLY_ROSTER_COLUMNS)
+
+
+def load_nfl_depth_charts(season: int) -> tuple[pd.DataFrame, pd.Timestamp | None]:
+    """The most recent published depth chart for every club.
+
+    The file holds every snapshot taken this season; only the newest is of
+    any use for naming who starts on Sunday, so the rest is dropped on the
+    way out. `as_of` is the timestamp of that snapshot, not of the download,
+    because that is the claim the site makes on the page.
+    """
+    dest = DATA_DIR / "nfl" / f"depth_charts_{season}.parquet"
+    df, _ = _cached_live([NFL_DEPTH_CHART_URL.format(year=season)], dest,
+                         columns=DEPTH_CHART_COLUMNS)
+    if df.empty or "dt" not in df.columns:
+        return pd.DataFrame(), None
+    latest = df["dt"].max()
+    snapshot = df[df["dt"] == latest].copy()
+    return snapshot, pd.to_datetime(latest, utc=True, errors="coerce")
+
+
+def load_ncaa_rosters(season: int) -> tuple[pd.DataFrame, pd.Timestamp | None]:
+    """Current college rosters, keyed by the same athlete ids the play feed
+    uses — which is what makes a transfer detectable rather than a guess."""
+    dest = DATA_DIR / "ncaa" / f"rosters_{season}.parquet"
+    urls = [u.format(year=season) for u in CFB_ROSTER_URLS]
+    return _cached_live(urls, dest, columns=CFB_ROSTER_COLUMNS)
 
 
 def load_nfl_schedules(refresh: bool = False) -> pd.DataFrame:
@@ -183,6 +304,18 @@ def load_nfl_snaps(seasons: list[int], refresh_latest: bool = False) -> pd.DataF
     """Per-game snap shares, used to weight how much a missing player matters."""
     return _load_nfl_yearly(NFL_SNAPS_URL, "snap_counts", SNAP_COLUMNS,
                             seasons, refresh_latest)
+
+
+def load_nfl_weekly_roster_history(seasons: list[int],
+                                   refresh_latest: bool = False) -> pd.DataFrame:
+    """Weekly rosters across several seasons, for features rather than prose.
+
+    Same files as :func:`load_nfl_weekly_rosters`, cached the archive way so
+    a backtest can ask what a club's roster looked like in week 6 of 2023
+    without refetching every season on every build.
+    """
+    return _load_nfl_yearly(NFL_WEEKLY_ROSTER_URL, "roster_weekly",
+                            WEEKLY_ROSTER_COLUMNS, seasons, refresh_latest)
 
 
 def load_nfl_rosters(seasons: list[int], refresh_latest: bool = False) -> pd.DataFrame:
