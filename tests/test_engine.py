@@ -139,6 +139,30 @@ def test_unpriced_moneyline_is_not_graded():
     assert graded["ats_result"].iloc[0] == "win" and graded["ats_price_assumed"].iloc[0]
 
 
+def _pixel_preds(cal_ml: float, price: float) -> pd.DataFrame:
+    return pd.DataFrame([{
+        "game_id": "g1", "home_team": "SEA", "away_team": "NE", "pred_margin": 4.0,
+        "home_win_prob": cal_ml, "ml_cal": cal_ml, "ats_cal": float("nan"),
+        "home_moneyline": price, "away_moneyline": 150.0, "spread_line": float("nan"),
+        "home_spread_odds": float("nan"), "away_spread_odds": float("nan"),
+    }])
+
+
+def test_pixels_pick_needs_a_price_edge_or_publishes_nothing():
+    from engine import pixel
+    # 62.5% calibrated at -170 (62.96% implied): confident, inside the price
+    # floor, and worth about -1.8% of stake. The old fair-priced fallback
+    # published exactly this; now it is no pick at all.
+    assert pixel.select(_pixel_preds(0.625, -170.0), margin_sigma=13.0) is None
+    # 66% at -170 is a real edge and publishes as a straight moneyline.
+    pick = pixel.select(_pixel_preds(0.66, -170.0), margin_sigma=13.0)
+    assert pick is not None and pick["ev"] > 0 and not pick["is_parlay"]
+    assert pick["fair_priced"] is False
+    # A disagreement with the price beyond MAX_DISAGREEMENT is disqualifying,
+    # however confident: 80% calibrated against a -170 price is 17 points.
+    assert pixel.select(_pixel_preds(0.80, -170.0), margin_sigma=13.0) is None
+
+
 def test_market_line_names_the_market_favourite():
     assert odds.format_market("Home", "Away", -5.5) == "Away -5.5"
     assert odds.format_market("Home", "Away", 3.0) == "Home -3"

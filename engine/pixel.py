@@ -2,11 +2,15 @@
 
 The rules, in order:
 
-* Every week produces at least one pick for the NFL and one for college.
 * A pick may be a moneyline or a spread, but it has to carry value: at the
-  price offered, the model's own probability has to beat the price's implied
-  probability. Confidence alone is not enough — a -650 favorite is usually
-  the right side and still a bad bet.
+  price offered, the model's calibrated probability has to beat the price's
+  implied probability. Confidence alone is not enough — a -650 favorite is
+  usually the right side and still a bad bet. A week with no leg that clears
+  that bar publishes NO pick. (Until 2026-09-15 a "fair-priced" fallback
+  posted the most confident legs anyway when the ticket was within 2% of
+  fair by the model's own numbers; measured over 2023-2025 the headline pick
+  went 17-17 in the NFL and 8-14 in college, and a bet the model itself
+  grades as break-even-or-worse is not a headline play at any label.)
 * The price has to be -175 or better. When the best play is a heavy favorite,
   it is parlayed with other high-conviction legs until the combined price
   clears that floor, and the pick names every leg it is combined with.
@@ -33,9 +37,9 @@ MIN_EDGE_POINTS = 1.5         # a spread leg needs a real disagreement
 # when the model agreed with the price to -44% and -65% in the two most
 # disagreeable buckets. Large disagreement is a symptom of the model missing
 # something the market knows, so it is disqualifying rather than exciting.
-MAX_DISAGREEMENT = 0.15
-# a confidence-only fallback pick may be at most this far below fair value
-FAIR_PRICE_TOLERANCE = -0.02
+# Tightened from 0.15 to 0.10 (2026-09-15) on the same ledger: the 5-10 point
+# bucket lost 13-15% of stake in both leagues, and the 10+ bucket 9-29%.
+MAX_DISAGREEMENT = 0.10
 
 
 def american_to_decimal(odds: float) -> float:
@@ -185,36 +189,31 @@ def select(preds: pd.DataFrame, margin_sigma: float) -> dict | None:
     if not strict:
         return None
 
-    # value legs are the preferred anchors; confident ones are the fallback
+    # only legs that carry a price edge may anchor a pick; there is no
+    # confidence-only fallback (see the module docstring)
     valued = [leg for leg in strict if leg["ev"] > 0]
     partners = candidate_legs(preds, margin_sigma, relaxed=True)
 
     combo = _best_combo(sorted(valued, key=lambda l: -l["ev"])[:8], partners)
-    fair_priced = False
-    if combo is None:
-        # no leg carries a price edge this week: fall back to the most
-        # confident legs, but only if the ticket is at least fairly priced
-        # by the model's own numbers, and say so on the card
-        combo = _best_combo(sorted(strict, key=lambda l: -l["prob"])[:8], partners)
-        if combo is not None:
-            dec = math.prod(leg["decimal"] for leg in combo)
-            joint = math.prod(leg["prob"] for leg in combo)
-            if joint * (dec - 1.0) - (1.0 - joint) < FAIR_PRICE_TOLERANCE:
-                combo = None
-            fair_priced = True
     if combo is None:
         return None
 
     dec = math.prod(leg["decimal"] for leg in combo)
     joint = math.prod(leg["prob"] for leg in combo)
+    ev = joint * (dec - 1.0) - (1.0 - joint)
+    # partners from the relaxed pool can drag a valued anchor's ticket below
+    # fair; the ticket as a whole has to carry the edge, not just one leg
+    if ev <= 0:
+        return None
     return {
         "legs": list(combo),
         "decimal": dec,
         "american": decimal_to_american(dec),
         "prob": joint,
-        "ev": joint * (dec - 1.0) - (1.0 - joint),
+        "ev": ev,
         "is_parlay": len(combo) > 1,
-        "fair_priced": fair_priced,
+        # kept on the record shape for readers of older picks; always False
+        "fair_priced": False,
     }
 
 
