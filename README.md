@@ -31,7 +31,11 @@ good: heavy favourites are priced as such, so Locks win almost always and
 pay very little. Spread sides are always leans — they cover about half the
 time.
 
-**Pixel's Pick.** One headline play per league per week, priced −175 or better.
+**Pixel's Pick.** The headline play per league per week, priced −175 or better
+and published only when the ticket carries positive expected value at the
+posted price by the calibrated numbers; a week with no such play publishes
+no Pixel's Pick (measured 2023–2025 the headline pick went 17-17 in the NFL
+and 8-14 in college, so a week without one is the model being honest).
 A short-priced favourite is only ever published parlayed up to that floor, with
 every leg named and a written case for it. Because −175 implies about 64%,
 this rung cannot hit like a Lock does; it is the best play *at that price*.
