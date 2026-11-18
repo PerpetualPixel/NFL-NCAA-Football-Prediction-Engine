@@ -7,6 +7,8 @@ so a reader can follow the reasoning rather than trust a bare number.
 """
 from __future__ import annotations
 
+import html
+
 import pandas as pd
 
 from . import grades, odds, rosters, teams, weather
@@ -16,6 +18,13 @@ from . import grades, odds, rosters, teams, weather
 NOTABLE = 0.05
 STRONG = 0.10
 ELITE = 0.15
+
+
+def _esc(value) -> str:
+    """Text that came from a data feed — a team, a player, an injury note —
+    made safe to sit inside the HTML this module writes. The markup around
+    it is the engine's own and is never passed through here."""
+    return html.escape(str(value))
 
 
 # Whether a player is expected to take the field, and how the numbers beside
@@ -43,7 +52,7 @@ def _availability_suffix(row) -> str:
     note = getattr(row, "roster_note", None)
     if _availability(row) == rosters.AVAILABLE or not isinstance(note, str) or not note:
         return ""
-    return f" &mdash; <em>{note}</em>"
+    return f" &mdash; <em>{_esc(note)}</em>"
 
 
 def _is_out(row) -> bool:
@@ -117,8 +126,8 @@ def _out_sentence(frame: pd.DataFrame, limit: int = 3) -> str:
     named = []
     for r in gone.itertuples():
         note = getattr(r, "roster_note", None)
-        tail = f" ({note})" if isinstance(note, str) and note else ""
-        named.append(f"<strong>{r.player}</strong>{tail}")
+        tail = f" ({_esc(note)})" if isinstance(note, str) and note else ""
+        named.append(f"<strong>{_esc(r.player)}</strong>{tail}")
     if not named:
         return ""
     return f" Not available: {', '.join(named)} &mdash; that work is going elsewhere."
@@ -146,7 +155,7 @@ def _has_units(row: pd.Series) -> bool:
 
 def game_script(row: pd.Series, league: str) -> list[str]:
     """Two-or-so paragraphs on how the model expects the game to be played."""
-    home, away = row.home_team, row.away_team
+    home, away = _esc(row.home_team), _esc(row.away_team)
     home_favored = row.pred_margin > 0
     fav, dog = (home, away) if home_favored else (away, home)
     prob = row.home_win_prob if home_favored else 1 - row.home_win_prob
@@ -283,15 +292,16 @@ def key_players(row: pd.Series, players: pd.DataFrame | None,
                        else "steady but not a difference-maker" if q.epa_per_play >= 0.0
                        else "a drag on the offense")
             bits.append(
-                f"QB <strong>{q.player}</strong> was {verdict}{when}, worth roughly "
+                f"QB <strong>{_esc(q.player)}</strong> was {verdict}{when}, worth roughly "
                 f"{q.epa_per_play * 35:+.1f} points a game over an average quarterback"
                 if when else
-                f"QB <strong>{q.player}</strong> has been {verdict}, adding roughly "
+                f"QB <strong>{_esc(q.player)}</strong> has been {verdict}, adding roughly "
                 f"{q.epa_per_play * 35:+.1f} points a game over an average quarterback"
             )
         top_rec = playing[playing["role"] == "REC"].nlargest(2, "total_epa")
         if not top_rec.empty:
-            names = " and ".join(f"<strong>{r.player}</strong>" for r in top_rec.itertuples())
+            names = " and ".join(f"<strong>{_esc(r.player)}</strong>"
+                               for r in top_rec.itertuples())
             bits.append(f"the passing game ran through {names}{when}" if when
                         else f"the passing game runs through {names}")
         # rusher_player_name includes QB scrambles, so drop anyone who is
@@ -307,7 +317,7 @@ def key_players(row: pd.Series, players: pd.DataFrame | None,
                        "been efficient" if r.epa_per_play >= 0.02
                        else "held his own" if r.epa_per_play >= -0.05
                        else "struggled to move the ball")
-            lead_in = "lead back <strong>%s</strong>" % r.player
+            lead_in = "lead back <strong>%s</strong>" % _esc(r.player)
             bits.append(f"{lead_in} {quality}{when}" if when
                         else f"{lead_in} has {quality}")
         missing = _out_sentence(side, limit=2).strip()
@@ -331,19 +341,19 @@ def availability_note(row: pd.Series, roster=None) -> str:
     if pd.notna(qb_change) and abs(qb_change) >= 0.04:
         side = row.home_team if qb_change < 0 else row.away_team
         bits.append(
-            f"<strong>{side}</strong> is not starting its usual quarterback, or is "
+            f"<strong>{_esc(side)}</strong> is not starting its usual quarterback, or is "
             "starting one playing below that level &mdash; the model marks them down "
             "accordingly"
         )
     qb_gap = row.get("qb_gap", 0.0)
     if pd.notna(qb_gap) and abs(qb_gap) >= 0.08:
         better = row.home_team if qb_gap > 0 else row.away_team
-        bits.append(f"<strong>{better}</strong> has the clear edge at quarterback")
+        bits.append(f"<strong>{_esc(better)}</strong> has the clear edge at quarterback")
     inj = row.get("inj_diff", 0.0)
     if pd.notna(inj) and abs(inj) >= 1.5:
         healthier = row.home_team if inj > 0 else row.away_team
         bits.append(
-            f"<strong>{healthier}</strong> is the healthier side this week by the "
+            f"<strong>{_esc(healthier)}</strong> is the healthier side this week by the "
             "injury report and the reserve lists, weighted by who is actually missing"
         )
     if not bits:
@@ -365,7 +375,8 @@ def _starting_quarterbacks(roster, home_key, away_key, home, away) -> str:
     for key, team in ((home_key, home), (away_key, away)):
         listed = roster.starters(key, "QB", limit=1)
         if listed:
-            named.append(f"{team} list <strong>{listed[0].name}</strong> at quarterback")
+            named.append(f"{_esc(team)} list <strong>{_esc(listed[0].name)}</strong> "
+                         "at quarterback")
     if not named:
         return ""
     return " and ".join(named)
@@ -380,7 +391,8 @@ def key_factors(row: pd.Series) -> list[dict]:
     how each unit ranks in its league."""
     if not _has_units(row):
         return []
-    home, away = row.home_team, row.away_team
+    # escaped once here: every string this returns is written into the page
+    home, away = _esc(row.home_team), _esc(row.away_team)
     n = _team_count(row)
     out = []
     specs = [
@@ -441,7 +453,7 @@ def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str,
     price = pixel.format_american(pick["american"])
     implied = pixel.implied_probability(pick["american"])
     if pick["is_parlay"]:
-        names = " + ".join(leg["detail"] for leg in pick["legs"])
+        names = " + ".join(_esc(leg["detail"]) for leg in pick["legs"])
         paras.append(
             f"<strong>{len(pick['legs'])}-leg parlay at {price}:</strong> {names}. "
             f"Each leg on its own is priced too short to be worth backing, so they are "
@@ -452,7 +464,7 @@ def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str,
     else:
         leg = pick["legs"][0]
         paras.append(
-            f"<strong>{leg['detail']} at {price}.</strong> The model gives this "
+            f"<strong>{_esc(leg['detail'])} at {price}.</strong> The model gives this "
             f"{leg['prob']:.0%}, while the price implies {implied:.0%}. Backing it is "
             "worth doing only because of that difference, not because the side is "
             "likely to win."
@@ -464,7 +476,7 @@ def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str,
         row = by_id.loc[leg["game_id"]]
         bits = []
         gap = row.get("home_rating", 0) - row.get("away_rating", 0)
-        stronger = row["home_team"] if gap > 0 else row["away_team"]
+        stronger = _esc(row["home_team"] if gap > 0 else row["away_team"])
         bits.append(f"{stronger} rates {abs(gap):.1f} points stronger on power ratings")
         factors = key_factors(row)
         if factors:
@@ -474,12 +486,12 @@ def pixel_rationale(pick: dict, preds: pd.DataFrame, league: str,
         if pd.notna(row.get("spread_line")):
             edge = row["pred_margin"] - row["spread_line"]
             if abs(edge) >= 1:
-                side = row["home_team"] if edge > 0 else row["away_team"]
+                side = _esc(row["home_team"] if edge > 0 else row["away_team"])
                 bits.append(f"the model wants {abs(edge):.1f} more points on {side} "
                             "than the market prices")
         note = availability_note(row, roster)
         paras.append(
-            f"<strong>{leg['matchup']} &mdash; {leg['detail']}.</strong> "
+            f"<strong>{_esc(leg['matchup'])} &mdash; {_esc(leg['detail'])}.</strong> "
             + _sentence_case("; ".join(bits)) + ". " + note
         )
 
@@ -523,8 +535,8 @@ def _fmt_player(row, kind: str, current: bool = True) -> str:
         depth = f", working {air:.1f} yards downfield on average" if air else ""
         noun = "receptions" if catches_only else "targets"
         position = getattr(row, "position", None)
-        label = f" ({position})" if isinstance(position, str) and position else ""
-        return (f"<strong>{row.player}</strong>{label} {commands} {row.share:.0%} of the "
+        label = f" ({_esc(position)})" if isinstance(position, str) and position else ""
+        return (f"<strong>{_esc(row.player)}</strong>{label} {commands} {row.share:.0%} of the "
                 f"{noun} ({detail} a game){depth}{_availability_suffix(row)}")
     bits = []
     carries, yards = _num(row, "carries_pg"), _num(row, "rush_yards_pg")
@@ -533,7 +545,7 @@ def _fmt_player(row, kind: str, current: bool = True) -> str:
     if yards is not None:
         bits.append(f"{yards:.0f} yards")
     detail = ", ".join(bits)
-    return (f"<strong>{row.player}</strong> {takes} {row.share:.0%} of the carries "
+    return (f"<strong>{_esc(row.player)}</strong> {takes} {row.share:.0%} of the carries "
             f"({detail} a game){_availability_suffix(row)}")
 
 
@@ -589,10 +601,10 @@ def usage_report(row: pd.Series, usage: pd.DataFrame | None,
                 verdict = ("should be tested repeatedly" if pct < 0.4
                            else "will make them work for it" if pct > 0.7
                            else "is roughly a neutral matchup")
-                defence = (f" The {opponent} pass defence grades "
+                defence = (f" The {_esc(opponent)} pass defence grades "
                            f"<strong>{grades.grade(pct)}</strong> "
                            f"({grades.rank_label(rank, n)}), so this group {verdict}.")
-            expect = (f" Expect {lead.player} to see the ball early and often."
+            expect = (f" Expect {_esc(lead.player)} to see the ball early and often."
                       if _availability(lead) == rosters.AVAILABLE else "")
             paras.append(
                 f"<strong>Through the air:</strong> {lines[0]}"
@@ -618,7 +630,7 @@ def usage_report(row: pd.Series, usage: pd.DataFrame | None,
                 verdict = ("a defence that has been run on all year" if pct < 0.4
                            else "a front that holds up well" if pct > 0.7
                            else "an average front")
-                defence = (f" They run into {verdict} &mdash; {opponent} grades "
+                defence = (f" They run into {verdict} &mdash; {_esc(opponent)} grades "
                            f"<strong>{grades.grade(pct)}</strong> against the run "
                            f"({grades.rank_label(rank, n)}).")
             paras.append(f"<strong>On the ground:</strong> {lines[0]}.{split}"
@@ -674,10 +686,10 @@ def _depth_chart_line(roster, team) -> str:
     for label, position in (("QB", "QB"), ("RB", "RB"), ("TE", "TE")):
         named = roster.starters(team, position, limit=1)
         if named:
-            bits.append(f"{label} <strong>{named[0].name}</strong>")
+            bits.append(f"{label} <strong>{_esc(named[0].name)}</strong>")
     wrs = roster.starters(team, "WR", limit=3)
     if wrs:
-        bits.append("WR " + ", ".join(f"<strong>{w.name}</strong>" for w in wrs))
+        bits.append("WR " + ", ".join(f"<strong>{_esc(w.name)}</strong>" for w in wrs))
     if not bits:
         return ""
     return ("<strong>On the depth chart:</strong> the club lists "
@@ -692,7 +704,7 @@ def line_movement(row: pd.Series) -> str:
         return ""
     opened, current = odds.to_spread(opened), odds.to_spread(current)
     move = current - opened
-    home, away = row.home_team, row.away_team
+    home, away = _esc(row.home_team), _esc(row.away_team)
     if abs(move) < 0.5:
         return (f"The line has not moved off its open of "
                 f"{odds.format_market(home, away, opened)} &mdash; the market is settled "
@@ -716,7 +728,8 @@ def projected_score(row: pd.Series) -> str:
     margin = float(row.pred_margin)
     home = (float(total) + margin) / 2.0
     away = (float(total) - margin) / 2.0
-    return (f"Projected score: <strong>{row.home_team} {home:.0f}, {row.away_team} {away:.0f}"
+    return (f"Projected score: <strong>{_esc(row.home_team)} {home:.0f}, "
+            f"{_esc(row.away_team)} {away:.0f}"
             f"</strong> against a market total of {float(total):g}.")
 
 
@@ -726,7 +739,8 @@ def conditions_note(row: pd.Series) -> str:
     if text:
         stamp = row.get("forecast_at")
         if isinstance(stamp, str) and stamp and not bool(row.get("indoors_venue")):
-            text += f' <span class="meta">(forecast as of {stamp[:16].replace("T", " ")} UTC)</span>'
+            text += (f' <span class="meta">(forecast as of '
+                     f'{_esc(stamp[:16].replace("T", " "))} UTC)</span>')
         return text
     if row.get("indoors"):
         return "Played indoors, so weather is not a factor."
@@ -799,8 +813,8 @@ def _designations(reports: pd.DataFrame | None, row: pd.Series, key: object,
         names = []
         for r in side[side["report_status"] == status].head(6).itertuples():
             inj = getattr(r, "report_primary_injury", None)
-            inj = f", {str(inj).lower()}" if isinstance(inj, str) and inj else ""
-            names.append(f"<strong>{r.full_name}</strong> ({r.position}{inj})")
+            inj = f", {_esc(str(inj).lower())}" if isinstance(inj, str) and inj else ""
+            names.append(f"<strong>{_esc(r.full_name)}</strong> ({_esc(r.position)}{inj})")
             gsis = getattr(r, "gsis_id", None)
             if isinstance(gsis, str):
                 ids.add(gsis)
@@ -821,8 +835,9 @@ def _reserve_list(roster, key: object, exclude: set, limit: int = 6) -> list[str
         return []
     names = []
     for player in sidelined[:limit]:
-        reason = f", {player.reason}" if player.reason else ""
-        names.append(f"<strong>{player.name}</strong> ({player.position or '—'}{reason})")
+        reason = f", {_esc(player.reason)}" if player.reason else ""
+        names.append(f"<strong>{_esc(player.name)}</strong> "
+                     f"({_esc(player.position or '—')}{reason})")
     extra = len(sidelined) - len(names)
     return ["Ruled out: " + ", ".join(names)
             + (f" and {extra} more" if extra > 0 else "")]
@@ -858,7 +873,7 @@ def recent_form(row: pd.Series, games: pd.DataFrame | None, league: str,
             where = "vs" if at_home else "@"
             stale = f" ({int(g.season)})" if g.season != season else ""
             bits.append(f"<span class=\"form-{tag.lower()}\">{tag}</span> {int(us)}&ndash;{int(them)} "
-                        f"{where} {opp_name}{stale}")
+                        f"{where} {_esc(opp_name)}{stale}")
         if not bits:
             continue
         n = len(bits)
@@ -898,7 +913,7 @@ def confidence_case(row: pd.Series, tier_rates: dict | None, league: str) -> lis
         price_txt = "No moneyline is posted yet, so this is not graded as a bet."
 
     label = tracking.TIER_LABELS.get(tier, tier.title())
-    paras.append(f"<strong>{pick}</strong> is a <strong>{label}</strong>: the calibrated "
+    paras.append(f"<strong>{_esc(pick)}</strong> is a <strong>{label}</strong>: the calibrated "
                  f"chance of winning is <strong>{prob:.0%}</strong>. {price_txt}")
 
     rec = (tier_rates or {}).get(tier)
@@ -924,6 +939,6 @@ def confidence_case(row: pd.Series, tier_rates: dict | None, league: str) -> lis
                      "two hours before kickoff; the number can still move until then.")
     elif stage == "locked":
         reason = row.get("lock_reason") or ""
-        paras.append(f"Locked ({reason}). This is the pick of record: it will not change "
+        paras.append(f"Locked ({_esc(reason)}). This is the pick of record: it will not change "
                      "and it is what the tracker grades.")
     return paras

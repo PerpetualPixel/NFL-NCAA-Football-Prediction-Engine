@@ -7,6 +7,7 @@ and looked up everywhere the site renders a team.
 """
 from __future__ import annotations
 
+import html
 from functools import lru_cache
 
 import pandas as pd
@@ -120,7 +121,9 @@ def logo_img(team: str, league: str, css: str = "crest") -> str:
     url = logo_url(team, league)
     if not url:
         return ""
-    return (f'<img class="{css}" src="{url}" alt="" loading="lazy" '
+    # college crests come straight out of the data feed, so the address is
+    # escaped for the attribute it sits in
+    return (f'<img class="{css}" src="{html.escape(str(url))}" alt="" loading="lazy" '
             f'onerror="this.style.display=\'none\'">')
 
 
