@@ -6,6 +6,7 @@ most recent completed week) into a small static site in site/.
 from __future__ import annotations
 
 import datetime as dt
+import html
 from pathlib import Path
 
 import pandas as pd
@@ -16,6 +17,17 @@ from .config import LEAGUES
 from .data import espn_odds
 
 SITE_DIR = Path(__file__).resolve().parents[1] / "site"
+
+
+def esc(value) -> str:
+    """Text that came from a data feed — a team, a venue, a book's name —
+    made safe to place in HTML text or inside a quoted attribute.
+
+    Only data goes through here. Markup the engine composes itself, and the
+    fragments engine.analysis returns (which escape their own data), are
+    written as they are; escaping those again would show the entities."""
+    return html.escape(str(value))
+
 
 CSS = """
 :root {
@@ -440,7 +452,7 @@ def _usage_html(row: pd.Series, usage, roster=None) -> str:
     if not reports:
         return ""
     blocks = "".join(
-        f'<div class="usageteam"><h5>{r["team"]}</h5>'
+        f'<div class="usageteam"><h5>{esc(r["team"])}</h5>'
         + "".join(f'<p class="ftext">{p}</p>' for p in r["paragraphs"])
         + "</div>"
         for r in reports
@@ -543,7 +555,7 @@ def _unit_table(row: pd.Series) -> str:
         for label, key in rows
     )
     return f"""<table class="units">
-<tr><th>Unit grades</th><th>{row.home_team}</th><th>{row.away_team}</th></tr>
+<tr><th>Unit grades</th><th>{esc(row.home_team)}</th><th>{esc(row.away_team)}</th></tr>
 {body}</table>
 <div class="meta gnote">Grades compare each unit to the rest of the league
 (A+ = top of the league, F = bottom), based on opponent-adjusted efficiency.</div>"""
@@ -586,12 +598,12 @@ def _game_card(row: pd.Series, graded: bool, league: str,
         side = row.home_team if edge > 0 else row.away_team
         cls = "edge-pos" if abs(edge) >= odds.VALUE_EDGE_PTS else "meta"
         source = row.get("odds_source")
-        source = (f' <span class="oddssrc">({source})</span>'
+        source = (f' <span class="oddssrc">({esc(source)})</span>'
                   if isinstance(source, str) and source else "")
-        verdict = (f'<span class="{cls}">model {abs(edge):.1f} toward {side}</span>'
+        verdict = (f'<span class="{cls}">model {abs(edge):.1f} toward {esc(side)}</span>'
                    if abs(edge) >= 0.05 else '<span class="meta">model agrees with the market</span>')
         market = (f'<div class="meta">Market line: '
-                  f'{odds.format_market(row.home_team, row.away_team, row.spread_line)}'
+                  f'{esc(odds.format_market(row.home_team, row.away_team, row.spread_line))}'
                   f'{source} &middot; {verdict}</div>')
 
     stage = row.get("release_stage") or "locked"
@@ -622,16 +634,16 @@ def _game_card(row: pd.Series, graded: bool, league: str,
             hit = actual_winner == pick
             verdict = (f'<span class="{"result-hit" if hit else "result-miss"}">'
                        f'{"HIT" if hit else "MISS"}</span>')
-        result = (f'<div class="meta">Final: {row.away_team} {as_} &ndash; '
-                  f'{row.home_team} {hs} &middot; {verdict}</div>')
+        result = (f'<div class="meta">Final: {esc(row.away_team)} {as_} &ndash; '
+                  f'{esc(row.home_team)} {hs} &middot; {verdict}</div>')
 
     kick_label, kick_sort = _kickoff(row, league)
     neutral = " (neutral site)" if row.neutral else ""
-    return f"""<div class="card game" id="g-{row.game_id}" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
+    return f"""<div class="card game" id="g-{esc(row.game_id)}" data-kick="{kick_sort:.0f}" data-prob="{prob:.4f}" \
 data-margin="{abs(row.pred_margin):.3f}" data-edge="{abs(edge) if edge is not None else 0:.3f}" \
 data-tags="{' '.join(tags)}">
-<div class="cardhead"><div class="teams">{teams.logo_img(row.get("away_key", ""), league)}{row.away_team}
-&nbsp;@&nbsp;{teams.logo_img(row.get("home_key", ""), league)}{row.home_team}{neutral}</div>
+<div class="cardhead"><div class="teams">{teams.logo_img(row.get("away_key", ""), league)}{esc(row.away_team)}
+&nbsp;@&nbsp;{teams.logo_img(row.get("home_key", ""), league)}{esc(row.home_team)}{neutral}</div>
 <div class="kick">{stage_badge}{kick_label}</div></div>
 {_pick_row(row, line, prob, ml)}
 <div class="chips">{chips}</div>
@@ -684,7 +696,7 @@ def _pick_row(row: pd.Series, line: str, prob: float, ml: str) -> str:
 
     hero = f'''<div class="pickhero t-{tier}">
 <div class="pickside"><div class="pickkicker">{badge} {kicker}</div>
-<div class="pickteam">{row.get('ml_pick', '')}</div>
+<div class="pickteam">{esc(row.get('ml_pick', ''))}</div>
 <div class="picknote">{note}</div></div>
 <div class="pickodds">{price_html}{prob_html}{outcome('ml')}</div></div>'''
 
@@ -695,13 +707,13 @@ def _pick_row(row: pd.Series, line: str, prob: float, ml: str) -> str:
                  f"{odds.format_spread(ats_line)}" if pd.notna(ats_line) else "")
         assumed = " (&minus;110 assumed)" if row.get("ats_price_assumed") else ""
         ats = (f'<div class="bet"><div class="betlabel">Spread lean</div>'
-               f'<div class="betvalue">{row.ats_pick} {shown}</div>'
+               f'<div class="betvalue">{esc(row.ats_pick)} {shown}</div>'
                f'<div class="betnote meta">{abs(row.get("ats_edge", 0)):.1f} pt edge vs market'
                f'{assumed}</div>{outcome("ats")}</div>')
 
     return f"""{hero}<div class="bets">
 <div class="bet"><div class="betlabel">Projected line</div>
-<div class="betvalue">{line}</div>
+<div class="betvalue">{esc(line)}</div>
 <div class="betnote meta">model projection</div></div>
 {ats}</div>"""
 
@@ -725,13 +737,14 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None,
     injuries = analysis.injury_report(row, ctx.get("reports"), league, roster)
     inj_html = ""
     if injuries:
-        items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in injuries)
+        items = "".join(f"<li><strong>{esc(team)}:</strong> {text}</li>"
+                        for team, text in injuries)
         inj_html = f'<h4>Who is out</h4><ul class="factors">{items}</ul>'
 
     form = analysis.recent_form(row, ctx.get("games"), league)
     form_html = ""
     if form:
-        items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in form)
+        items = "".join(f"<li><strong>{esc(team)}:</strong> {text}</li>" for team, text in form)
         form_html = f'<h4>Recent form</h4><ul class="factors">{items}</ul>'
 
     cond = analysis.conditions_note(row)
@@ -740,7 +753,7 @@ def _analysis_panel(row: pd.Series, league: str, players: pd.DataFrame | None,
     player_html = ""
     people = analysis.key_players(row, players, roster)
     if people:
-        items = "".join(f"<li><strong>{team}:</strong> {text}</li>" for team, text in people)
+        items = "".join(f"<li><strong>{esc(team)}:</strong> {text}</li>" for team, text in people)
         player_html = f'<h4>Players to watch</h4><ul class="factors">{items}</ul>'
 
     avail = analysis.availability_note(row, roster)
@@ -925,7 +938,8 @@ def _stage_badge(row: pd.Series, stage: str) -> str:
                 'cancelled or unscored</span>')
     if stage == "locked":
         reason = row.get("lock_reason") or ""
-        return f'<span class="stage locked" title="{reason}">Final &middot; locked{when}</span>'
+        return (f'<span class="stage locked" title="{esc(reason)}">'
+                f'Final &middot; locked{when}</span>')
     if stage == "started":
         if row.get("post_kick"):
             return ('<span class="stage started">Graded after the fact &middot; '
@@ -957,7 +971,7 @@ def _sched_row(row: pd.Series, league: str) -> str:
             margin = row.margin if side == "home" else -row.margin
             if margin < 0:
                 cls += " lost"
-        return f'<div class="{cls}">{teams.logo_img(key, league)}{name}{score}</div>'
+        return f'<div class="{cls}">{teams.logo_img(key, league)}{esc(name)}{score}</div>'
 
     hours = row.get("hours_out")
     if final:
@@ -973,7 +987,7 @@ def _sched_row(row: pd.Series, league: str) -> str:
         else:
             day, _, time = label.partition(" &middot; ")
             when = f"<strong>{day}</strong>{time}"
-    return (f'<a class="srow" href="#g-{row.game_id}">'
+    return (f'<a class="srow" href="#g-{esc(row.game_id)}">'
             f'<div class="steams">{team("away")}{team("home")}</div>'
             f'<div class="swhen">{when}</div></a>')
 
@@ -1436,8 +1450,8 @@ def _pixel_section(week: dict, league: str, players, roster=None) -> str:
     graded = week.get("pixel_graded")
     price = pixel.format_american(pick["american"])
     legs = "".join(
-        f'<li class="pxleg"><span class="pxdetail">{leg["detail"]}</span> '
-        f'<span class="meta">{leg["matchup"]} &middot; '
+        f'<li class="pxleg"><span class="pxdetail">{esc(leg["detail"])}</span> '
+        f'<span class="meta">{esc(leg["matchup"])} &middot; '
         f'{pixel.format_american(leg["price"])} &middot; model {leg["prob"]:.0%}</span></li>'
         for leg in pick["legs"]
     )
@@ -1478,8 +1492,8 @@ def _board_section(week: dict) -> str:
                 outcome = (f'<span class="outcome t-{tone}">{graded["result"].upper()}'
                            f' &middot; {graded["profit"]:+.2f}u</span>')
             legs = "".join(
-                f'<li class="pxleg"><span class="pxdetail">{leg["pick"]}</span> '
-                f'<span class="meta">{leg["matchup"]} &middot; '
+                f'<li class="pxleg"><span class="pxdetail">{esc(leg["pick"])}</span> '
+                f'<span class="meta">{esc(leg["matchup"])} &middot; '
                 f'{pixel.format_american(leg["price"])} &middot; model '
                 f'{leg["prob"]:.0%}</span></li>'
                 for leg in parlay["legs"]
@@ -1661,6 +1675,12 @@ LEDGER_SCRIPT = """<script>
 
   var LABEL = {'Pixel': "Pixel's Pick", 'Parlay': 'Parlay board'};
   function fmtPrice(p) { return p > 0 ? '+' + p : '' + p; }
+  // team names in the ledger are data, so they are escaped before they are
+  // written into a row; the week label and the tags are the site's own text
+  var ENT = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;'};
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return ENT[c]; });
+  }
 
   function render(reset) {
     if (reset) { tbody.innerHTML = ''; shown = 0; }
@@ -1672,7 +1692,7 @@ LEDGER_SCRIPT = """<script>
       var live = r.live ? ' <span class="lgtag live">live</span>' : '';
       return '<tr><td>' + r.week_label + ' <span class="meta">' + r.season + '</span></td>' +
         '<td>' + (LABEL[r.type] || r.type) + tier + live + '</td>' +
-        '<td>' + r.pick + ' <span class="meta">' + r.matchup + '</span></td>' +
+        '<td>' + esc(r.pick) + ' <span class="meta">' + esc(r.matchup) + '</span></td>' +
         '<td class="num">' + fmtPrice(r.price) + '</td>' +
         '<td class="num meta">' + prob + '</td>' +
         '<td class="num ' + tone + '">' + r.result.toUpperCase() + '</td>' +

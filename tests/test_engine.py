@@ -459,6 +459,64 @@ def test_market_line_names_the_market_favourite():
     assert "upset" not in odds.classify(0.55, 3.0, spread_line=4.0)
 
 
+# ---------------------------------------------------------------------------
+# Names come from other people's feeds: on the page they are text, never markup
+# ---------------------------------------------------------------------------
+
+NASTY = '<script>alert(1)</script> "Tigers"'
+NASTY_ESCAPED = '&lt;script&gt;alert(1)&lt;/script&gt; &quot;Tigers&quot;'
+
+
+def test_a_team_name_from_the_feed_cannot_become_markup():
+    html = _card(home_team=NASTY, ml_pick=NASTY, game_id='x1"><script>')
+    assert "<script>" not in html and NASTY not in html
+    # the pick, the projected line, the market line and the prose all name it
+    assert f'<div class="pickteam">{NASTY_ESCAPED}</div>' in html
+    assert f'<div class="betvalue">{NASTY_ESCAPED} -3</div>' in html
+    assert f'Market line: {NASTY_ESCAPED} -0.5' in html
+    assert f'<strong>{NASTY_ESCAPED} by 3</strong>' in html
+    # a quote in feed text cannot close the attribute it sits in
+    assert 'id="g-x1&quot;&gt;&lt;script&gt;"' in html
+    # and nothing is escaped twice on the way to the page
+    assert "&amp;lt;" not in html and "&amp;quot;" not in html
+
+    # an ordinary name with an ampersand reads the same in a browser
+    html = _card(home_team="Texas A&M Aggies", ml_pick="Texas A&M Aggies")
+    assert '<div class="pickteam">Texas A&amp;M Aggies</div>' in html
+    assert "A&M" not in html and "&amp;amp;" not in html
+    # the engine's own markup and entities are left exactly as written
+    assert "Moneyline lean" in html and "&middot;" in html
+
+
+def test_a_player_name_from_the_feed_cannot_become_markup():
+    from engine import feed
+
+    usage = pd.DataFrame([
+        {"team": "KC", "player_id": "p2", "player": NASTY, "share": 0.24,
+         "role": "REC", "rank": 1, "targets_pg": 7.0, "rec_yards_pg": 66.0,
+         "stats_are_current": False, "stat_season": 2025},
+    ])
+    row = pd.Series({"home_team": NASTY, "away_team": "MIN", "home_key": "KC",
+                     "away_key": "MIN", "n_teams": 32})
+    html = site._usage_html(row, usage, None)
+    assert "<script>" not in html and NASTY not in html
+    assert f"<h5>{NASTY_ESCAPED}</h5>" in html
+    assert f"<strong>{NASTY_ESCAPED}</strong> commanded 24% of the targets" in html
+    assert "&amp;lt;" not in html and "&amp;quot;" not in html
+
+    # the parlay board takes its legs from the same names
+    board = site._board_section({"board": [{"slot": "Sunday", "parlays": [{
+        "american": 120.0, "prob": 0.5,
+        "legs": [{"pick": NASTY, "matchup": f"MIN @ {NASTY}",
+                  "price": -150.0, "prob": 0.7}]}]}]})
+    assert "<script>" not in board
+    assert f'<span class="pxdetail">{NASTY_ESCAPED}</span>' in board
+
+    # picks.json is plain text: the same paragraph still carries no markup
+    para = analysis.usage_report(row, usage, None)[0]["paragraphs"][0]
+    assert "<" not in feed.plain(para) and "alert(1)" in feed.plain(para)
+
+
 if __name__ == "__main__":
     import sys
     failures = 0

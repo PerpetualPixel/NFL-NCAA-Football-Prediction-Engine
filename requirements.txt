@@ -1,7 +1,24 @@
-pandas>=2.0
-numpy>=1.24
-pyarrow>=14.0
-scikit-learn>=1.3
-scipy>=1.11
-requests>=2.31
-tzdata>=2024.1
+# Exact pins, so a build installs the versions the tests last passed on
+# rather than whatever is newest that day. To refresh: install the floors
+# (pandas>=2.0 numpy>=1.24 pyarrow>=14.0 scikit-learn>=1.3 scipy>=1.11
+# requests>=2.31 tzdata>=2024.1) in a clean Python 3.11 virtualenv, run
+# `python -m tests.test_engine`, then copy the versions from `pip freeze`.
+pandas==3.1.1
+numpy==2.4.6
+pyarrow==26.0.1
+scikit-learn==1.9.1
+scipy==1.17.1
+requests==2.34.2
+tzdata==2026.6
+
+# The packages above bring these in as their own dependencies; pinned too,
+# so a build cannot pick up a new release of one of them unreviewed.
+certifi==2026.10.23
+charset-normalizer==3.5.2
+cloudpickle==3.1.2
+idna==3.20
+joblib==1.6.0
+narwhals==2.29.0
+python-dateutil==4.0.0
+threadpoolctl==3.8.0
+urllib3==2.8.0

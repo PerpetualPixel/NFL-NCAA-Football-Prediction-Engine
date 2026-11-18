@@ -94,7 +94,11 @@ def plain(text) -> str:
     if text is None or (isinstance(text, float) and pd.isna(text)):
         return ""
     stripped = _TAG.sub("", str(text))
-    return re.sub(r"\s+", " ", html_mod.unescape(stripped)).strip()
+    # The fragments carry feed text (team and player names) as entities, so a
+    # name that itself looks like a tag only shows up once those are decoded.
+    # It is dropped then, exactly as it was when names were written in raw.
+    decoded = _TAG.sub("", html_mod.unescape(stripped))
+    return re.sub(r"\s+", " ", decoded).strip()
 
 
 def _num(value):
